@@ -211,7 +211,7 @@ item_t NewItem(char*, item_slug_en, int);
 bool FContainsChar(FILE*, char);
 void InteractWithNPC(game_state_t*, char);
 int GetKeyInput();
-void AddHealth(player_t*, int);
+int AddHealth(player_t*, int);
 bool AddToInventory(player_t*, const item_t*);
 
 void Cleanup_GameState(game_state_t*);

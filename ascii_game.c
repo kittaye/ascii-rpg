@@ -1262,13 +1262,14 @@ void DrawMerchantScreen(game_state_t *state) {
 	}
 }
 
-void AddHealth(player_t *player, int amt) {
+int AddHealth(player_t *player, int amt) {
 	assert(player != NULL);
 
 	if (player->stats.curr_health + amt > player->stats.max_health) {
 		amt = player->stats.max_health - player->stats.curr_health;
 	}
 	player->stats.curr_health += amt;
+	return amt;
 }
 
 void DrawPlayerInfoScreen(const game_state_t * state) {
@@ -1295,7 +1296,7 @@ void DrawPlayerInfoScreen(const game_state_t * state) {
 	y++;
 	GEO_draw_string(x, y++, CLR_CYAN, "Inventory");
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
-		GEO_draw_formatted(x, y++, CLR_YELLOW, "(%d) - %s", i + 1, state->player.inventory[i].name);
+		GEO_draw_formatted(x, y++, CLR_YELLOW, "(%d) %s", i + 1, state->player.inventory[i].name);
 	}
 	y++;
 	GEO_draw_string(x, y++, CLR_CYAN, "Stats");
