@@ -129,7 +129,6 @@ typedef struct tile_t {
 typedef struct game_state_t {
 	int game_turns;					// Current number of game turns since game started.
 	int num_rooms_created;			// Number of rooms created in game (may not always == num_rooms_specified in command line).
-	bool process_over;				// Determines when to exit the program.
 	bool fog_of_war;				// Toggle whether all world tiles are shown or only those within range of the player.
 	bool player_turn_over;			// Determines when the player has finished their turn.
 	bool floor_complete;			// Determines when the player has completed the dungeon floor.
@@ -190,6 +189,7 @@ void SetPlayerPos(player_t*, coord_t);
 coord_t NewCoord(int, int);
 bool FContainsChar(FILE*, char);
 bool InteractWithNPC(char);
+void GetAnyKeyInput();
 
 void Cleanup_GameState(game_state_t*);
 void FreeEnemyList(entity_node_t**);

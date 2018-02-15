@@ -13,6 +13,7 @@
 #include "ascii_game.h"
 
 bool g_resize_error = false;
+bool g_process_over = false;
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
@@ -66,7 +67,7 @@ int main(int argc, char *argv[]) {
 	CreateDungeonFloor(&game_state, num_rooms_specified, room_size_specified, filename_specified);
 
 	// Main game loop.
-	while (!game_state.process_over) {
+	while (!g_process_over) {
 		Process(&game_state);
 		if (game_state.floor_complete) {
 			game_state.current_floor++;
@@ -113,7 +114,6 @@ void InitGameState(game_state_t *state) {
 	state->game_turns = 0;
 	state->num_rooms_created = 0;
 	state->current_floor = 1;
-	state->process_over = false;
 	state->fog_of_war = true;
 	state->player_turn_over = false;
 	state->floor_complete = false;
@@ -390,7 +390,7 @@ void Process(game_state_t *state) {
 		if (state->player.stats.curr_health <= 0) {
 			// GAME OVER.
 			DrawDeathScreen();
-			state->process_over = true;
+			g_process_over = true;
 		}
 		state->player_turn_over = false;
 		state->game_turns++;
@@ -1111,11 +1111,11 @@ void NextPlayerInput(game_state_t *state) {
 			valid_key_pressed = true;
 			break;
 		case 'q':
-			state->process_over = true;
+			g_process_over = true;
 			valid_key_pressed = true;
 			break;
 		case KEY_RESIZE:
-			state->process_over = true;
+			g_process_over = true;
 			g_resize_error = true;
 			valid_key_pressed = true;
 		case '\n':
@@ -1162,7 +1162,24 @@ void DrawHelpScreen() {
 	GEO_draw_align_center(h / 2 + 4, "Press any key to continue...", CLR_WHITE);
 
 	GEO_show_screen();
-	GEO_wait_char();
+	GetAnyKeyInput();
+}
+
+void GetAnyKeyInput() {
+	while (1) {
+		int key = GEO_get_char();
+		switch (key)
+		{
+		case KEY_RESIZE:
+			g_resize_error = true;
+			g_process_over = true;
+			return;
+		case ERR:
+			break;
+		default:
+			return;
+		}
+	}
 }
 
 void DrawDeathScreen() {
@@ -1173,7 +1190,7 @@ void DrawDeathScreen() {
 	GEO_draw_align_center(h / 2, "YOU DIED", CLR_RED);
 
 	GEO_show_screen();
-	GEO_wait_char();
+	GetAnyKeyInput();
 }
 
 void DrawMenuScreen(const game_state_t * state) {
@@ -1208,8 +1225,7 @@ void DrawMenuScreen(const game_state_t * state) {
 	GEO_draw_formatted(x, y++, CLR_WHITE, "Gold - %d", state->player.stats.num_gold);
 
 	GEO_show_screen();
-	GEO_wait_char();
-	GEO_clear_screen();
+	GetAnyKeyInput();
 }
 
 void AddToEnemyList(entity_node_t **list, entity_t *entity) {
