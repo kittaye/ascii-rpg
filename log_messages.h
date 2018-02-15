@@ -8,8 +8,12 @@
 #define LOGMSG_PLR_DMG_ENEMY "Hero hit %s for %d dmg."
 #define LOGMSG_PLR_KILL_ENEMY "Hero has slain %s."
 #define LOGMSG_PLR_INTERACT_STAIRCASE "Hero ascends the staircase..."
-#define LOGMSG_PLR_INTERACT_MERCHANT "Merchant: \"Greetings traveller! If you wish to trade, press ENTER.\""
 #define LOGMSG_PLR_NEW_FLOOR "Hero is now traversing floor %d."
+
+#define LOGMSG_PLR_INTERACT_MERCHANT "Merchant: \"Greetings traveller! If you wish to trade, press ENTER.\""
+#define LOGMSG_PLR_BUY_MERCHANT "Merchant: \"Thank you for purchasing my %s!\""
+#define LOGMSG_PLR_BUY_FULL_MERCHANT "Merchant: \"Seems like you don't have any room in your inventory to buy this.\""
+#define LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT "Merchant: \"I will not offer any lower for my goods!\""
 
 #define LOGMSG_ENEMY_DMG_PLR "%s hit Hero for %d dmg."
 

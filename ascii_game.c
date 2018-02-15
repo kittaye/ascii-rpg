@@ -1228,12 +1228,12 @@ void DrawMerchantScreen(game_state_t *state) {
 				if (state->player.stats.num_gold >= state->item_food1.value) {
 					if (AddToInventory(&state->player, &state->item_food1)) {
 						state->player.stats.num_gold -= state->item_food1.value;
-						UpdateGameLog(&state->game_log, "Merchant: \"Thank you for purchasing my %s!\"", state->item_food1.name);
+						UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_MERCHANT, state->item_food1.name);
 					} else {
-						UpdateGameLog(&state->game_log, "Merchant: \"Seems like you don't have any room in your inventory to buy this.\"");
+						UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_FULL_MERCHANT);
 					}
 				} else {
-					UpdateGameLog(&state->game_log, "Merchant: \"I will not offer any lower for my goods!\"");
+					UpdateGameLog(&state->game_log, LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT);
 				}
 				validKeyPress = true;
 				break;
@@ -1241,12 +1241,12 @@ void DrawMerchantScreen(game_state_t *state) {
 				if (state->player.stats.num_gold >= state->item_food2.value) {
 					if (AddToInventory(&state->player, &state->item_food1)) {
 						state->player.stats.num_gold -= state->item_food2.value;
-						UpdateGameLog(&state->game_log, "Merchant: \"Thank you for purchasing my %s!\"", state->item_food2.name);
+						UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_MERCHANT, state->item_food2.name);
 					} else {
-						UpdateGameLog(&state->game_log, "Merchant: \"Seems like you don't have any room in your inventory to buy this.\"");
+						UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_FULL_MERCHANT);
 					}
 				} else {
-					UpdateGameLog(&state->game_log, "Merchant: \"I will not offer any lower for my goods!\"");
+					UpdateGameLog(&state->game_log, LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT);
 				}
 				validKeyPress = true;
 				break;
