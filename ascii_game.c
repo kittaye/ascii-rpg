@@ -426,10 +426,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 		else if (curr_world_tile->sprite == SPR_FOOD) {
 			if (state->player.stats.curr_health < state->player.stats.max_health) {
 				int amt = (rand() % 2) + 1;
-				if (state->player.stats.curr_health + amt > state->player.stats.max_health) {
-					amt = state->player.stats.max_health - state->player.stats.curr_health;
-				}
-				state->player.stats.curr_health += amt;
+				AddHealth(&state->player, amt);
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_FOOD, amt);
 			}
 			else {
@@ -1120,10 +1117,8 @@ void NextPlayerInput(game_state_t *state) {
 			valid_key_pressed = true;
 		case '\n':
 		case KEY_ENTER:
-			if (InteractWithNPC(state->current_target)) {
-				DrawMenuScreen(state);
-				valid_key_pressed = true;
-			}
+			InteractWithNPC(state);
+			valid_key_pressed = true;
 			break;
 		default:
 			break;
@@ -1137,13 +1132,14 @@ void NextPlayerInput(game_state_t *state) {
 	}
 }
 
-bool InteractWithNPC(char npc_sprite) {
-	switch (npc_sprite)
+void InteractWithNPC(game_state_t *state) {
+	switch (state->current_target)
 	{
 	case SPR_MERCHANT:
-		return true;
+		DrawMerchantScreen(state);
+		return;
 	default:
-		return false;
+		return;
 	}
 }
 
@@ -1165,7 +1161,7 @@ void DrawHelpScreen() {
 	GetAnyKeyInput();
 }
 
-void GetAnyKeyInput() {
+int GetAnyKeyInput() {
 	while (1) {
 		int key = GEO_get_char();
 		switch (key)
@@ -1173,11 +1169,11 @@ void GetAnyKeyInput() {
 		case KEY_RESIZE:
 			g_resize_error = true;
 			g_process_over = true;
-			return;
+			return KEY_RESIZE;
 		case ERR:
 			break;
 		default:
-			return;
+			return key;
 		}
 	}
 }
@@ -1191,6 +1187,77 @@ void DrawDeathScreen() {
 
 	GEO_show_screen();
 	GetAnyKeyInput();
+}
+
+void DrawMerchantScreen(game_state_t * state) {
+	assert(state != NULL);
+
+	int w = GEO_screen_width() - 1;
+	int h = GEO_screen_height() - 1;
+
+	GEO_clear_screen();
+
+	GEO_draw_line(0, 0, w, 0, '*', CLR_WHITE);
+	GEO_draw_line(0, 0, 0, h, '*', CLR_WHITE);
+	GEO_draw_line(w, 0, w, h, '*', CLR_WHITE);
+	GEO_draw_line(0, h, w, h, '*', CLR_WHITE);
+
+	int x = 3;
+	int y = 2;
+
+	GEO_draw_align_center(y++, "Trading with Merchant", CLR_YELLOW);
+	y++;
+	GEO_draw_string(x, y++, "Option    Item         Price (gold)", CLR_YELLOW);
+	GEO_draw_string(x, y++, "(1)\t\t\t\t\t\tFood (+1)\t\t\t\t\t\t20", CLR_WHITE);
+	GEO_draw_string(x, y++, "(2)\t\t\t\t\t\tFood (+2)\t\t\t\t\t\t35", CLR_WHITE);
+	y++;
+	GEO_draw_formatted(x, y++, CLR_WHITE, "Your gold: %d", state->player.stats.num_gold);
+	y++;
+	GEO_draw_string(x, y++, "Press an option to buy, or press ENTER to leave.", CLR_WHITE);
+
+	GEO_show_screen();
+
+	bool validKeyPress = false;
+	while (!validKeyPress) {
+		int key = GetAnyKeyInput();
+		switch (key)
+		{
+		case '1':
+			if (state->player.stats.num_gold >= 20) {
+				AddHealth(&state->player, 1);
+				state->player.stats.num_gold -= 20;
+				UpdateGameLog(&state->game_log, "Merchant: \"Thank you for purchasing my Food (+1)!\"");
+				validKeyPress = true;
+			}
+			break;
+		case '2':
+			if (state->player.stats.num_gold >= 35) {
+				AddHealth(&state->player, 2);
+				state->player.stats.num_gold -= 35;
+				UpdateGameLog(&state->game_log, "Merchant: \"Thank you for purchasing my Food (+2)!\"");
+				validKeyPress = true;
+			}
+			break;
+		case '\n':
+		case KEY_ENTER:
+		case 'q':
+			validKeyPress = true;
+			break;
+		case KEY_RESIZE:
+			return;
+		default:
+			break;
+		}
+	}
+}
+
+void AddHealth(player_t *player, int amt) {
+	assert(player != NULL);
+
+	if (player->stats.curr_health + amt > player->stats.max_health) {
+		amt = player->stats.max_health - player->stats.curr_health;
+	}
+	player->stats.curr_health += amt;
 }
 
 void DrawMenuScreen(const game_state_t * state) {
