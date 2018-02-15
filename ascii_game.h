@@ -49,10 +49,18 @@ typedef enum direction_en {
 	D_Right = 3
 } direction_en;
 
-typedef enum item_en {
+typedef enum item_slug_en {
 	I_None,
-	I_Map
-} item_en;
+	I_Map,
+	I_Food1,
+	I_Food2
+} item_slug_en;
+
+typedef struct item_t {
+	char *name;
+	item_slug_en item_slug;
+	int value;
+} item_t;
 
 typedef struct player_stats {
 	int level;
@@ -110,7 +118,7 @@ typedef struct entity_t {
 	entity_data_t *data;
 	int curr_health;
 	bool is_alive;
-	item_en loot;
+	item_slug_en loot;
 	coord_t pos;
 } entity_t;
 

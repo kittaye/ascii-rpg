@@ -1204,16 +1204,11 @@ void DrawMerchantScreen(game_state_t *state) {
 	GEO_draw_line(0, h, w, h, CLR_WHITE, '*');
 
 	// Create shop items.
-	struct shopping_item
-	{
-		char* name;
-		int price;
+	item_t shopping_list[] = { 
+		{ .name = "Food (+1)", .item_slug = I_Food1, .value = 20 },
+		{ .name = "Food (+2)", .item_slug = I_Food2, .value = 35 }
 	};
-	struct shopping_item shopping_list[] = { 
-		{ .name = "Food (+1)", .price = 20 },
-		{ .name = "Food (+2)", .price = 35 }
-	};
-	int shopping_list_len = sizeof(shopping_list) / sizeof(struct shopping_item);
+	int shopping_list_len = sizeof(shopping_list) / sizeof(*shopping_list);
 
 	// Draw the merchant shop interface.
 	int x = 3;
@@ -1225,7 +1220,7 @@ void DrawMerchantScreen(game_state_t *state) {
 	for (int i = 0; i < shopping_list_len; i++)
 	{
 		GEO_draw_formatted(x, y, CLR_WHITE, "(%d)        %s", i + 1, shopping_list[i].name);
-		GEO_draw_formatted(x + 30, y, CLR_WHITE, "%d", shopping_list[i].price);
+		GEO_draw_formatted(x + 30, y, CLR_WHITE, "%d", shopping_list[i].value);
 		y++;
 	}
 	y++;
@@ -1262,8 +1257,8 @@ void DrawMerchantScreen(game_state_t *state) {
 	}
 
 	if (chosen_item_id != -1) {
-		if (state->player.stats.num_gold >= shopping_list[chosen_item_id].price) {
-			state->player.stats.num_gold -= shopping_list[chosen_item_id].price;
+		if (state->player.stats.num_gold >= shopping_list[chosen_item_id].value) {
+			state->player.stats.num_gold -= shopping_list[chosen_item_id].value;
 			UpdateGameLog(&state->game_log, "Merchant: \"Thank you for purchasing my %s!\"", shopping_list[chosen_item_id].name);
 		}
 	}
