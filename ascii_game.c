@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 	InitGameState(&game_state);
 
 	DrawHelpScreen();
-	UpdateGameLog(&game_state.game_log, "Welcome to Asciiscape!");
+	UpdateGameLog(&game_state.game_log, LOGMSG_WELCOME);
 	CreateDungeonFloor(&game_state, num_rooms_specified, room_size_specified, filename_specified);
 
 	// Main game loop.
