@@ -28,6 +28,7 @@
 #define LOG_BUFFER_SIZE 250
 #define MIN_ROOMS 2
 #define MIN_ROOM_SIZE 5
+#define INVENTORY_SIZE 10
 
 // NOTE: These min values should be the largest txt dimension size of a dungeon layout from a file at compile time!
 #define MIN_SCREEN_WIDTH 85	
@@ -68,7 +69,6 @@ typedef struct player_stats {
 	int curr_health;
 	int max_mana;
 	int curr_mana;
-
 	int max_vision;
 
 	int s_STR;
@@ -102,6 +102,7 @@ typedef struct room_t {
 typedef struct player_t {
 	stats_t stats;
 	coord_t pos;
+	item_t inventory[INVENTORY_SIZE];
 	char sprite;
 	int color;
 } player_t;
