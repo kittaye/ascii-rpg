@@ -142,7 +142,6 @@ void InitGameState(game_state_t *state) {
 
 	state->player = InitPlayer(state, SPR_PLAYER);
 	state->enemy_list = (entity_node_t*)NULL;
-	state->item_list = (item_node_t*)NULL;
 
 	state->world_tiles = malloc(sizeof(*state->world_tiles) * (w + 1));
 	assert(state->world_tiles != NULL);
@@ -166,7 +165,6 @@ void Cleanup_GameState(game_state_t *state) {
 	free(state->world_tiles);
 	free(state->rooms);
 	FreeEnemyList(&state->enemy_list);
-	FreeItemList(&state->item_list);
 }
 
 void FreeEnemyList(entity_node_t **list) {
@@ -181,26 +179,11 @@ void FreeEnemyList(entity_node_t **list) {
 	}
 }
 
-void FreeItemList(item_node_t **list) {
-	assert(list != NULL);
-
-	item_node_t *tmp;
-	while ((*list) != NULL) {
-		tmp = (*list);
-		(*list) = (*list)->next;
-		free(tmp->item);
-		free(tmp);
-	}
-}
-
 void ResetDungeonFloor(game_state_t *state) {
 	assert(state != NULL);
 
 	FreeEnemyList(&state->enemy_list);
 	state->enemy_list = (entity_node_t*)NULL;
-
-	FreeItemList(&state->item_list);
-	state->item_list = (item_node_t*)NULL;
 
 	free(state->rooms);
 	state->rooms = (room_t*)NULL;
@@ -282,20 +265,12 @@ void PopulateRooms(game_state_t *state) {
 
 				} else if (val <= 2) {
 					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGGOLD, T_Item, CLR_GREEN, NULL, NULL);
-
 				} else if (val <= 4) {
 					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_GOLD, T_Item, CLR_GREEN, NULL, NULL);
-
 				} else if (val <= 5) {
-					int food_amt = (rand() % 2) + 1;
-					item_t *food_item = malloc(sizeof(*food_item));
-					assert(food_item != NULL);
-					if (food_amt == 1) {
-						food_item = &state->item_food1;
-					} else {
-						food_item = &state->item_food2;
-					}
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_FOOD, T_Item, CLR_GREEN, NULL, food_item);
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, T_Item, CLR_GREEN, NULL, &state->item_food1);
+				} else if (val <= 6) {
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, T_Item, CLR_GREEN, NULL, &state->item_food2);
 				}
 			}
 		}
@@ -609,7 +584,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 					case SPR_WALL:
 						type = T_Solid;
 						break;
-					case SPR_FOOD:
+					case SPR_SMALLFOOD:
 						type = T_Item;
 						colour = CLR_GREEN;
 						int food_amt = (rand() % 2) + 1;
@@ -1363,27 +1338,6 @@ void AddToEnemyList(entity_node_t **list, entity_t *entity) {
 		*list = node;
 	} else {
 		entity_node_t *searcher = *list;
-		while (searcher->next != NULL) {
-			searcher = searcher->next;
-		}
-		searcher->next = node;
-	}
-}
-
-void AddToItemList(item_node_t **list, item_t *item) {
-	assert(list != NULL);
-	assert(item != NULL);
-
-	item_node_t *node = malloc(sizeof(*node));
-	assert(node != NULL);
-
-	node->item = item;
-	node->next = NULL;
-
-	if (*list == NULL) {
-		*list = node;
-	} else {
-		item_node_t *searcher = *list;
 		while (searcher->next != NULL) {
 			searcher = searcher->next;
 		}

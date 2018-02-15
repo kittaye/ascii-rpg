@@ -14,7 +14,8 @@
 #define SPR_BIGGOLD 'G'
 #define SPR_WALL '#'
 #define SPR_STAIRCASE '^'
-#define SPR_FOOD 'f'
+#define SPR_SMALLFOOD 'f'
+#define SPR_BIGFOOD 'F'
 #define SPR_ZOMBIE 'Z'
 #define SPR_WEREWOLF 'W'
 #define SPR_MERCHANT '1'
@@ -163,7 +164,6 @@ typedef struct game_state_t {
 	item_t item_food2;				// Global data for a big food item.
 
 	entity_node_t *enemy_list;		// Linked list of all enemies created in game.
-	item_node_t *item_list;			// Linked list of all items created in game.
 
 	int debug_rcs;					// Room collisions during room creation.
 	double debug_seed;				// RNG seed used to create this game.
@@ -200,7 +200,6 @@ void UpdateGameLog(log_list_t*, const char*, ...);
 void NextPlayerInput(game_state_t*);
 void ApplyVision(const game_state_t*, coord_t);
 void AddToEnemyList(entity_node_t**, entity_t*);
-void AddToItemList(item_node_t**, item_t*);
 void EnemyCombatUpdate(game_state_t*, entity_node_t*);
 void DrawHelpScreen();
 void DrawPlayerInfoScreen(const game_state_t*);
@@ -217,4 +216,3 @@ bool AddToInventory(player_t*, const item_t*);
 
 void Cleanup_GameState(game_state_t*);
 void FreeEnemyList(entity_node_t**);
-void FreeItemList(item_node_t**);
