@@ -190,7 +190,7 @@ void SetPlayerPos(player_t*, coord_t);
 coord_t NewCoord(int, int);
 bool FContainsChar(FILE*, char);
 void InteractWithNPC(game_state_t*);
-int GetAnyKeyInput();
+int GetKeyInput();
 void AddHealth(player_t*, int);
 
 void Cleanup_GameState(game_state_t*);

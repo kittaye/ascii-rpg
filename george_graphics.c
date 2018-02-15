@@ -133,7 +133,7 @@ void GEO_show_screen(void) {
 	refresh();
 }
 
-void GEO_draw_char(int x, int y, char value, int color) {
+void GEO_draw_char(int x, int y, int color, char value) {
 	if ( GEO_zdk_screen != NULL ) {
 		int w = GEO_zdk_screen->width;
 		int h = GEO_zdk_screen->height;
@@ -145,17 +145,17 @@ void GEO_draw_char(int x, int y, char value, int color) {
 	}
 }
 
-void GEO_draw_line(int x1, int y1, int x2, int y2, char value, int color) {
+void GEO_draw_line(int x1, int y1, int x2, int y2, int color, char value) {
 	if ( x1 == x2 ) {
 		// Draw vertical line
 		for ( int i = MIN(y1, y2); i <= MAX(y1, y2); i++ ) {
-			GEO_draw_char(x1, i, value, color);
+			GEO_draw_char(x1, i, color, value);
 		}
 	}
 	else if ( y1 == y2 ) {
 		// Draw horizontal line
 		for ( int i = MIN(x1, x2); i <= MAX(x1, x2); i++ ) {
-			GEO_draw_char(i, y1, value, color);
+			GEO_draw_char(i, y1, color, value);
 		}
 	}
 	else {
@@ -177,10 +177,10 @@ void GEO_draw_line(int x1, int y1, int x2, int y2, char value, int color) {
 		float derr = ABS(dy / dx);
 
 		for ( int x = x1, y = y1; (dx > 0) ? x <= x2 : x >= x2; (dx > 0) ? x++ : x-- ) {
-			GEO_draw_char(x, y, value, color);
+			GEO_draw_char(x, y, color, value);
 			err += derr;
 			while ( err >= 0.5 && ((dy > 0) ? y <= y2 : y >= y2) ) {
-				GEO_draw_char(x, y, value, color);
+				GEO_draw_char(x, y, color, value);
 				y += (dy > 0) - (dy < 0);
 
 				err -= 1.0;
@@ -189,20 +189,20 @@ void GEO_draw_line(int x1, int y1, int x2, int y2, char value, int color) {
 	}
 }
 
-void GEO_draw_string(int x, int y, char * text, int color) {
+void GEO_draw_string(int x, int y, int color, char * text) {
 	for ( int i = 0; text[i]; i++ ) {
-		GEO_draw_char(x + i, y, text[i], color);
+		GEO_draw_char(x + i, y, color, text[i]);
 	}
 }
 
-void GEO_draw_align_center(int y, char *text, int color) {
+void GEO_draw_align_center(int y, int color, char *text) {
 	int x = (GEO_screen_width() / 2) - (strlen(text) / 2);
-	GEO_draw_string(x, y, text, color);
+	GEO_draw_string(x, y, color, text);
 }
 
-void GEO_draw_align_right(int y, char *text, int color) {
+void GEO_draw_align_right(int y, int color, char *text) {
 	int x = GEO_screen_width() - strlen(text);
-	GEO_draw_string(x, y, text, color);
+	GEO_draw_string(x, y, color, text);
 }
 
 void GEO_draw_formatted(int x, int y, int color, const char * format, ...) {
@@ -210,7 +210,7 @@ void GEO_draw_formatted(int x, int y, int color, const char * format, ...) {
 	va_start(args, format);
 	char buffer[1000];
 	vsprintf(buffer, format, args);
-	GEO_draw_string(x, y, buffer, color);
+	GEO_draw_string(x, y, color, buffer);
 	va_end(args);
 }
 
@@ -219,7 +219,7 @@ void GEO_draw_formatted_align_center(int y, int color, const char * format, ...)
 	va_start(args, format);
 	char buffer[1000];
 	vsprintf(buffer, format, args);
-	GEO_draw_align_center(y, buffer, color);
+	GEO_draw_align_center(y, color, buffer);
 	va_end(args);
 }
 
@@ -228,7 +228,7 @@ void GEO_draw_formatted_align_right(int y, int color, const char * format, ...) 
 	va_start(args, format);
 	char buffer[1000];
 	vsprintf(buffer, format, args);
-	GEO_draw_align_right(y, buffer, color);
+	GEO_draw_align_right(y, color, buffer);
 	va_end(args);
 }
 

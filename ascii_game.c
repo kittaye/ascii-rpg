@@ -356,7 +356,7 @@ void Process(game_state_t *state) {
 	}
 
 	// Draw player.
-	GEO_draw_char(state->player.pos.x, state->player.pos.y, state->player.sprite, state->player.color);
+	GEO_draw_char(state->player.pos.x, state->player.pos.y, state->player.color, state->player.sprite);
 
 	// Draw last 3 game log lines.
 	int y_start_pos = h - BOTTOM_PANEL_OFFSET;
@@ -369,7 +369,7 @@ void Process(game_state_t *state) {
 		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
 
 	// Draw DEBUG line.
-	GEO_draw_line(0, y_start_pos + 4, w - 1, y_start_pos + 4, '_', CLR_MAGENTA);
+	GEO_draw_line(0, y_start_pos + 4, w - 1, y_start_pos + 4, CLR_MAGENTA, '_');
 
 	// Draw DEBUG label.
 	GEO_draw_formatted(0, y_start_pos + 5, CLR_MAGENTA, "   xy: (%d, %d)   rc(s): %d   seed: %d   |   Rooms: %d   Turns: %d",
@@ -1015,11 +1015,11 @@ void ApplyVision(const game_state_t *state, coord_t pos) {
 
 	if (state->fog_of_war) {
 		if (vision_to_tile < state->player.stats.max_vision) {
-			GEO_draw_char(pos.x, pos.y, state->world_tiles[pos.x][pos.y].sprite, state->world_tiles[pos.x][pos.y].color);
+			GEO_draw_char(pos.x, pos.y, state->world_tiles[pos.x][pos.y].color, state->world_tiles[pos.x][pos.y].sprite);
 		}
 	}
 	else {
-		GEO_draw_char(pos.x, pos.y, state->world_tiles[pos.x][pos.y].sprite, state->world_tiles[pos.x][pos.y].color);
+		GEO_draw_char(pos.x, pos.y, state->world_tiles[pos.x][pos.y].color, state->world_tiles[pos.x][pos.y].sprite);
 	}
 }
 
@@ -1117,8 +1117,10 @@ void NextPlayerInput(game_state_t *state) {
 			valid_key_pressed = true;
 		case '\n':
 		case KEY_ENTER:
-			InteractWithNPC(state);
-			valid_key_pressed = true;
+			if (state->current_target != ' ') {
+				InteractWithNPC(state);
+				valid_key_pressed = true;
+			}
 			break;
 		default:
 			break;
@@ -1149,19 +1151,19 @@ void DrawHelpScreen() {
 
 	GEO_clear_screen();
 
-	GEO_draw_align_center(h / 2 - 4, "Asciiscape by George Delosa", CLR_WHITE);
-	GEO_draw_align_center(h / 2 - 2, "up/down/left/right: movement keys", CLR_WHITE);
-	GEO_draw_string(w / 2 - 11, h / 2 - 1, "h: show this help screen", CLR_WHITE);
-	GEO_draw_string(w / 2 - 11, h / 2 - 0, "i: show player info screen", CLR_WHITE);
-	GEO_draw_string(w / 2 - 11, h / 2 + 1, "f: toggle fog of war", CLR_WHITE);
-	GEO_draw_string(w / 2 - 11, h / 2 + 2, "q: quit game", CLR_WHITE);
-	GEO_draw_align_center(h / 2 + 4, "Press any key to continue...", CLR_WHITE);
+	GEO_draw_align_center(h / 2 - 4, CLR_WHITE, "Asciiscape by George Delosa");
+	GEO_draw_align_center(h / 2 - 2, CLR_WHITE, "up/down/left/right: movement keys");
+	GEO_draw_string(w / 2 - 11, h / 2 - 1, CLR_WHITE, "h: show this help screen");
+	GEO_draw_string(w / 2 - 11, h / 2 - 0, CLR_WHITE, "i: show player info screen");
+	GEO_draw_string(w / 2 - 11, h / 2 + 1, CLR_WHITE, "f: toggle fog of war");
+	GEO_draw_string(w / 2 - 11, h / 2 + 2, CLR_WHITE, "q: quit game");
+	GEO_draw_align_center(h / 2 + 4, CLR_WHITE, "Press any key to continue...");
 
 	GEO_show_screen();
-	GetAnyKeyInput();
+	GetKeyInput();
 }
 
-int GetAnyKeyInput() {
+int GetKeyInput() {
 	while (1) {
 		int key = GEO_get_char();
 		switch (key)
@@ -1183,13 +1185,13 @@ void DrawDeathScreen() {
 
 	GEO_clear_screen();
 
-	GEO_draw_align_center(h / 2, "YOU DIED", CLR_RED);
+	GEO_draw_align_center(h / 2, CLR_RED, "YOU DIED");
 
 	GEO_show_screen();
-	GetAnyKeyInput();
+	GetKeyInput();
 }
 
-void DrawMerchantScreen(game_state_t * state) {
+void DrawMerchantScreen(game_state_t *state) {
 	assert(state != NULL);
 
 	int w = GEO_screen_width() - 1;
@@ -1197,29 +1199,29 @@ void DrawMerchantScreen(game_state_t * state) {
 
 	GEO_clear_screen();
 
-	GEO_draw_line(0, 0, w, 0, '*', CLR_WHITE);
-	GEO_draw_line(0, 0, 0, h, '*', CLR_WHITE);
-	GEO_draw_line(w, 0, w, h, '*', CLR_WHITE);
-	GEO_draw_line(0, h, w, h, '*', CLR_WHITE);
+	GEO_draw_line(0, 0, w, 0, CLR_WHITE, '*');
+	GEO_draw_line(0, 0, 0, h, CLR_WHITE, '*');
+	GEO_draw_line(w, 0, w, h, CLR_WHITE, '*');
+	GEO_draw_line(0, h, w, h, CLR_WHITE, '*');
 
 	int x = 3;
 	int y = 2;
 
-	GEO_draw_align_center(y++, "Trading with Merchant", CLR_YELLOW);
+	GEO_draw_align_center(y++, CLR_YELLOW, "Trading with Merchant");
 	y++;
-	GEO_draw_string(x, y++, "Option    Item         Price (gold)", CLR_YELLOW);
-	GEO_draw_string(x, y++, "(1)\t\t\t\t\t\tFood (+1)\t\t\t\t\t\t20", CLR_WHITE);
-	GEO_draw_string(x, y++, "(2)\t\t\t\t\t\tFood (+2)\t\t\t\t\t\t35", CLR_WHITE);
+	GEO_draw_string(x, y++, CLR_YELLOW, "Option    Item         Price (gold)");
+	GEO_draw_string(x, y++, CLR_WHITE, "(1)\t\t\t\t\t\tFood (+1)\t\t\t\t\t\t20");
+	GEO_draw_string(x, y++, CLR_WHITE, "(2)\t\t\t\t\t\tFood (+2)\t\t\t\t\t\t35");
 	y++;
 	GEO_draw_formatted(x, y++, CLR_WHITE, "Your gold: %d", state->player.stats.num_gold);
 	y++;
-	GEO_draw_string(x, y++, "Press an option to buy, or press ENTER to leave.", CLR_WHITE);
+	GEO_draw_string(x, y++, CLR_WHITE, "Press an option to buy, or press ENTER to leave.");
 
 	GEO_show_screen();
 
 	bool validKeyPress = false;
 	while (!validKeyPress) {
-		int key = GetAnyKeyInput();
+		int key = GetKeyInput();
 		switch (key)
 		{
 		case '1':
@@ -1241,10 +1243,9 @@ void DrawMerchantScreen(game_state_t * state) {
 		case '\n':
 		case KEY_ENTER:
 		case 'q':
+		case KEY_RESIZE:
 			validKeyPress = true;
 			break;
-		case KEY_RESIZE:
-			return;
 		default:
 			break;
 		}
@@ -1268,10 +1269,10 @@ void DrawMenuScreen(const game_state_t * state) {
 
 	GEO_clear_screen();
 
-	GEO_draw_line(0, 0, w, 0, '*', CLR_WHITE);
-	GEO_draw_line(0, 0, 0, h, '*', CLR_WHITE);
-	GEO_draw_line(w, 0, w, h, '*', CLR_WHITE);
-	GEO_draw_line(0, h, w, h, '*', CLR_WHITE);
+	GEO_draw_line(0, 0, w, 0, CLR_WHITE, '*');
+	GEO_draw_line(0, 0, 0, h, CLR_WHITE, '*');
+	GEO_draw_line(w, 0, w, h, CLR_WHITE, '*');
+	GEO_draw_line(0, h, w, h, CLR_WHITE, '*');
 
 	int x = 3;
 	int y = 2;
@@ -1292,7 +1293,7 @@ void DrawMenuScreen(const game_state_t * state) {
 	GEO_draw_formatted(x, y++, CLR_WHITE, "Gold - %d", state->player.stats.num_gold);
 
 	GEO_show_screen();
-	GetAnyKeyInput();
+	GetKeyInput();
 }
 
 void AddToEnemyList(entity_node_t **list, entity_t *entity) {
