@@ -1069,7 +1069,7 @@ void NextPlayerInput(game_state_t *state) {
 	bool valid_key_pressed = false;
 	while (!valid_key_pressed)
 	{
-		int key = GEO_get_char();
+		int key = GetKeyInput();
 		switch (key) {
 		case KEY_UP:
 			if (player->pos.y - 1 >= 0 + TOP_PANEL_OFFSET && state->world_tiles[player->pos.x][player->pos.y - 1].type != T_Solid) {
@@ -1112,13 +1112,11 @@ void NextPlayerInput(game_state_t *state) {
 			valid_key_pressed = true;
 			break;
 		case KEY_RESIZE:
-			g_process_over = true;
-			g_resize_error = true;
 			valid_key_pressed = true;
 		case '\n':
 		case KEY_ENTER:
 			if (state->current_target != ' ') {
-				InteractWithNPC(state);
+				InteractWithNPC(state, state->current_target);
 				valid_key_pressed = true;
 			}
 			break;
@@ -1134,8 +1132,8 @@ void NextPlayerInput(game_state_t *state) {
 	}
 }
 
-void InteractWithNPC(game_state_t *state) {
-	switch (state->current_target)
+void InteractWithNPC(game_state_t *state, char npc_target) {
+	switch (npc_target)
 	{
 	case SPR_MERCHANT:
 		DrawMerchantScreen(state);
@@ -1199,46 +1197,58 @@ void DrawMerchantScreen(game_state_t *state) {
 
 	GEO_clear_screen();
 
+	// Draw screen border.
 	GEO_draw_line(0, 0, w, 0, CLR_WHITE, '*');
 	GEO_draw_line(0, 0, 0, h, CLR_WHITE, '*');
 	GEO_draw_line(w, 0, w, h, CLR_WHITE, '*');
 	GEO_draw_line(0, h, w, h, CLR_WHITE, '*');
 
+	// Create shop items.
+	struct shopping_item
+	{
+		char* name;
+		int price;
+	};
+	struct shopping_item shopping_list[] = { 
+		{ .name = "Food (+1)", .price = 20 },
+		{ .name = "Food (+2)", .price = 35 }
+	};
+	int shopping_list_len = sizeof(shopping_list) / sizeof(struct shopping_item);
+
+	// Draw the merchant shop interface.
 	int x = 3;
 	int y = 2;
 
 	GEO_draw_align_center(y++, CLR_YELLOW, "Trading with Merchant");
 	y++;
-	GEO_draw_string(x, y++, CLR_YELLOW, "Option    Item         Price (gold)");
-	GEO_draw_string(x, y++, CLR_WHITE, "(1)\t\t\t\t\t\tFood (+1)\t\t\t\t\t\t20");
-	GEO_draw_string(x, y++, CLR_WHITE, "(2)\t\t\t\t\t\tFood (+2)\t\t\t\t\t\t35");
+	GEO_draw_string(x, y++, CLR_YELLOW, "Option     Item               Price (gold)");
+	for (int i = 0; i < shopping_list_len; i++)
+	{
+		GEO_draw_formatted(x, y, CLR_WHITE, "(%d)        %s", i + 1, shopping_list[i].name);
+		GEO_draw_formatted(x + 30, y, CLR_WHITE, "%d", shopping_list[i].price);
+		y++;
+	}
 	y++;
 	GEO_draw_formatted(x, y++, CLR_WHITE, "Your gold: %d", state->player.stats.num_gold);
 	y++;
-	GEO_draw_string(x, y++, CLR_WHITE, "Press an option to buy, or press ENTER to leave.");
+	GEO_draw_string(x, y++, CLR_WHITE, "Select an option to buy an item, or press ENTER to leave.");
 
 	GEO_show_screen();
 
+	// Get player input to buy something or leave.
+	int chosen_item_id = -1;
 	bool validKeyPress = false;
 	while (!validKeyPress) {
 		int key = GetKeyInput();
 		switch (key)
 		{
 		case '1':
-			if (state->player.stats.num_gold >= 20) {
-				AddHealth(&state->player, 1);
-				state->player.stats.num_gold -= 20;
-				UpdateGameLog(&state->game_log, "Merchant: \"Thank you for purchasing my Food (+1)!\"");
-				validKeyPress = true;
-			}
+			chosen_item_id = 0;
+			validKeyPress = true;
 			break;
 		case '2':
-			if (state->player.stats.num_gold >= 35) {
-				AddHealth(&state->player, 2);
-				state->player.stats.num_gold -= 35;
-				UpdateGameLog(&state->game_log, "Merchant: \"Thank you for purchasing my Food (+2)!\"");
-				validKeyPress = true;
-			}
+			chosen_item_id = 1;
+			validKeyPress = true;
 			break;
 		case '\n':
 		case KEY_ENTER:
@@ -1248,6 +1258,13 @@ void DrawMerchantScreen(game_state_t *state) {
 			break;
 		default:
 			break;
+		}
+	}
+
+	if (chosen_item_id != -1) {
+		if (state->player.stats.num_gold >= shopping_list[chosen_item_id].price) {
+			state->player.stats.num_gold -= shopping_list[chosen_item_id].price;
+			UpdateGameLog(&state->game_log, "Merchant: \"Thank you for purchasing my %s!\"", shopping_list[chosen_item_id].name);
 		}
 	}
 }

@@ -189,7 +189,7 @@ void DrawMerchantScreen(game_state_t *);
 void SetPlayerPos(player_t*, coord_t);
 coord_t NewCoord(int, int);
 bool FContainsChar(FILE*, char);
-void InteractWithNPC(game_state_t*);
+void InteractWithNPC(game_state_t*, char);
 int GetKeyInput();
 void AddHealth(player_t*, int);
 
