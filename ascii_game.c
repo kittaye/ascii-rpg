@@ -117,6 +117,7 @@ void InitGameState(game_state_t *state) {
 	state->fog_of_war = true;
 	state->player_turn_over = false;
 	state->floor_complete = false;
+	state->current_target = ' ';
 
 	state->player = InitPlayer(SPR_PLAYER);
 	state->enemy_list = (entity_node_t*)NULL;
@@ -364,7 +365,7 @@ void Process(game_state_t *state) {
 	GEO_draw_formatted(0, y_start_pos + 2, CLR_WHITE, "* %s", state->game_log.line1);
 
 	// Draw basic player info.
-	GEO_draw_formatted_align_center(y_start_pos + 3, CLR_WHITE, "Health - %d/%d   Mana - %d/%d   Gold - %d",
+	GEO_draw_formatted_align_center(y_start_pos + 3, CLR_CYAN, "Health - %d/%d   Mana - %d/%d   Gold - %d",
 		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
 
 	// Draw DEBUG line.
@@ -379,7 +380,7 @@ void Process(game_state_t *state) {
 
 	// Remember player's current position before a move is made.
 	coord_t oldPos = state->player.pos;
-
+	
 	// Wait for next player input.
 	NextPlayerInput(state);
 
@@ -399,6 +400,8 @@ void Process(game_state_t *state) {
 void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord_t oldPos) {
 	assert(state != NULL);
 	assert(curr_world_tile != NULL);
+
+	state->current_target = ' ';
 
 	switch (curr_world_tile->type) {
 	case T_Item:
@@ -468,6 +471,14 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 		}
 
 		// Moving into a special object results in no movement from the player.
+		state->player.pos = oldPos;
+		break;
+	case T_Npc:
+		if (curr_world_tile->sprite == SPR_MERCHANT) {
+			UpdateGameLog(&state->game_log, LOGMSG_PLR_INTERACT_MERCHANT);
+			state->current_target = SPR_MERCHANT;
+		}
+		// Moving into an NPC results in no movement from the player.
 		state->player.pos = oldPos;
 		break;
 	default:
@@ -592,6 +603,11 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 				case SPR_STAIRCASE:
 					type = T_Special;
 					colour = CLR_YELLOW;
+					break;
+				case SPR_MERCHANT:
+					type = T_Npc;
+					colour = CLR_MAGENTA;
+					break;
 				default:
 					break;
 				}
@@ -1102,6 +1118,13 @@ void NextPlayerInput(game_state_t *state) {
 			state->process_over = true;
 			g_resize_error = true;
 			valid_key_pressed = true;
+		case '\n':
+		case KEY_ENTER:
+			if (InteractWithNPC(state->current_target)) {
+				DrawMenuScreen(state);
+				valid_key_pressed = true;
+			}
+			break;
 		default:
 			break;
 		}
@@ -1111,6 +1134,16 @@ void NextPlayerInput(game_state_t *state) {
 	state->player_turn_over = false;
 	if (player->pos.x != oldPos.x || player->pos.y != oldPos.y) {
 		state->player_turn_over = true;
+	}
+}
+
+bool InteractWithNPC(char npc_sprite) {
+	switch (npc_sprite)
+	{
+	case SPR_MERCHANT:
+		return true;
+	default:
+		return false;
 	}
 }
 

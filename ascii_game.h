@@ -17,6 +17,7 @@
 #define SPR_FOOD 'f'
 #define SPR_ZOMBIE 'Z'
 #define SPR_WEREWOLF 'W'
+#define SPR_MERCHANT '1'
 
 // Other.
 #define PLAYER_MAX_VISION 100
@@ -24,7 +25,7 @@
 #define BOTTOM_PANEL_OFFSET 6			
 #define TOP_PANEL_OFFSET 0		
 #define DEBUG_RCS_LIMIT 100000	// Room collision limit.
-#define LOG_BUFFER_SIZE 100
+#define LOG_BUFFER_SIZE 250
 #define MIN_ROOMS 2
 #define MIN_ROOM_SIZE 5
 
@@ -133,6 +134,7 @@ typedef struct game_state_t {
 	bool player_turn_over;			// Determines when the player has finished their turn.
 	bool floor_complete;			// Determines when the player has completed the dungeon floor.
 	int current_floor;				
+	char current_target;			// The player-targetted sprite, used to interact with NPCs.
 
 	player_t player;				
 	tile_t **world_tiles;			// Stores information about every (x, y) coordinate in the terminal, for use in the game.
@@ -154,9 +156,9 @@ typedef struct game_state_t {
 void InitGameState(game_state_t*);
 void ResetDungeonFloor(game_state_t*);
 void CreateDungeonFloor(game_state_t*, int, int, char*);
-void Process(game_state_t*);
 player_t InitPlayer(char);
 entity_t* InitAndCreateEnemy(entity_data_t*, coord_t);
+void Process(game_state_t*);
 
 int GetNextRoomRadius();
 void CreateOpenRooms(game_state_t*, int, int);
@@ -187,6 +189,7 @@ void DrawDeathScreen();
 void SetPlayerPos(player_t*, coord_t);
 coord_t NewCoord(int, int);
 bool FContainsChar(FILE*, char);
+bool InteractWithNPC(char);
 
 void Cleanup_GameState(game_state_t*);
 void FreeEnemyList(entity_node_t**);
