@@ -123,16 +123,22 @@ typedef struct entity_t {
 	coord_t pos;
 } entity_t;
 
-typedef struct eNode_t {
+typedef struct entity_node_t {
 	entity_t *entity;
-	struct eNode_t *next;
+	struct entity_node_t *next;
 } entity_node_t;
+
+typedef struct item_node_t {
+	item_t *item;
+	struct item_node_t *next;
+} item_node_t;
 
 typedef struct tile_t {
 	char sprite;
 	tile_type_en type;
 	int color;
-	entity_t *occupier;
+	entity_t *entity_occupier;
+	item_t *item_occupier;
 } tile_t;
 
 typedef struct game_state_t {
@@ -152,8 +158,12 @@ typedef struct game_state_t {
 	entity_data_t data_zombie;		// Global data for all zombies.
 	entity_data_t data_werewolf;	// Global data for all werewolves.
 
+	item_t item_empty;				// Global data for an empty item.
+	item_t item_food1;				// Global data for a small food item.
+	item_t item_food2;				// Global data for a big food item.
+
 	entity_node_t *enemy_list;		// Linked list of all enemies created in game.
-	int num_enemies;				// Number of created enemies in game.
+	item_node_t *item_list;			// Linked list of all items created in game.
 
 	int debug_rcs;					// Room collisions during room creation.
 	double debug_seed;				// RNG seed used to create this game.
@@ -164,7 +174,7 @@ typedef struct game_state_t {
 void InitGameState(game_state_t*);
 void ResetDungeonFloor(game_state_t*);
 void CreateDungeonFloor(game_state_t*, int, int, char*);
-player_t InitPlayer(char);
+player_t InitPlayer(const game_state_t*, char);
 entity_t* InitAndCreateEnemy(entity_data_t*, coord_t);
 void Process(game_state_t*);
 
@@ -184,12 +194,13 @@ bool CheckRoomMapBounds(const room_t*);
 bool CheckMapBounds(coord_t);
 bool CheckCorridorCollision(const tile_t**, coord_t, int, direction_en);
 
-void UpdateWorldTile(tile_t**, coord_t, char, tile_type_en, int, entity_t*);
+void UpdateWorldTile(tile_t**, coord_t, char, tile_type_en, int, entity_t*, item_t*);
 void PerformWorldLogic(game_state_t*, const tile_t*, coord_t);
 void UpdateGameLog(log_list_t*, const char*, ...);
 void NextPlayerInput(game_state_t*);
 void ApplyVision(const game_state_t*, coord_t);
 void AddToEnemyList(entity_node_t**, entity_t*);
+void AddToItemList(item_node_t**, item_t*);
 void EnemyCombatUpdate(game_state_t*, entity_node_t*);
 void DrawHelpScreen();
 void DrawPlayerInfoScreen(const game_state_t*);
@@ -197,10 +208,13 @@ void DrawDeathScreen();
 void DrawMerchantScreen(game_state_t *);
 void SetPlayerPos(player_t*, coord_t);
 coord_t NewCoord(int, int);
+item_t NewItem(char*, item_slug_en, int);
 bool FContainsChar(FILE*, char);
 void InteractWithNPC(game_state_t*, char);
 int GetKeyInput();
 void AddHealth(player_t*, int);
+bool AddToInventory(player_t*, const item_t*);
 
 void Cleanup_GameState(game_state_t*);
 void FreeEnemyList(entity_node_t**);
+void FreeItemList(item_node_t**);
