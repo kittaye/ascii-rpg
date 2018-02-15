@@ -192,7 +192,7 @@ void ApplyVision(const game_state_t*, coord_t);
 void AddToEnemyList(entity_node_t**, entity_t*);
 void EnemyCombatUpdate(game_state_t*, entity_node_t*);
 void DrawHelpScreen();
-void DrawMenuScreen(const game_state_t*);
+void DrawPlayerInfoScreen(const game_state_t*);
 void DrawDeathScreen();
 void DrawMerchantScreen(game_state_t *);
 void SetPlayerPos(player_t*, coord_t);
