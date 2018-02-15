@@ -39,14 +39,11 @@ void GEO_setup_screen(void) {
 	// Turn off the cursor.
 	curs_set(0);
 
-	// Cause getch to return ERR if no key pressed within 0 milliseconds.
-	timeout(0);
+	// Cause getch to return ERR if no key pressed within 5 milliseconds.
+	timeout(5);
 
 	// Enable the keypad.
 	keypad(stdscr, TRUE);
-
-	// Turn on mouse reporting.
-	mousemask(ALL_MOUSE_EVENTS, NULL);
 
 	// Try enable colours.
 	if (has_colors()) {
