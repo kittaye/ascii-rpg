@@ -10,17 +10,11 @@
 #include <stdbool.h>
 #include "george_graphics.h"
 #include "log_messages.h"
+#include "items.h"
 #include "ascii_game.h"
 
 static bool g_resize_error = false;
 static bool g_process_over = false;
-
-// TODO: Make this private. g_item_database should never be modified and should be used as read-only.
-static item_t g_item_database[] = {
-	[I_None] = {.name = "Empty", .item_slug = I_None, .value = 0},
-	[I_SmallFood] = {.name = "Small food", .item_slug = I_SmallFood, .value = 20},
-	[I_BigFood] = {.name = "Big food", .item_slug = I_BigFood, .value = 35 }
-};
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
@@ -270,9 +264,9 @@ void PopulateRooms(game_state_t *state) {
 				} else if (val <= 4) {
 					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_GOLD, T_Item, Clr_Green, NULL, NULL);
 				} else if (val <= 5) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, T_Item, Clr_Green, NULL, &g_item_database[I_SmallFood]);
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, T_Item, Clr_Green, NULL, GetItem(I_SmallFood));
 				} else if (val <= 6) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, T_Item, Clr_Green, NULL, &g_item_database[I_BigFood]);
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, T_Item, Clr_Green, NULL, GetItem(I_BigFood));
 				}
 			}
 		}
@@ -315,7 +309,7 @@ player_t InitPlayer(const game_state_t *state, char sprite) {
 	player.pos = NewCoord(0, 0);
 	player.color = Clr_Cyan;
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
-		player.inventory[i] = g_item_database[I_None];
+		player.inventory[i] = GetItem(I_None);
 	}
 
 	player.stats.level = 1;
@@ -481,14 +475,6 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 	}
 }
 
-item_t NewItem(char *name, item_slug_en item_slug, int value) {
-	item_t item;
-	item.name = name;
-	item.item_slug = item_slug;
-	item.value = value;
-	return item;
-}
-
 bool CheckRoomCollision(const tile_t **world_tiles, const room_t *a) {
 	assert(world_tiles != NULL);
 	assert(a != NULL);
@@ -589,11 +575,11 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 						break;
 					case SPR_SMALLFOOD:
 						isItem = true;
-						item = &g_item_database[I_SmallFood];
+						item = GetItem(I_SmallFood);
 						break;
 					case SPR_BIGFOOD:
 						isItem = true;
-						item = &g_item_database[I_BigFood];
+						item = GetItem(I_BigFood);
 						break;
 					case SPR_GOLD:
 					case SPR_BIGGOLD:
@@ -1208,11 +1194,11 @@ void DrawMerchantScreen(game_state_t *state) {
 	y++;
 
 	GEO_draw_string(x, y++, Clr_Yellow, "Option     Item               Price (gold)");
-	GEO_draw_formatted(x, y, Clr_White, "(1)        %s", g_item_database[I_SmallFood].name);
-	GEO_draw_formatted(x + 30, y, Clr_White, "%d", g_item_database[I_SmallFood].value);
+	GEO_draw_formatted(x, y, Clr_White, "(1)        %s", GetItem(I_SmallFood)->name);
+	GEO_draw_formatted(x + 30, y, Clr_White, "%d", GetItem(I_SmallFood)->value);
 	y++;
-	GEO_draw_formatted(x, y, Clr_White, "(2)        %s", g_item_database[I_BigFood].name);
-	GEO_draw_formatted(x + 30, y, Clr_White, "%d", g_item_database[I_BigFood].value);
+	GEO_draw_formatted(x, y, Clr_White, "(2)        %s", GetItem(I_BigFood)->name);
+	GEO_draw_formatted(x + 30, y, Clr_White, "%d", GetItem(I_BigFood)->value);
 	y++;
 
 	y++;
@@ -1249,10 +1235,10 @@ void DrawMerchantScreen(game_state_t *state) {
 
 	// If player bought something...
 	if (chosen_item != I_None) {
-		if (state->player.stats.num_gold >= g_item_database[chosen_item].value) {
-			if (AddToInventory(&state->player, &g_item_database[chosen_item])) {
-				state->player.stats.num_gold -= g_item_database[chosen_item].value;
-				UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_MERCHANT, g_item_database[chosen_item].name);
+		if (state->player.stats.num_gold >= GetItem(chosen_item)->value) {
+			if (AddToInventory(&state->player, GetItem(chosen_item))) {
+				state->player.stats.num_gold -= GetItem(chosen_item)->value;
+				UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_MERCHANT, GetItem(chosen_item)->name);
 			} else {
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_FULL_MERCHANT);
 			}
@@ -1296,7 +1282,7 @@ void DrawPlayerInfoScreen(const game_state_t * state) {
 	y++;
 	GEO_draw_string(x, y++, Clr_Cyan, "Inventory");
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
-		GEO_draw_formatted(x, y++, Clr_Yellow, "(%d) %s", i + 1, state->player.inventory[i].name);
+		GEO_draw_formatted(x, y++, Clr_Yellow, "(%d) %s", i + 1, state->player.inventory[i]->name);
 	}
 	y++;
 	GEO_draw_string(x, y++, Clr_Cyan, "Stats");
@@ -1312,13 +1298,13 @@ void DrawPlayerInfoScreen(const game_state_t * state) {
 	GetKeyInput();
 }
 
-bool AddToInventory(player_t *player, const item_t *item) {
+bool AddToInventory(player_t *player, item_t *item) {
 	assert(player != NULL);
 	assert(item != NULL);
 
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
-		if (player->inventory[i].item_slug == I_None) {
-			player->inventory[i] = *item;
+		if (player->inventory[i]->item_slug == I_None) {
+			player->inventory[i] = item;
 			return true;
 		}
 	}
