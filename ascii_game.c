@@ -15,6 +15,13 @@
 static bool g_resize_error = false;
 static bool g_process_over = false;
 
+// TODO: Make this private. g_item_database should never be modified and should be used as read-only.
+static item_t g_item_database[] = {
+	[I_None] = {.name = "Empty", .item_slug = I_None, .value = 0},
+	[I_SmallFood] = {.name = "Small food", .item_slug = I_SmallFood, .value = 20},
+	[I_BigFood] = {.name = "Big food", .item_slug = I_BigFood, .value = 35 }
+};
+
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
 		fprintf(stderr, "Run with: ./ascii_game [num_rooms] (OPTIONAL: [filename.txt])\n");
@@ -110,11 +117,6 @@ void InitGameState(game_state_t *state) {
 
 	state->debug_seed = time(NULL);
 	srand(state->debug_seed);
-
-	// Declare items.
-	state->item_empty = NewItem("Empty", I_None, 0);
-	state->item_food1 = NewItem("Small food", I_Food1, 20);
-	state->item_food2 = NewItem("Big food", I_Food2, 35);
 
 	// Declare global zombie data.
 	state->data_zombie.name = "Zombie";
@@ -268,9 +270,9 @@ void PopulateRooms(game_state_t *state) {
 				} else if (val <= 4) {
 					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_GOLD, T_Item, Clr_Green, NULL, NULL);
 				} else if (val <= 5) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, T_Item, Clr_Green, NULL, &state->item_food1);
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, T_Item, Clr_Green, NULL, &g_item_database[I_SmallFood]);
 				} else if (val <= 6) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, T_Item, Clr_Green, NULL, &state->item_food2);
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, T_Item, Clr_Green, NULL, &g_item_database[I_BigFood]);
 				}
 			}
 		}
@@ -313,7 +315,7 @@ player_t InitPlayer(const game_state_t *state, char sprite) {
 	player.pos = NewCoord(0, 0);
 	player.color = Clr_Cyan;
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
-		player.inventory[i] = state->item_empty;
+		player.inventory[i] = g_item_database[I_None];
 	}
 
 	player.stats.level = 1;
@@ -568,6 +570,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 				int colour = Clr_White;
 				coord_t pos = NewCoord(anchor_centered_map_offset.x + i, anchor_centered_map_offset.y + lineNum);
 				bool isEnemy = false;
+				bool isItem = false;
 				entity_t *entity = NULL;
 				item_t *item = NULL;
 
@@ -585,19 +588,16 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 						type = T_Solid;
 						break;
 					case SPR_SMALLFOOD:
-						type = T_Item;
-						colour = Clr_Green;
-						int food_amt = (rand() % 2) + 1;
-						if (food_amt == 1) {
-							item = &state->item_food1;
-						} else {
-							item = &state->item_food2;
-						}
+						isItem = true;
+						item = &g_item_database[I_SmallFood];
+						break;
+					case SPR_BIGFOOD:
+						isItem = true;
+						item = &g_item_database[I_BigFood];
 						break;
 					case SPR_GOLD:
 					case SPR_BIGGOLD:
-						type = T_Item;
-						colour = Clr_Green;
+						isItem = true;
 						break;
 					case SPR_ZOMBIE:
 						isEnemy = true;
@@ -623,6 +623,9 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 					type = T_Enemy;
 					colour = Clr_Red;
 					AddToEnemyList(&state->enemy_list, entity);
+				} else if (isItem) {
+					type = T_Item;
+					colour = Clr_Green;
 				}
 
 				UpdateWorldTile(state->world_tiles, pos, line[i], type, colour, entity, item);
@@ -1201,15 +1204,15 @@ void DrawMerchantScreen(game_state_t *state) {
 	// Draw the merchant shop interface.
 	int x = 3;
 	int y = 2;
-
 	GEO_draw_align_center(y++, Clr_Yellow, "Trading with Merchant");
 	y++;
+
 	GEO_draw_string(x, y++, Clr_Yellow, "Option     Item               Price (gold)");
-	GEO_draw_formatted(x, y, Clr_White, "(1)        %s", state->item_food1.name);
-	GEO_draw_formatted(x + 30, y, Clr_White, "%d", state->item_food1.value);
+	GEO_draw_formatted(x, y, Clr_White, "(1)        %s", g_item_database[I_SmallFood].name);
+	GEO_draw_formatted(x + 30, y, Clr_White, "%d", g_item_database[I_SmallFood].value);
 	y++;
-	GEO_draw_formatted(x, y, Clr_White, "(2)        %s", state->item_food2.name);
-	GEO_draw_formatted(x + 30, y, Clr_White, "%d", state->item_food2.value);
+	GEO_draw_formatted(x, y, Clr_White, "(2)        %s", g_item_database[I_BigFood].name);
+	GEO_draw_formatted(x + 30, y, Clr_White, "%d", g_item_database[I_BigFood].value);
 	y++;
 
 	y++;
@@ -1219,35 +1222,18 @@ void DrawMerchantScreen(game_state_t *state) {
 
 	GEO_show_screen();
 
-	// Get player input to buy something or leave. TODO: USE HASHTABLE FOR ALL ITEM DATA TO REFACTOR REDUNDANT CODE.
+	// Get player input to buy something or leave.
 	bool validKeyPress = false;
+	item_slug_en chosen_item = I_None;
 	while (!validKeyPress) {
 		int key = GetKeyInput();
 		switch (key) {
 			case '1':
-				if (state->player.stats.num_gold >= state->item_food1.value) {
-					if (AddToInventory(&state->player, &state->item_food1)) {
-						state->player.stats.num_gold -= state->item_food1.value;
-						UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_MERCHANT, state->item_food1.name);
-					} else {
-						UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_FULL_MERCHANT);
-					}
-				} else {
-					UpdateGameLog(&state->game_log, LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT);
-				}
+				chosen_item = I_SmallFood;
 				validKeyPress = true;
 				break;
 			case '2':
-				if (state->player.stats.num_gold >= state->item_food2.value) {
-					if (AddToInventory(&state->player, &state->item_food1)) {
-						state->player.stats.num_gold -= state->item_food2.value;
-						UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_MERCHANT, state->item_food2.name);
-					} else {
-						UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_FULL_MERCHANT);
-					}
-				} else {
-					UpdateGameLog(&state->game_log, LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT);
-				}
+				chosen_item = I_BigFood;
 				validKeyPress = true;
 				break;
 			case '\n':
@@ -1258,6 +1244,20 @@ void DrawMerchantScreen(game_state_t *state) {
 				break;
 			default:
 				break;
+		}
+	}
+
+	// If player bought something...
+	if (chosen_item != I_None) {
+		if (state->player.stats.num_gold >= g_item_database[chosen_item].value) {
+			if (AddToInventory(&state->player, &g_item_database[chosen_item])) {
+				state->player.stats.num_gold -= g_item_database[chosen_item].value;
+				UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_MERCHANT, g_item_database[chosen_item].name);
+			} else {
+				UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_FULL_MERCHANT);
+			}
+		} else {
+			UpdateGameLog(&state->game_log, LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT);
 		}
 	}
 }

@@ -22,7 +22,7 @@
 #define MIN_ROOM_SIZE 5
 #define INVENTORY_SIZE 10
 
-// NOTE: These min values should be the largest txt dimension size of a dungeon layout from a file at compile time!
+// NOTE: These min values should be the largest txt dimension size of a dungeon layout from a file!
 #define MIN_SCREEN_WIDTH 85	
 #define MIN_SCREEN_HEIGHT 56
 
@@ -55,8 +55,8 @@ typedef enum direction_en {
 typedef enum item_slug_en {
 	I_None,
 	I_Map,
-	I_Food1,
-	I_Food2
+	I_SmallFood,
+	I_BigFood
 } item_slug_en;
 
 typedef struct item_t {
@@ -159,10 +159,6 @@ typedef struct game_state_t {
 
 	entity_data_t data_zombie;		// Global data for all zombies.
 	entity_data_t data_werewolf;	// Global data for all werewolves.
-
-	item_t item_empty;				// Global data for an empty item.
-	item_t item_food1;				// Global data for a small food item.
-	item_t item_food2;				// Global data for a big food item.
 
 	entity_node_t *enemy_list;		// Linked list of all enemies created in game.
 
