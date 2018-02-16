@@ -1,3 +1,8 @@
+#ifndef ASCII_GAME_H_
+#define ASCII_GAME_H_
+
+#include "items.h"
+
 // Sprites.
 #define SPR_EMPTY ' '
 #define SPR_PLAYER '@'
@@ -52,19 +57,6 @@ typedef enum direction_en {
 	D_Right
 } direction_en;
 
-typedef enum item_slug_en {
-	I_None,
-	I_Map,
-	I_SmallFood,
-	I_BigFood
-} item_slug_en;
-
-typedef struct item_t {
-	char *name;
-	item_slug_en item_slug;
-	int value;
-} item_t;
-
 typedef struct player_stats {
 	int level;
 	int max_health;
@@ -104,7 +96,7 @@ typedef struct room_t {
 typedef struct player_t {
 	stats_t stats;
 	coord_t pos;
-	item_t inventory[INVENTORY_SIZE];
+	item_t *inventory[INVENTORY_SIZE];
 	char sprite;
 	int color;
 } player_t;
@@ -129,11 +121,6 @@ typedef struct entity_node_t {
 	entity_t *entity;
 	struct entity_node_t *next;
 } entity_node_t;
-
-typedef struct item_node_t {
-	item_t *item;
-	struct item_node_t *next;
-} item_node_t;
 
 typedef struct tile_t {
 	char sprite;
@@ -204,12 +191,13 @@ void DrawDeathScreen();
 void DrawMerchantScreen(game_state_t *);
 void SetPlayerPos(player_t*, coord_t);
 coord_t NewCoord(int, int);
-item_t NewItem(char*, item_slug_en, int);
 bool FContainsChar(FILE*, char);
 void InteractWithNPC(game_state_t*, char);
 int GetKeyInput();
 int AddHealth(player_t*, int);
-bool AddToInventory(player_t*, const item_t*);
+bool AddToInventory(player_t*, item_t*);
 
 void Cleanup_GameState(game_state_t*);
 void FreeEnemyList(entity_node_t**);
+
+#endif /* ASCII_GAME_H_ */
