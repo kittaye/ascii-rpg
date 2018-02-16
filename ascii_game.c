@@ -12,8 +12,8 @@
 #include "log_messages.h"
 #include "ascii_game.h"
 
-bool g_resize_error = false;
-bool g_process_over = false;
+static bool g_resize_error = false;
+static bool g_process_over = false;
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
