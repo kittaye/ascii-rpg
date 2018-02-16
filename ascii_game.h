@@ -1,12 +1,3 @@
-// Colours.
-#define CLR_WHITE (0)
-#define CLR_YELLOW (1)
-#define CLR_RED (2)
-#define CLR_BLUE (3)
-#define CLR_MAGENTA (4)
-#define CLR_CYAN (5)
-#define CLR_GREEN (6)
-
 // Sprites.
 #define SPR_EMPTY ' '
 #define SPR_PLAYER '@'
@@ -35,6 +26,16 @@
 #define MIN_SCREEN_WIDTH 85	
 #define MIN_SCREEN_HEIGHT 56
 
+typedef enum colour_en {
+	Clr_White = 0,
+	Clr_Yellow = 1,
+	Clr_Red = 2,
+	Clr_Blue = 3,
+	Clr_Magenta = 4,
+	Clr_Cyan = 5,
+	Clr_Green = 6
+} colour_en;
+
 typedef enum tile_type_en {
 	T_Npc,
 	T_Enemy,
@@ -45,10 +46,10 @@ typedef enum tile_type_en {
 } tile_type_en;
 
 typedef enum direction_en {
-	D_Up = 0,
-	D_Down = 1,
-	D_Left = 2,
-	D_Right = 3
+	D_Up,
+	D_Down,
+	D_Left,
+	D_Right
 } direction_en;
 
 typedef enum item_slug_en {

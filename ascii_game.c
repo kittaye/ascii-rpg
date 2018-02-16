@@ -121,14 +121,14 @@ void InitGameState(game_state_t *state) {
 	state->data_zombie.type = T_Enemy;
 	state->data_zombie.max_health = 5;
 	state->data_zombie.sprite = SPR_ZOMBIE;
-	state->data_zombie.color = CLR_RED;
+	state->data_zombie.color = Clr_Red;
 
 	// Declare global wolf data
 	state->data_werewolf.name = "Werewolf";
 	state->data_werewolf.type = T_Enemy;
 	state->data_werewolf.max_health = 3;
 	state->data_werewolf.sprite = SPR_WEREWOLF;
-	state->data_werewolf.color = CLR_RED;
+	state->data_werewolf.color = Clr_Red;
 
 	// Initialise and declare general game info.
 	state->game_turns = 0;
@@ -204,7 +204,7 @@ void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_s
 	// Create empty space.
 	for (int x = 0; x < w; x++) {
 		for (int y = 0; y < h; y++) {
-			UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 		}
 	}
 
@@ -264,13 +264,13 @@ void PopulateRooms(game_state_t *state) {
 					AddToEnemyList(&state->enemy_list, enemy);
 
 				} else if (val <= 2) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGGOLD, T_Item, CLR_GREEN, NULL, NULL);
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGGOLD, T_Item, Clr_Green, NULL, NULL);
 				} else if (val <= 4) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_GOLD, T_Item, CLR_GREEN, NULL, NULL);
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_GOLD, T_Item, Clr_Green, NULL, NULL);
 				} else if (val <= 5) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, T_Item, CLR_GREEN, NULL, &state->item_food1);
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, T_Item, Clr_Green, NULL, &state->item_food1);
 				} else if (val <= 6) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, T_Item, CLR_GREEN, NULL, &state->item_food2);
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, T_Item, Clr_Green, NULL, &state->item_food2);
 				}
 			}
 		}
@@ -282,7 +282,7 @@ void PopulateRooms(game_state_t *state) {
 				state->rooms[i].TR_corner.y + ((state->rooms[i].BR_corner.y - state->rooms[i].TR_corner.y) / 2)
 			);
 			// TODO: staircase may spawn ontop of enemy, removing them from the world in an unexpected way. Find fix.
-			UpdateWorldTile(state->world_tiles, pos, SPR_STAIRCASE, T_Special, CLR_YELLOW, NULL, NULL);
+			UpdateWorldTile(state->world_tiles, pos, SPR_STAIRCASE, T_Special, Clr_Yellow, NULL, NULL);
 		}
 	}
 }
@@ -311,7 +311,7 @@ player_t InitPlayer(const game_state_t *state, char sprite) {
 
 	player.sprite = sprite;
 	player.pos = NewCoord(0, 0);
-	player.color = CLR_CYAN;
+	player.color = Clr_Cyan;
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
 		player.inventory[i] = state->item_empty;
 	}
@@ -359,19 +359,19 @@ void Process(game_state_t *state) {
 
 	// Draw last 3 game log lines.
 	int y_start_pos = h - BOTTOM_PANEL_OFFSET;
-	GEO_draw_formatted(0, y_start_pos + 0, CLR_WHITE, "* %s", state->game_log.line3);
-	GEO_draw_formatted(0, y_start_pos + 1, CLR_WHITE, "* %s", state->game_log.line2);
-	GEO_draw_formatted(0, y_start_pos + 2, CLR_WHITE, "* %s", state->game_log.line1);
+	GEO_draw_formatted(0, y_start_pos + 0, Clr_White, "* %s", state->game_log.line3);
+	GEO_draw_formatted(0, y_start_pos + 1, Clr_White, "* %s", state->game_log.line2);
+	GEO_draw_formatted(0, y_start_pos + 2, Clr_White, "* %s", state->game_log.line1);
 
 	// Draw basic player info.
-	GEO_draw_formatted_align_center(y_start_pos + 3, CLR_CYAN, "Health - %d/%d   Mana - %d/%d   Gold - %d",
+	GEO_draw_formatted_align_center(y_start_pos + 3, Clr_Cyan, "Health - %d/%d   Mana - %d/%d   Gold - %d",
 		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
 
 	// Draw DEBUG line.
-	GEO_draw_line(0, y_start_pos + 4, w - 1, y_start_pos + 4, CLR_MAGENTA, '_');
+	GEO_draw_line(0, y_start_pos + 4, w - 1, y_start_pos + 4, Clr_Magenta, '_');
 
 	// Draw DEBUG label.
-	GEO_draw_formatted(0, y_start_pos + 5, CLR_MAGENTA, "   xy: (%d, %d)   rc(s): %d   seed: %d   |   Rooms: %d   Turns: %d",
+	GEO_draw_formatted(0, y_start_pos + 5, Clr_Magenta, "   xy: (%d, %d)   rc(s): %d   seed: %d   |   Rooms: %d   Turns: %d",
 		state->player.pos.x, state->player.pos.y, state->debug_rcs, (int)state->debug_seed, state->num_rooms_created, state->game_turns);
 
 	// Display drawn elements to screen.
@@ -419,14 +419,14 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 				} else {
 					UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_GOLD_PLURAL, amt);
 				}
-				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
+				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 				return;
 			}
 
 			// All items are "picked up" (removed from world) if the player has room in their inventory.
 			if (AddToInventory(&state->player, curr_world_tile->item_occupier)) {
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_ITEM, curr_world_tile->item_occupier->name);
-				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
+				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 			} else {
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_INVENTORY_FULL);
 			}
@@ -440,7 +440,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_KILL_ENEMY, attackedEnemy->data->name);
 				attackedEnemy->is_alive = false;
 				state->player.stats.enemies_slain++;
-				UpdateWorldTile(state->world_tiles, attackedEnemy->pos, SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
+				UpdateWorldTile(state->world_tiles, attackedEnemy->pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 
 				if (attackedEnemy->loot == I_Map && state->fog_of_war) {
 					UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_MAP);
@@ -565,7 +565,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 		while ((read = getline(&line, &len, fp)) != -1) {
 			for (int i = 0; i < read - 1; i++) {
 				tile_type_en type = T_Empty;
-				int colour = CLR_WHITE;
+				int colour = Clr_White;
 				coord_t pos = NewCoord(anchor_centered_map_offset.x + i, anchor_centered_map_offset.y + lineNum);
 				bool isEnemy = false;
 				entity_t *entity = NULL;
@@ -586,7 +586,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 						break;
 					case SPR_SMALLFOOD:
 						type = T_Item;
-						colour = CLR_GREEN;
+						colour = Clr_Green;
 						int food_amt = (rand() % 2) + 1;
 						if (food_amt == 1) {
 							item = &state->item_food1;
@@ -597,7 +597,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 					case SPR_GOLD:
 					case SPR_BIGGOLD:
 						type = T_Item;
-						colour = CLR_GREEN;
+						colour = Clr_Green;
 						break;
 					case SPR_ZOMBIE:
 						isEnemy = true;
@@ -609,11 +609,11 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 						break;
 					case SPR_STAIRCASE:
 						type = T_Special;
-						colour = CLR_YELLOW;
+						colour = Clr_Yellow;
 						break;
 					case SPR_MERCHANT:
 						type = T_Npc;
-						colour = CLR_MAGENTA;
+						colour = Clr_Magenta;
 						break;
 					default:
 						break;
@@ -621,7 +621,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 
 				if (isEnemy) {
 					type = T_Enemy;
-					colour = CLR_RED;
+					colour = Clr_Red;
 					AddToEnemyList(&state->enemy_list, entity);
 				}
 
@@ -687,7 +687,7 @@ void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size
 		coord_t opening = GetRandRoomOpeningPos(&state->rooms[i]);
 
 		// Create marked opening.
-		UpdateWorldTile(state->world_tiles, opening, '?', T_Empty, CLR_WHITE, NULL, NULL);
+		UpdateWorldTile(state->world_tiles, opening, '?', T_Empty, Clr_White, NULL, NULL);
 
 		//Connect corners with walls and convert marked opening to a real opening.
 		GenerateRoom(state->world_tiles, &state->rooms[i]);
@@ -851,40 +851,40 @@ void GenerateCorridor(tile_t **world_tiles, coord_t starting_room, int corridor_
 
 		case D_Up:
 			// Create opening for THIS room; create marked opening for NEXT room.
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - corridor_size), SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - (corridor_size * 2)), '?', T_Empty, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - corridor_size), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - (corridor_size * 2)), '?', T_Empty, Clr_White, NULL, NULL);
 
 			// Connect rooms with the corridor.
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
 			}
 			break;
 		case D_Down:
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + corridor_size), SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + (corridor_size * 2)), '?', T_Empty, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + corridor_size), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + (corridor_size * 2)), '?', T_Empty, Clr_White, NULL, NULL);
 
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
 			}
 			break;
 		case D_Left:
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size, starting_room.y), SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x - (corridor_size * 2), starting_room.y), '?', T_Empty, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size, starting_room.y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x - (corridor_size * 2), starting_room.y), '?', T_Empty, Clr_White, NULL, NULL);
 
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y - 1), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y + 1), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y - 1), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y + 1), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
 			}
 			break;
 		case D_Right:
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size, starting_room.y), SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x + (corridor_size * 2), starting_room.y), '?', T_Empty, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size, starting_room.y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x + (corridor_size * 2), starting_room.y), '?', T_Empty, Clr_White, NULL, NULL);
 
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y - 1), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y + 1), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y - 1), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y + 1), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
 			}
 			break;
 		default:
@@ -970,29 +970,29 @@ void GenerateRoom(tile_t **world_tiles, const room_t *room) {
 	// Bottom and top walls.
 	for (int x = room->TL_corner.x; x <= room->TR_corner.x; x++) {
 		if (world_tiles[x][room->TL_corner.y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 		}
 
 		if (world_tiles[x][room->BL_corner.y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 		}
 	}
 
 	// Left and right walls.
 	for (int y = room->TR_corner.y; y <= room->BR_corner.y; y++) {
 		if (world_tiles[room->TR_corner.x][y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 		}
 		if (world_tiles[room->TL_corner.x][y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_WALL, T_Solid, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 		}
 	}
 }
@@ -1046,7 +1046,7 @@ void EnemyCombatUpdate(game_state_t *state, entity_node_t *enemy_list) {
 			node->entity->curr_health--;
 			if (node->entity->curr_health <= 0) {
 				node->entity->is_alive = false;
-				UpdateWorldTile(state->world_tiles, node->entity->pos, SPR_EMPTY, T_Empty, CLR_WHITE, NULL, NULL);
+				UpdateWorldTile(state->world_tiles, node->entity->pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 			}
 			break;
 		}
@@ -1145,13 +1145,13 @@ void DrawHelpScreen() {
 
 	GEO_clear_screen();
 
-	GEO_draw_align_center(h / 2 - 4, CLR_WHITE, "Asciiscape by George Delosa");
-	GEO_draw_align_center(h / 2 - 2, CLR_WHITE, "up/down/left/right: movement keys");
-	GEO_draw_string(w / 2 - 11, h / 2 - 1, CLR_WHITE, "h: show this help screen");
-	GEO_draw_string(w / 2 - 11, h / 2 - 0, CLR_WHITE, "i: show player info screen");
-	GEO_draw_string(w / 2 - 11, h / 2 + 1, CLR_WHITE, "f: toggle fog of war");
-	GEO_draw_string(w / 2 - 11, h / 2 + 2, CLR_WHITE, "q: quit game");
-	GEO_draw_align_center(h / 2 + 4, CLR_WHITE, "Press any key to continue...");
+	GEO_draw_align_center(h / 2 - 4, Clr_White, "Asciiscape by George Delosa");
+	GEO_draw_align_center(h / 2 - 2, Clr_White, "up/down/left/right: movement keys");
+	GEO_draw_string(w / 2 - 11, h / 2 - 1, Clr_White, "h: show this help screen");
+	GEO_draw_string(w / 2 - 11, h / 2 - 0, Clr_White, "i: show player info screen");
+	GEO_draw_string(w / 2 - 11, h / 2 + 1, Clr_White, "f: toggle fog of war");
+	GEO_draw_string(w / 2 - 11, h / 2 + 2, Clr_White, "q: quit game");
+	GEO_draw_align_center(h / 2 + 4, Clr_White, "Press any key to continue...");
 
 	GEO_show_screen();
 	GetKeyInput();
@@ -1178,7 +1178,7 @@ void DrawDeathScreen() {
 
 	GEO_clear_screen();
 
-	GEO_draw_align_center(h / 2, CLR_RED, "YOU DIED");
+	GEO_draw_align_center(h / 2, Clr_Red, "YOU DIED");
 
 	GEO_show_screen();
 	GetKeyInput();
@@ -1193,29 +1193,29 @@ void DrawMerchantScreen(game_state_t *state) {
 	GEO_clear_screen();
 
 	// Draw screen border.
-	GEO_draw_line(0, 0, w, 0, CLR_WHITE, '*');
-	GEO_draw_line(0, 0, 0, h, CLR_WHITE, '*');
-	GEO_draw_line(w, 0, w, h, CLR_WHITE, '*');
-	GEO_draw_line(0, h, w, h, CLR_WHITE, '*');
+	GEO_draw_line(0, 0, w, 0, Clr_White, '*');
+	GEO_draw_line(0, 0, 0, h, Clr_White, '*');
+	GEO_draw_line(w, 0, w, h, Clr_White, '*');
+	GEO_draw_line(0, h, w, h, Clr_White, '*');
 
 	// Draw the merchant shop interface.
 	int x = 3;
 	int y = 2;
 
-	GEO_draw_align_center(y++, CLR_YELLOW, "Trading with Merchant");
+	GEO_draw_align_center(y++, Clr_Yellow, "Trading with Merchant");
 	y++;
-	GEO_draw_string(x, y++, CLR_YELLOW, "Option     Item               Price (gold)");
-	GEO_draw_formatted(x, y, CLR_WHITE, "(1)        %s", state->item_food1.name);
-	GEO_draw_formatted(x + 30, y, CLR_WHITE, "%d", state->item_food1.value);
+	GEO_draw_string(x, y++, Clr_Yellow, "Option     Item               Price (gold)");
+	GEO_draw_formatted(x, y, Clr_White, "(1)        %s", state->item_food1.name);
+	GEO_draw_formatted(x + 30, y, Clr_White, "%d", state->item_food1.value);
 	y++;
-	GEO_draw_formatted(x, y, CLR_WHITE, "(2)        %s", state->item_food2.name);
-	GEO_draw_formatted(x + 30, y, CLR_WHITE, "%d", state->item_food2.value);
+	GEO_draw_formatted(x, y, Clr_White, "(2)        %s", state->item_food2.name);
+	GEO_draw_formatted(x + 30, y, Clr_White, "%d", state->item_food2.value);
 	y++;
 
 	y++;
-	GEO_draw_formatted(x, y++, CLR_WHITE, "Your gold: %d", state->player.stats.num_gold);
+	GEO_draw_formatted(x, y++, Clr_White, "Your gold: %d", state->player.stats.num_gold);
 	y++;
-	GEO_draw_string(x, y++, CLR_WHITE, "Select an option to buy an item, or press ENTER to leave.");
+	GEO_draw_string(x, y++, Clr_White, "Select an option to buy an item, or press ENTER to leave.");
 
 	GEO_show_screen();
 
@@ -1280,33 +1280,33 @@ void DrawPlayerInfoScreen(const game_state_t * state) {
 
 	GEO_clear_screen();
 
-	GEO_draw_line(0, 0, w, 0, CLR_WHITE, '*');
-	GEO_draw_line(0, 0, 0, h, CLR_WHITE, '*');
-	GEO_draw_line(w, 0, w, h, CLR_WHITE, '*');
-	GEO_draw_line(0, h, w, h, CLR_WHITE, '*');
+	GEO_draw_line(0, 0, w, 0, Clr_White, '*');
+	GEO_draw_line(0, 0, 0, h, Clr_White, '*');
+	GEO_draw_line(w, 0, w, h, Clr_White, '*');
+	GEO_draw_line(0, h, w, h, Clr_White, '*');
 
 	int x = 3;
 	int y = 2;
 
-	GEO_draw_formatted_align_center(y++, CLR_CYAN, "Hero,  Lvl. %d", state->player.stats.level);
-	GEO_draw_formatted_align_center(y++, CLR_WHITE, "Current floor: %d", state->current_floor);
+	GEO_draw_formatted_align_center(y++, Clr_Cyan, "Hero,  Lvl. %d", state->player.stats.level);
+	GEO_draw_formatted_align_center(y++, Clr_White, "Current floor: %d", state->current_floor);
 	y++;
-	GEO_draw_formatted_align_center(y++, CLR_WHITE, "Health - %d/%d   Mana - %d/%d   Gold - %d",
+	GEO_draw_formatted_align_center(y++, Clr_White, "Health - %d/%d   Mana - %d/%d   Gold - %d",
 		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
 	y++;
-	GEO_draw_string(x, y++, CLR_CYAN, "Inventory");
+	GEO_draw_string(x, y++, Clr_Cyan, "Inventory");
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
-		GEO_draw_formatted(x, y++, CLR_YELLOW, "(%d) %s", i + 1, state->player.inventory[i].name);
+		GEO_draw_formatted(x, y++, Clr_Yellow, "(%d) %s", i + 1, state->player.inventory[i].name);
 	}
 	y++;
-	GEO_draw_string(x, y++, CLR_CYAN, "Stats");
-	GEO_draw_formatted(x, y++, CLR_YELLOW, "STR - %d", state->player.stats.s_STR);
-	GEO_draw_formatted(x, y++, CLR_YELLOW, "DEF - %d", state->player.stats.s_DEF);
-	GEO_draw_formatted(x, y++, CLR_YELLOW, "VIT - %d", state->player.stats.s_VIT);
-	GEO_draw_formatted(x, y++, CLR_YELLOW, "INT - %d", state->player.stats.s_INT);
-	GEO_draw_formatted(x, y++, CLR_YELLOW, "LCK - %d", state->player.stats.s_LCK);
+	GEO_draw_string(x, y++, Clr_Cyan, "Stats");
+	GEO_draw_formatted(x, y++, Clr_Yellow, "STR - %d", state->player.stats.s_STR);
+	GEO_draw_formatted(x, y++, Clr_Yellow, "DEF - %d", state->player.stats.s_DEF);
+	GEO_draw_formatted(x, y++, Clr_Yellow, "VIT - %d", state->player.stats.s_VIT);
+	GEO_draw_formatted(x, y++, Clr_Yellow, "INT - %d", state->player.stats.s_INT);
+	GEO_draw_formatted(x, y++, Clr_Yellow, "LCK - %d", state->player.stats.s_LCK);
 	y++;
-	GEO_draw_formatted(x, y++, CLR_WHITE, "Enemies slain - %d", state->player.stats.enemies_slain);
+	GEO_draw_formatted(x, y++, Clr_White, "Enemies slain - %d", state->player.stats.enemies_slain);
 
 	GEO_show_screen();
 	GetKeyInput();
