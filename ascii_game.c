@@ -294,9 +294,9 @@ entity_t* InitAndCreateEnemy(entity_data_t *enemy_data, coord_t pos) {
 	enemy->pos = pos;
 	enemy->is_alive = true;
 	if (rand() % 10 == 0) {
-		enemy->loot = I_Map;
+		enemy->loot = GetItem(I_Map);
 	} else {
-		enemy->loot = I_None;
+		enemy->loot = GetItem(I_None);
 	}
 
 	return enemy;
@@ -438,7 +438,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 				state->player.stats.enemies_slain++;
 				UpdateWorldTile(state->world_tiles, attackedEnemy->pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 
-				if (attackedEnemy->loot == I_Map && state->fog_of_war) {
+				if (attackedEnemy->loot == GetItem(I_Map) && state->fog_of_war) {
 					UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_MAP);
 					state->fog_of_war = false;
 				}

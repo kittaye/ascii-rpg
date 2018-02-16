@@ -113,7 +113,7 @@ typedef struct entity_t {
 	entity_data_t *data;
 	int curr_health;
 	bool is_alive;
-	item_slug_en loot;
+	const item_t *loot;
 	coord_t pos;
 } entity_t;
 
