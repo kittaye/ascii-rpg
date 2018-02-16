@@ -12,6 +12,7 @@
 #define SPR_STAIRCASE '^'
 #define SPR_SMALLFOOD 'f'
 #define SPR_BIGFOOD 'F'
+#define SPR_MAP 'm'
 #define SPR_ZOMBIE 'Z'
 #define SPR_WEREWOLF 'W'
 #define SPR_MERCHANT '1'

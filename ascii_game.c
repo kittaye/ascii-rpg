@@ -400,6 +400,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 
 	switch (curr_world_tile->type) {
 		case T_Item:
+			// Special case for items which are gold.
 			if (curr_world_tile->sprite == SPR_GOLD || curr_world_tile->sprite == SPR_BIGGOLD) {
 				int amt = 0;
 
@@ -419,7 +420,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 				return;
 			}
 
-			// All items are "picked up" (removed from world) if the player has room in their inventory.
+			// All other items are "picked up" (removed from world) if the player has room in their inventory.
 			if (AddToInventory(&state->player, curr_world_tile->item_occupier)) {
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_ITEM, curr_world_tile->item_occupier->name);
 				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
@@ -438,9 +439,8 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 				state->player.stats.enemies_slain++;
 				UpdateWorldTile(state->world_tiles, attackedEnemy->pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 
-				if (attackedEnemy->loot == GetItem(I_Map) && state->fog_of_war) {
-					UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_MAP);
-					state->fog_of_war = false;
+				if (attackedEnemy->loot == GetItem(I_Map)) {
+					UpdateWorldTile(state->world_tiles, attackedEnemy->pos, SPR_MAP, T_Special, Clr_Yellow, NULL, NULL);
 				}
 			} else {
 				state->player.stats.curr_health--;
@@ -454,6 +454,10 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 			if (curr_world_tile->sprite == SPR_STAIRCASE) {
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_INTERACT_STAIRCASE);
 				state->floor_complete = true;
+			} else if (curr_world_tile->sprite == SPR_MAP) {
+				UpdateGameLog(&state->game_log, LOGMSG_PLR_USE_MAP);
+				state->fog_of_war = false;
+				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 			}
 
 			// Moving into a special object results in no movement from the player.
