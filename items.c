@@ -7,6 +7,6 @@ static const item_t g_item_database[] = {
 	[I_BigFood] = {.name = "Big food", .item_slug = I_BigFood, .value = 35}
 };
 
-const item_t* GetItem(item_slug_en item_slug) {
+const item_t* GetItem(const item_slug_en item_slug) {
 	return &g_item_database[item_slug];
 }
