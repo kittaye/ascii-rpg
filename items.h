@@ -15,6 +15,6 @@ typedef struct item_t {
 } item_t;
 
 // Returns a pointer to the item from the global item database (defined in items.c) that matches the item_slug arg.
-item_t* GetItem(item_slug_en);
+const item_t* GetItem(item_slug_en);
 
 #endif /* ITEMS_H_ */

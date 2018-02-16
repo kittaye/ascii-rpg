@@ -96,7 +96,7 @@ typedef struct room_t {
 typedef struct player_t {
 	stats_t stats;
 	coord_t pos;
-	item_t *inventory[INVENTORY_SIZE];
+	const item_t *inventory[INVENTORY_SIZE];
 	char sprite;
 	int color;
 } player_t;
@@ -127,7 +127,7 @@ typedef struct tile_t {
 	tile_type_en type;
 	int color;
 	entity_t *entity_occupier;
-	item_t *item_occupier;
+	const item_t *item_occupier;
 } tile_t;
 
 typedef struct game_state_t {
@@ -178,7 +178,7 @@ bool CheckRoomMapBounds(const room_t*);
 bool CheckMapBounds(coord_t);
 bool CheckCorridorCollision(const tile_t**, coord_t, int, direction_en);
 
-void UpdateWorldTile(tile_t**, coord_t, char, tile_type_en, int, entity_t*, item_t*);
+void UpdateWorldTile(tile_t**, coord_t, char, tile_type_en, int, entity_t*, const item_t*);
 void PerformWorldLogic(game_state_t*, const tile_t*, coord_t);
 void UpdateGameLog(log_list_t*, const char*, ...);
 void NextPlayerInput(game_state_t*);
@@ -195,7 +195,7 @@ bool FContainsChar(FILE*, char);
 void InteractWithNPC(game_state_t*, char);
 int GetKeyInput();
 int AddHealth(player_t*, int);
-bool AddToInventory(player_t*, item_t*);
+bool AddToInventory(player_t*, const item_t*);
 
 void Cleanup_GameState(game_state_t*);
 void FreeEnemyList(entity_node_t**);

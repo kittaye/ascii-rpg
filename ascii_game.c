@@ -558,7 +558,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 				bool isEnemy = false;
 				bool isItem = false;
 				entity_t *entity = NULL;
-				item_t *item = NULL;
+				const item_t *item = NULL;
 
 				// Replace any /n, /t, etc. with a whitespace character.
 				if (!isgraph(line[i])) {
@@ -986,7 +986,7 @@ void GenerateRoom(tile_t **world_tiles, const room_t *room) {
 	}
 }
 
-void UpdateWorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, entity_t *entity_occupier, item_t *item_occupier) {
+void UpdateWorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, entity_t *entity_occupier, const item_t *item_occupier) {
 	assert(world_tiles != NULL);
 
 	world_tiles[pos.x][pos.y].sprite = sprite;
@@ -1298,7 +1298,7 @@ void DrawPlayerInfoScreen(const game_state_t * state) {
 	GetKeyInput();
 }
 
-bool AddToInventory(player_t *player, item_t *item) {
+bool AddToInventory(player_t *player, const item_t *item) {
 	assert(player != NULL);
 	assert(item != NULL);
 
