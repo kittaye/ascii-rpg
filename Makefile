@@ -5,8 +5,8 @@ FLAGS=-std=gnu99 -Wall -Werror -g
 
 all: $(TARGETS)
 
-ascii_game: ascii_game.c george_graphics.c
-	gcc $(FLAGS) ascii_game.c george_graphics.c -o ascii_game $(LIBS) 
+ascii_game: ascii_game.c george_graphics.c items.c
+	gcc $(FLAGS) ascii_game.c george_graphics.c items.c -o ascii_game $(LIBS) 
 
 
 clean:
