@@ -137,7 +137,7 @@ void InitGameState(game_state_t *state) {
 	state->debug_rcs = 0;
 
 	state->player = InitPlayer(state, SPR_PLAYER);
-	state->enemy_list = (entity_node_t*)NULL;
+	state->enemy_list = (enemy_node_t*)NULL;
 
 	state->world_tiles = malloc(sizeof(*state->world_tiles) * (w + 1));
 	assert(state->world_tiles != NULL);
@@ -163,14 +163,14 @@ void Cleanup_GameState(game_state_t *state) {
 	FreeEnemyList(&state->enemy_list);
 }
 
-void FreeEnemyList(entity_node_t **list) {
+void FreeEnemyList(enemy_node_t **list) {
 	assert(list != NULL);
 
-	entity_node_t *tmp;
+	enemy_node_t *tmp;
 	while ((*list) != NULL) {
 		tmp = (*list);
 		(*list) = (*list)->next;
-		free(tmp->entity);
+		free(tmp->enemy);
 		free(tmp);
 	}
 }
@@ -179,7 +179,7 @@ void ResetDungeonFloor(game_state_t *state) {
 	assert(state != NULL);
 
 	FreeEnemyList(&state->enemy_list);
-	state->enemy_list = (entity_node_t*)NULL;
+	state->enemy_list = (enemy_node_t*)NULL;
 
 	free(state->rooms);
 	state->rooms = (room_t*)NULL;
@@ -250,7 +250,7 @@ void PopulateRooms(game_state_t *state) {
 				int val = (rand() % 100) + 1;
 
 				if (val >= 99) {
-					entity_t *enemy = NULL;
+					enemy_t *enemy = NULL;
 					if (val == 99) {
 						enemy = InitAndCreateEnemy(&state->data_zombie, NewCoord(x, y));
 					} else if (val == 100) {
@@ -283,10 +283,10 @@ void PopulateRooms(game_state_t *state) {
 	}
 }
 
-entity_t* InitAndCreateEnemy(entity_data_t *enemy_data, coord_t pos) {
+enemy_t* InitAndCreateEnemy(enemy_data_t *enemy_data, coord_t pos) {
 	assert(enemy_data != NULL);
 
-	entity_t *enemy = malloc(sizeof(*enemy));
+	enemy_t *enemy = malloc(sizeof(*enemy));
 	assert(enemy != NULL);
 
 	enemy->data = enemy_data;
@@ -429,7 +429,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 			}
 			break;
 		case T_Enemy:;
-			entity_t *attackedEnemy = curr_world_tile->entity_occupier;
+			enemy_t *attackedEnemy = curr_world_tile->enemy_occupier;
 			attackedEnemy->curr_health--;
 			UpdateGameLog(&state->game_log, LOGMSG_PLR_DMG_ENEMY, attackedEnemy->data->name, 1);
 
@@ -561,7 +561,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 				coord_t pos = NewCoord(anchor_centered_map_offset.x + i, anchor_centered_map_offset.y + lineNum);
 				bool isEnemy = false;
 				bool isItem = false;
-				entity_t *entity = NULL;
+				enemy_t *enemy = NULL;
 				const item_t *item = NULL;
 
 				// Replace any /n, /t, etc. with a whitespace character.
@@ -591,11 +591,11 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 						break;
 					case SPR_ZOMBIE:
 						isEnemy = true;
-						entity = InitAndCreateEnemy(&state->data_zombie, pos);
+						enemy = InitAndCreateEnemy(&state->data_zombie, pos);
 						break;
 					case SPR_WEREWOLF:
 						isEnemy = true;
-						entity = InitAndCreateEnemy(&state->data_werewolf, pos);
+						enemy = InitAndCreateEnemy(&state->data_werewolf, pos);
 						break;
 					case SPR_STAIRCASE:
 						type = T_Special;
@@ -612,13 +612,13 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 				if (isEnemy) {
 					type = T_Enemy;
 					colour = Clr_Red;
-					AddToEnemyList(&state->enemy_list, entity);
+					AddToEnemyList(&state->enemy_list, enemy);
 				} else if (isItem) {
 					type = T_Item;
 					colour = Clr_Green;
 				}
 
-				UpdateWorldTile(state->world_tiles, pos, line[i], type, colour, entity, item);
+				UpdateWorldTile(state->world_tiles, pos, line[i], type, colour, enemy, item);
 			}
 			line = NULL;
 			lineNum++;
@@ -990,13 +990,13 @@ void GenerateRoom(tile_t **world_tiles, const room_t *room) {
 	}
 }
 
-void UpdateWorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, entity_t *entity_occupier, const item_t *item_occupier) {
+void UpdateWorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, enemy_t *enemy_occupier, const item_t *item_occupier) {
 	assert(world_tiles != NULL);
 
 	world_tiles[pos.x][pos.y].sprite = sprite;
 	world_tiles[pos.x][pos.y].type = type;
 	world_tiles[pos.x][pos.y].color = color;
-	world_tiles[pos.x][pos.y].entity_occupier = entity_occupier;
+	world_tiles[pos.x][pos.y].enemy_occupier = enemy_occupier;
 	world_tiles[pos.x][pos.y].item_occupier = item_occupier;
 }
 
@@ -1028,18 +1028,18 @@ void UpdateGameLog(log_list_t *game_log, const char *format, ...) {
 	va_end(argp);
 }
 
-void EnemyCombatUpdate(game_state_t *state, entity_node_t *enemy_list) {
+void EnemyCombatUpdate(game_state_t *state, enemy_node_t *enemy_list) {
 	assert(state != NULL);
 	assert(enemy_list != NULL);
 
-	entity_node_t *node = enemy_list;
+	enemy_node_t *node = enemy_list;
 	for (; node != NULL; node = node->next) {
-		if (node->entity->pos.x == state->player.pos.x && node->entity->pos.y == state->player.pos.y) {
+		if (node->enemy->pos.x == state->player.pos.x && node->enemy->pos.y == state->player.pos.y) {
 			state->player.stats.curr_health--;
-			node->entity->curr_health--;
-			if (node->entity->curr_health <= 0) {
-				node->entity->is_alive = false;
-				UpdateWorldTile(state->world_tiles, node->entity->pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+			node->enemy->curr_health--;
+			if (node->enemy->curr_health <= 0) {
+				node->enemy->is_alive = false;
+				UpdateWorldTile(state->world_tiles, node->enemy->pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
 			}
 			break;
 		}
@@ -1151,7 +1151,7 @@ void DrawHelpScreen() {
 }
 
 int GetKeyInput() {
-	while (1) {
+	while (true) {
 		int key = GEO_get_char();
 		switch (key) {
 			case KEY_RESIZE:
@@ -1315,20 +1315,20 @@ bool AddToInventory(player_t *player, const item_t *item) {
 	return false;
 }
 
-void AddToEnemyList(entity_node_t **list, entity_t *entity) {
+void AddToEnemyList(enemy_node_t **list, enemy_t *enemy) {
 	assert(list != NULL);
-	assert(entity != NULL);
+	assert(enemy != NULL);
 
-	entity_node_t *node = malloc(sizeof(*node));
+	enemy_node_t *node = malloc(sizeof(*node));
 	assert(node != NULL);
 
-	node->entity = entity;
+	node->enemy = enemy;
 	node->next = NULL;
 
 	if (*list == NULL) {
 		*list = node;
 	} else {
-		entity_node_t *searcher = *list;
+		enemy_node_t *searcher = *list;
 		while (searcher->next != NULL) {
 			searcher = searcher->next;
 		}
