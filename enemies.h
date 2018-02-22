@@ -16,6 +16,7 @@ typedef enum enemy_slug_en {
 
 typedef struct enemy_data_t {
 	const char *const name;
+	const enemy_slug_en enemy_slug;
 	const int max_health;
 	const char sprite;
 } enemy_data_t;
