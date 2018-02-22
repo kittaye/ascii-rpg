@@ -39,8 +39,8 @@ void GEO_setup_screen(void) {
 	// Turn off the cursor.
 	curs_set(0);
 
-	// Cause getch to return ERR if no key pressed within 5 milliseconds.
-	timeout(5);
+	// Cause getch to return ERR if no key pressed within 0 milliseconds.
+	timeout(0);
 
 	// Enable the keypad.
 	keypad(stdscr, TRUE);
@@ -242,7 +242,7 @@ int GEO_wait_char() {
 
 	timeout(-1);
 	current_char = getch();
-	timeout(5);
+	timeout(0);
 
 	return current_char;
 }
