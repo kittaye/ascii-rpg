@@ -1,7 +1,9 @@
 #ifndef ASCII_GAME_H_
 #define ASCII_GAME_H_
 
+#include <stdio.h>
 #include "items.h"
+#include "enemies.h"
 
 // Sprites.
 #define SPR_EMPTY ' '
@@ -82,11 +84,6 @@ typedef struct log_list_t {
 	char line3[LOG_BUFFER_SIZE];	// Third message that is shown in the game log.
 } log_list_t;
 
-typedef struct coord_t {
-	int x;
-	int y;
-} coord_t;
-
 typedef struct room_t {
 	coord_t TL_corner;
 	coord_t TR_corner;
@@ -101,27 +98,6 @@ typedef struct player_t {
 	char sprite;
 	int color;
 } player_t;
-
-typedef struct enemy_data_t {
-	char *name;
-	tile_type_en type;
-	int max_health;
-	char sprite;
-	int color;
-} enemy_data_t;
-
-typedef struct enemy_t {
-	enemy_data_t *data;
-	int curr_health;
-	bool is_alive;
-	const item_t *loot;
-	coord_t pos;
-} enemy_t;
-
-typedef struct enemy_node_t {
-	enemy_t *enemy;
-	struct enemy_node_t *next;
-} enemy_node_t;
 
 typedef struct tile_t {
 	char sprite;
@@ -144,10 +120,6 @@ typedef struct game_state_t {
 	tile_t **world_tiles;			// Stores information about every (x, y) coordinate in the terminal, for use in the game.
 	room_t *rooms;					// Array of all created rooms after CreateDungeonRooms returns.
 	log_list_t game_log;			
-
-	enemy_data_t data_zombie;		// Global data for all zombies.
-	enemy_data_t data_werewolf;		// Global data for all werewolves.
-
 	enemy_node_t *enemy_list;		// Linked list of all enemies created in game.
 
 	int debug_rcs;					// Room collisions during room creation.
@@ -160,7 +132,7 @@ void InitGameState(game_state_t*);
 void ResetDungeonFloor(game_state_t*);
 void CreateDungeonFloor(game_state_t*, int, int, char*);
 player_t InitPlayer(const game_state_t*, char);
-enemy_t* InitAndCreateEnemy(enemy_data_t*, coord_t);
+enemy_t* InitAndCreateEnemy(const enemy_data_t*, coord_t);
 void Process(game_state_t*);
 
 int GetNextRoomRadius();

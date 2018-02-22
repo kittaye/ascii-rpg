@@ -11,6 +11,7 @@
 #include "george_graphics.h"
 #include "log_messages.h"
 #include "items.h"
+#include "enemies.h"
 #include "ascii_game.h"
 
 static bool g_resize_error = false;
@@ -111,20 +112,6 @@ void InitGameState(game_state_t *state) {
 
 	state->debug_seed = time(NULL);
 	srand(state->debug_seed);
-
-	// Declare global zombie data.
-	state->data_zombie.name = "Zombie";
-	state->data_zombie.type = T_Enemy;
-	state->data_zombie.max_health = 5;
-	state->data_zombie.sprite = SPR_ZOMBIE;
-	state->data_zombie.color = Clr_Red;
-
-	// Declare global wolf data
-	state->data_werewolf.name = "Werewolf";
-	state->data_werewolf.type = T_Enemy;
-	state->data_werewolf.max_health = 3;
-	state->data_werewolf.sprite = SPR_WEREWOLF;
-	state->data_werewolf.color = Clr_Red;
 
 	// Initialise and declare general game info.
 	state->game_turns = 0;
@@ -252,11 +239,11 @@ void PopulateRooms(game_state_t *state) {
 				if (val >= 99) {
 					enemy_t *enemy = NULL;
 					if (val == 99) {
-						enemy = InitAndCreateEnemy(&state->data_zombie, NewCoord(x, y));
+						enemy = InitAndCreateEnemy(GetEnemyData(E_Zombie), NewCoord(x, y));
 					} else if (val == 100) {
-						enemy = InitAndCreateEnemy(&state->data_werewolf, NewCoord(x, y));
+						enemy = InitAndCreateEnemy(GetEnemyData(E_Werewolf), NewCoord(x, y));
 					}
-					UpdateWorldTile(state->world_tiles, enemy->pos, enemy->data->sprite, enemy->data->type, enemy->data->color, enemy, NULL);
+					UpdateWorldTile(state->world_tiles, enemy->pos, enemy->data->sprite, T_Enemy, Clr_Red, enemy, NULL);
 					AddToEnemyList(&state->enemy_list, enemy);
 
 				} else if (val <= 2) {
@@ -283,7 +270,7 @@ void PopulateRooms(game_state_t *state) {
 	}
 }
 
-enemy_t* InitAndCreateEnemy(enemy_data_t *enemy_data, coord_t pos) {
+enemy_t* InitAndCreateEnemy(const enemy_data_t *enemy_data, coord_t pos) {
 	assert(enemy_data != NULL);
 
 	enemy_t *enemy = malloc(sizeof(*enemy));
@@ -591,11 +578,11 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 						break;
 					case SPR_ZOMBIE:
 						isEnemy = true;
-						enemy = InitAndCreateEnemy(&state->data_zombie, pos);
+						enemy = InitAndCreateEnemy(GetEnemyData(E_Zombie), pos);
 						break;
 					case SPR_WEREWOLF:
 						isEnemy = true;
-						enemy = InitAndCreateEnemy(&state->data_werewolf, pos);
+						enemy = InitAndCreateEnemy(GetEnemyData(E_Werewolf), pos);
 						break;
 					case SPR_STAIRCASE:
 						type = T_Special;
