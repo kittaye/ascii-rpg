@@ -20,8 +20,10 @@
 #define MIN(x,y) (((x) < (y)) ? (x) : (y))
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 
-// Private helper function.
+// Private functions.
 static void GEO_destroy_screen(GEO_Screen * scr);
+static void GEO_update_buffer(GEO_Screen ** buffer, const int width, const int height);
+static void GEO_copy_screen(GEO_Screen * old_scr, GEO_Screen * new_scr);
 
 GEO_Screen * GEO_zdk_screen = NULL;
 GEO_Screen * GEO_zdk_prev_screen = NULL;
@@ -256,7 +258,6 @@ int GEO_screen_height(void) {
 }
 
 void GEO_override_screen_size(const int width, const int height) {
-	void GEO_update_buffer(GEO_Screen ** buffer, const int width, const int height);
 
 	GEO_update_buffer(&GEO_zdk_screen, width, height);
 	GEO_update_buffer(&GEO_zdk_prev_screen, width, height);
@@ -318,8 +319,6 @@ void GEO_update_buffer(GEO_Screen **screen, const int width, const int height) {
 	}
 
 	memset(new_screen->pixels[0], ' ', width * height);
-
-	void GEO_copy_screen(GEO_Screen * old_scr, GEO_Screen * new_scr);
 
 	GEO_copy_screen(old_screen, new_screen);
 
