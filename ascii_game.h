@@ -129,46 +129,46 @@ typedef struct game_state_t {
 
 
 // Function initialization.
-void InitGameState(game_state_t*);
-void ResetDungeonFloor(game_state_t*);
-void CreateDungeonFloor(game_state_t*, int, int, const char*);
-player_t InitPlayer(char);
-enemy_t* InitAndCreateEnemy(const enemy_data_t*, coord_t);
-void Process(game_state_t*);
+void InitGameState(game_state_t *state);
+void ResetDungeonFloor(game_state_t *state);
+void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified);
+player_t InitPlayer(char sprite);
+enemy_t* InitAndCreateEnemy(const enemy_data_t *enemy_data, coord_t pos);
+void Process(game_state_t *state);
 
-int GetNextRoomRadius();
-void CreateOpenRooms(game_state_t*, int, int);
-void DefineOpenRoom(room_t*, int);
-void CreateClosedRooms(game_state_t*, int, int);
-void DefineClosedRoom(room_t*, coord_t, int);
-void InstantiateClosedRoomRecursive(game_state_t*, coord_t, int, int, int);
-void GenerateRoom(tile_t**, const room_t*);
-void GenerateCorridor(tile_t**, coord_t, int, direction_en);
-void CreateRoomsFromFile(game_state_t*, const char*);
-void PopulateRooms(game_state_t*);
-coord_t GetRandRoomOpeningPos(const room_t*);
-bool CheckRoomCollision(const tile_t**, const room_t*);
-bool CheckRoomMapBounds(const room_t*);
-bool CheckMapBounds(coord_t);
-bool CheckCorridorCollision(const tile_t**, coord_t, int, direction_en);
+int GetNextRoomRadius(void);
+void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size);
+void CreateClosedRooms(game_state_t *state, int num_rooms_specified, int room_size);
+void CreateRoomsFromFile(game_state_t *state, const char *filename);
+void DefineOpenRoom(room_t *room, int room_size);
+void DefineClosedRoom(room_t *room, coord_t pos, int radius);
+void InstantiateClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms);
+void GenerateRoom(tile_t **world_tiles, const room_t *room);
+void GenerateCorridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
+void PopulateRooms(game_state_t *state);
+coord_t GetRandRoomOpeningPos(const room_t *room);
+bool CheckRoomCollision(const tile_t **world_tiles, const room_t *room);
+bool CheckRoomMapBounds(const room_t *room);
+bool CheckMapBounds(coord_t coord);
+bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
 
-void UpdateWorldTile(tile_t**, coord_t, char, tile_type_en, int, enemy_t*, const item_t*);
-void PerformWorldLogic(game_state_t*, const tile_t*, coord_t);
-void UpdateGameLog(log_list_t*, const char*, ...);
-void NextPlayerInput(game_state_t*);
-void ApplyVision(const game_state_t*, coord_t);
-void EnemyCombatUpdate(game_state_t*, enemy_node_t*);
-void DrawHelpScreen();
-void DrawPlayerInfoScreen(const game_state_t*);
-void DrawDeathScreen();
-void DrawMerchantScreen(game_state_t *);
-void SetPlayerPos(player_t*, coord_t);
-bool FContainsChar(FILE*, char);
-void InteractWithNPC(game_state_t*, char);
-int GetKeyInput();
-int AddHealth(player_t*, int);
-bool AddToInventory(player_t*, const item_t*);
+void UpdateWorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, enemy_t *enemy_occupier, const item_t *item_occupier);
+void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord_t player_old_pos);
+void UpdateGameLog(log_list_t *game_log, const char *format, ...);
+void NextPlayerInput(game_state_t *state);
+void ApplyVision(const game_state_t *state, coord_t pos);
+void EnemyCombatUpdate(game_state_t *state, enemy_node_t *enemy_list);
+void DrawHelpScreen(void);
+void DrawPlayerInfoScreen(const game_state_t *state);
+void DrawDeathScreen(void);
+void DrawMerchantScreen(game_state_t *state);
+void SetPlayerPos(player_t *player, coord_t pos);
+bool FContainsChar(FILE *fp, char char_to_find);
+void InteractWithNPC(game_state_t *state, char npc_target);
+int GetKeyInput(void);
+int AddHealth(player_t *player, int amount);
+bool AddToInventory(player_t *player, const item_t *item);
 
-void Cleanup_GameState(game_state_t*);
+void Cleanup_GameState(game_state_t *state);
 
 #endif /* ASCII_GAME_H_ */
