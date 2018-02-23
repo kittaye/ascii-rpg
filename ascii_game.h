@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include "items.h"
 #include "enemies.h"
+#include "coord.h"
 
 // Sprites.
 #define SPR_EMPTY ' '
@@ -68,7 +69,7 @@ typedef struct player_stats {
 	int curr_mana;
 	int max_vision;
 
-	int s_STR;
+	int s_STR;	
 	int s_DEF;
 	int s_VIT;
 	int s_INT;

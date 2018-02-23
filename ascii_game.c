@@ -12,6 +12,7 @@
 #include "log_messages.h"
 #include "items.h"
 #include "enemies.h"
+#include "coord.h"
 #include "ascii_game.h"
 
 static bool g_resize_error = false;

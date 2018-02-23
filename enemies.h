@@ -3,11 +3,7 @@
 
 #include <stdbool.h>
 #include "items.h"
-
-typedef struct coord_t {
-	int x;
-	int y;
-} coord_t;
+#include "coord.h"
 
 typedef enum enemy_slug_en {
 	E_Zombie,
@@ -34,7 +30,7 @@ typedef struct enemy_node_t {
 	struct enemy_node_t *next;
 } enemy_node_t;
 
-// Returns a pointer to the item from the global item database (defined in items.c) that matches the item_slug arg.
+// Returns a pointer to the enemy data from the global enemy data database (defined in enemies.c) that matches the enemy_slug arg.
 const enemy_data_t* GetEnemyData(enemy_slug_en);
 
 #endif /* ENEMIES_H_ */
