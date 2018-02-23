@@ -509,7 +509,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 	} else {
 		int lineNum = 0;
 		size_t len = 0;
-		const char *line = NULL;
+		char *line = NULL;
 		ssize_t read = 0;
 
 		// FIRST PASS: Get map length and height, use it to find the anchor point (Top-left corner) to center the map on.
