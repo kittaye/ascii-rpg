@@ -123,7 +123,7 @@ void InitGameState(game_state_t *state) {
 	state->current_target = ' ';
 	state->debug_rcs = 0;
 
-	state->player = InitPlayer(state, SPR_PLAYER);
+	state->player = InitPlayer(SPR_PLAYER);
 	state->enemy_list = (enemy_node_t*)NULL;
 
 	state->world_tiles = malloc(sizeof(*state->world_tiles) * (w + 1));
@@ -165,7 +165,7 @@ void ResetDungeonFloor(game_state_t *state) {
 	state->debug_rcs = 0;
 }
 
-void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, char *opt_filename_specified) {
+void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified) {
 	assert(state != NULL);
 
 	int w = GEO_screen_width();
@@ -184,15 +184,15 @@ void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_s
 
 	// Every few floors, the hub layout is created instead of a random dungeon layout.
 	if (state->current_floor % HUB_MAP_FREQUENCY == 0) {
-		opt_filename_specified = "hub.txt";
+		filename_specified = "hub.txt";
 		state->player.stats.max_vision = PLAYER_MAX_VISION + 100;
 	} else {
 		state->player.stats.max_vision = PLAYER_MAX_VISION;
 	}
 
 	// Create the floor.
-	if (opt_filename_specified != NULL) {
-		CreateRoomsFromFile(state, opt_filename_specified);
+	if (filename_specified != NULL) {
+		CreateRoomsFromFile(state, filename_specified);
 	} else {
 		//CreateOpenRooms(state, num_rooms_specified, room_size_specified);
 		CreateClosedRooms(state, num_rooms_specified, room_size_specified);
@@ -277,7 +277,7 @@ enemy_t* InitAndCreateEnemy(const enemy_data_t *enemy_data, coord_t pos) {
 	return enemy;
 }
 
-player_t InitPlayer(const game_state_t *state, char sprite) {
+player_t InitPlayer(char sprite) {
 	player_t player;
 
 	player.sprite = sprite;

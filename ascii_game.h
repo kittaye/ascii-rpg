@@ -131,8 +131,8 @@ typedef struct game_state_t {
 // Function initialization.
 void InitGameState(game_state_t*);
 void ResetDungeonFloor(game_state_t*);
-void CreateDungeonFloor(game_state_t*, int, int, char*);
-player_t InitPlayer(const game_state_t*, char);
+void CreateDungeonFloor(game_state_t*, int, int, const char*);
+player_t InitPlayer(char);
 enemy_t* InitAndCreateEnemy(const enemy_data_t*, coord_t);
 void Process(game_state_t*);
 
