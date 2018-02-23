@@ -157,7 +157,6 @@ void PerformWorldLogic(game_state_t*, const tile_t*, coord_t);
 void UpdateGameLog(log_list_t*, const char*, ...);
 void NextPlayerInput(game_state_t*);
 void ApplyVision(const game_state_t*, coord_t);
-void AddToEnemyList(enemy_node_t**, enemy_t*);
 void EnemyCombatUpdate(game_state_t*, enemy_node_t*);
 void DrawHelpScreen();
 void DrawPlayerInfoScreen(const game_state_t*);
@@ -172,6 +171,5 @@ int AddHealth(player_t*, int);
 bool AddToInventory(player_t*, const item_t*);
 
 void Cleanup_GameState(game_state_t*);
-void FreeEnemyList(enemy_node_t**);
 
 #endif /* ASCII_GAME_H_ */

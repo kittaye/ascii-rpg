@@ -31,6 +31,10 @@ typedef struct enemy_node_t {
 } enemy_node_t;
 
 // Returns a pointer to the enemy data from the global enemy data database (defined in enemies.c) that matches the enemy_slug arg.
-const enemy_data_t* GetEnemyData(enemy_slug_en);
+const enemy_data_t* GetEnemyData(enemy_slug_en enemy_slug);
+
+void AddToEnemyList(enemy_node_t **list, enemy_t *enemy);
+
+void FreeEnemyList(enemy_node_t **list);
 
 #endif /* ENEMIES_H_ */

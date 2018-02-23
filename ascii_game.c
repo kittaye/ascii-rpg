@@ -114,7 +114,6 @@ void InitGameState(game_state_t *state) {
 	state->debug_seed = time(NULL);
 	srand(state->debug_seed);
 
-	// Initialise and declare general game info.
 	state->game_turns = 0;
 	state->num_rooms_created = 0;
 	state->current_floor = 1;
@@ -149,18 +148,6 @@ void Cleanup_GameState(game_state_t *state) {
 	free(state->world_tiles);
 	free(state->rooms);
 	FreeEnemyList(&state->enemy_list);
-}
-
-void FreeEnemyList(enemy_node_t **list) {
-	assert(list != NULL);
-
-	enemy_node_t *tmp;
-	while ((*list) != NULL) {
-		tmp = (*list);
-		(*list) = (*list)->next;
-		free(tmp->enemy);
-		free(tmp);
-	}
 }
 
 void ResetDungeonFloor(game_state_t *state) {
@@ -1301,25 +1288,4 @@ bool AddToInventory(player_t *player, const item_t *item) {
 		}
 	}
 	return false;
-}
-
-void AddToEnemyList(enemy_node_t **list, enemy_t *enemy) {
-	assert(list != NULL);
-	assert(enemy != NULL);
-
-	enemy_node_t *node = malloc(sizeof(*node));
-	assert(node != NULL);
-
-	node->enemy = enemy;
-	node->next = NULL;
-
-	if (*list == NULL) {
-		*list = node;
-	} else {
-		enemy_node_t *searcher = *list;
-		while (searcher->next != NULL) {
-			searcher = searcher->next;
-		}
-		searcher->next = node;
-	}
 }
