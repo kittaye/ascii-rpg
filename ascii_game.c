@@ -603,13 +603,6 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 	}
 }
 
-coord_t NewCoord(int x, int y) {
-	coord_t coord;
-	coord.x = x;
-	coord.y = y;
-	return coord;
-}
-
 void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size_specified) {
 	assert(state != NULL);
 
@@ -1009,7 +1002,7 @@ void EnemyCombatUpdate(game_state_t *state, enemy_node_t *enemy_list) {
 
 	enemy_node_t *node = enemy_list;
 	for (; node != NULL; node = node->next) {
-		if (node->enemy->pos.x == state->player.pos.x && node->enemy->pos.y == state->player.pos.y) {
+		if (CoordsEqual(node->enemy->pos, state->player.pos)) {
 			state->player.stats.curr_health--;
 			node->enemy->curr_health--;
 			if (node->enemy->curr_health <= 0) {
@@ -1092,7 +1085,7 @@ void NextPlayerInput(game_state_t *state) {
 
 	// The player's turn is over if they moved on this turn.
 	state->player_turn_over = false;
-	if (player->pos.x != oldPos.x || player->pos.y != oldPos.y) {
+	if (!CoordsEqual(player->pos, oldPos)) {
 		state->player_turn_over = true;
 	}
 }
