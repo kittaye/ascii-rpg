@@ -27,7 +27,7 @@ int main(int argc, char *argv[]) {
 	// Get command line info.
 	int num_rooms_specified = 0;
 	int room_size_specified = 5;
-	char *filename_specified = NULL;
+	const char *filename_specified = NULL;
 	{
 		num_rooms_specified = atoi(argv[1]);
 		if (num_rooms_specified < MIN_ROOMS) {
@@ -509,7 +509,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 	} else {
 		int lineNum = 0;
 		size_t len = 0;
-		char *line = NULL;
+		const char *line = NULL;
 		ssize_t read = 0;
 
 		// FIRST PASS: Get map length and height, use it to find the anchor point (Top-left corner) to center the map on.
