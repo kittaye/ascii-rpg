@@ -46,19 +46,19 @@ typedef enum colour_en {
 } colour_en;
 
 typedef enum tile_type_en {
-	T_Npc,
-	T_Enemy,
-	T_Solid,
-	T_Special,
-	T_Item,
-	T_Empty
+	TileType_Npc,
+	TileType_Enemy,
+	TileType_Solid,
+	TileType_Special,
+	TileType_Item,
+	TileType_Empty
 } tile_type_en;
 
 typedef enum direction_en {
-	D_Up,
-	D_Down,
-	D_Left,
-	D_Right
+	Dir_Up,
+	Dir_Down,
+	Dir_Left,
+	Dir_Right
 } direction_en;
 
 typedef struct player_stats {

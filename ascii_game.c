@@ -175,7 +175,7 @@ void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_s
 	// Create empty space.
 	for (int x = 0; x < w; x++) {
 		for (int y = 0; y < h; y++) {
-			UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 	}
 
@@ -231,17 +231,17 @@ void PopulateRooms(game_state_t *state) {
 					} else if (val == 100) {
 						enemy = InitAndCreateEnemy(GetEnemyData(E_Werewolf), NewCoord(x, y));
 					}
-					UpdateWorldTile(state->world_tiles, enemy->pos, enemy->data->sprite, T_Enemy, Clr_Red, enemy, NULL);
+					UpdateWorldTile(state->world_tiles, enemy->pos, enemy->data->sprite, TileType_Enemy, Clr_Red, enemy, NULL);
 					AddToEnemyList(&state->enemy_list, enemy);
 
 				} else if (val <= 2) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGGOLD, T_Item, Clr_Green, NULL, NULL);
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGGOLD, TileType_Item, Clr_Green, NULL, NULL);
 				} else if (val <= 4) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_GOLD, T_Item, Clr_Green, NULL, NULL);
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_GOLD, TileType_Item, Clr_Green, NULL, NULL);
 				} else if (val <= 5) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, T_Item, Clr_Green, NULL, GetItem(I_SmallFood));
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, TileType_Item, Clr_Green, NULL, GetItem(I_SmallFood));
 				} else if (val <= 6) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, T_Item, Clr_Green, NULL, GetItem(I_BigFood));
+					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, TileType_Item, Clr_Green, NULL, GetItem(I_BigFood));
 				}
 			}
 		}
@@ -253,7 +253,7 @@ void PopulateRooms(game_state_t *state) {
 				state->rooms[i].TR_corner.y + ((state->rooms[i].BR_corner.y - state->rooms[i].TR_corner.y) / 2)
 			);
 			// TODO: staircase may spawn ontop of enemy, removing them from the world in an unexpected way. Find fix.
-			UpdateWorldTile(state->world_tiles, pos, SPR_STAIRCASE, T_Special, Clr_Yellow, NULL, NULL);
+			UpdateWorldTile(state->world_tiles, pos, SPR_STAIRCASE, TileType_Special, Clr_Yellow, NULL, NULL);
 		}
 	}
 }
@@ -374,7 +374,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 	state->current_target = ' ';
 
 	switch (curr_world_tile->type) {
-		case T_Item:
+		case TileType_Item:
 			// Special case for items which are gold.
 			if (curr_world_tile->sprite == SPR_GOLD || curr_world_tile->sprite == SPR_BIGGOLD) {
 				int amt = 0;
@@ -391,19 +391,19 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 				} else {
 					UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_GOLD_PLURAL, amt);
 				}
-				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 				return;
 			}
 
 			// All other items are "picked up" (removed from world) if the player has room in their inventory.
 			if (AddToInventory(&state->player, curr_world_tile->item_occupier)) {
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_ITEM, curr_world_tile->item_occupier->name);
-				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 			} else {
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_INVENTORY_FULL);
 			}
 			break;
-		case T_Enemy:;
+		case TileType_Enemy:;
 			enemy_t *attackedEnemy = curr_world_tile->enemy_occupier;
 			attackedEnemy->curr_health--;
 			UpdateGameLog(&state->game_log, LOGMSG_PLR_DMG_ENEMY, attackedEnemy->data->name, 1);
@@ -412,10 +412,10 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_KILL_ENEMY, attackedEnemy->data->name);
 				attackedEnemy->is_alive = false;
 				state->player.stats.enemies_slain++;
-				UpdateWorldTile(state->world_tiles, attackedEnemy->pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+				UpdateWorldTile(state->world_tiles, attackedEnemy->pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 
 				if (attackedEnemy->loot == GetItem(I_Map)) {
-					UpdateWorldTile(state->world_tiles, attackedEnemy->pos, SPR_MAP, T_Special, Clr_Yellow, NULL, NULL);
+					UpdateWorldTile(state->world_tiles, attackedEnemy->pos, SPR_MAP, TileType_Special, Clr_Yellow, NULL, NULL);
 				}
 			} else {
 				state->player.stats.curr_health--;
@@ -425,20 +425,20 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 			// Moving into any enemy results in no movement from the player.
 			state->player.pos = oldPos;
 			break;
-		case T_Special:
+		case TileType_Special:
 			if (curr_world_tile->sprite == SPR_STAIRCASE) {
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_INTERACT_STAIRCASE);
 				state->floor_complete = true;
 			} else if (curr_world_tile->sprite == SPR_MAP) {
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_USE_MAP);
 				state->fog_of_war = false;
-				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 			}
 
 			// Moving into a special object results in no movement from the player.
 			state->player.pos = oldPos;
 			break;
-		case T_Npc:
+		case TileType_Npc:
 			if (curr_world_tile->sprite == SPR_MERCHANT) {
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_INTERACT_MERCHANT);
 				state->current_target = SPR_MERCHANT;
@@ -467,7 +467,7 @@ bool CheckRoomCollision(const tile_t **world_tiles, const room_t *a) {
 
 	for (int y = 0; y <= room_height; y++) {
 		for (int x = 0; x <= room_width; x++) {
-			if (world_tiles[a->TL_corner.x + x][a->TL_corner.y + y].type == T_Solid) {
+			if (world_tiles[a->TL_corner.x + x][a->TL_corner.y + y].type == TileType_Solid) {
 				return true;
 			}
 		}
@@ -531,7 +531,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 		// SECOND PASS: generate the map relative to anchor point.
 		while ((read = getline(&line, &len, fp)) != -1) {
 			for (int i = 0; i < read - 1; i++) {
-				tile_type_en type = T_Empty;
+				tile_type_en type = TileType_Empty;
 				int colour = Clr_White;
 				coord_t pos = NewCoord(anchor_centered_map_offset.x + i, anchor_centered_map_offset.y + lineNum);
 				bool isEnemy = false;
@@ -550,7 +550,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 						line[i] = SPR_EMPTY;
 						break;
 					case SPR_WALL:
-						type = T_Solid;
+						type = TileType_Solid;
 						break;
 					case SPR_SMALLFOOD:
 						isItem = true;
@@ -573,11 +573,11 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 						enemy = InitAndCreateEnemy(GetEnemyData(E_Werewolf), pos);
 						break;
 					case SPR_STAIRCASE:
-						type = T_Special;
+						type = TileType_Special;
 						colour = Clr_Yellow;
 						break;
 					case SPR_MERCHANT:
-						type = T_Npc;
+						type = TileType_Npc;
 						colour = Clr_Magenta;
 						break;
 					default:
@@ -585,11 +585,11 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 				}
 
 				if (isEnemy) {
-					type = T_Enemy;
+					type = TileType_Enemy;
 					colour = Clr_Red;
 					AddToEnemyList(&state->enemy_list, enemy);
 				} else if (isItem) {
-					type = T_Item;
+					type = TileType_Item;
 					colour = Clr_Green;
 				}
 
@@ -648,7 +648,7 @@ void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size
 		coord_t opening = GetRandRoomOpeningPos(&state->rooms[i]);
 
 		// Create marked opening.
-		UpdateWorldTile(state->world_tiles, opening, '?', T_Empty, Clr_White, NULL, NULL);
+		UpdateWorldTile(state->world_tiles, opening, '?', TileType_Empty, Clr_White, NULL, NULL);
 
 		//Connect corners with walls and convert marked opening to a real opening.
 		GenerateRoom(state->world_tiles, &state->rooms[i]);
@@ -760,16 +760,16 @@ void InstantiateClosedRoomRecursive(game_state_t *state, coord_t pos, int radius
 		// Get the new room's position coordinates.
 		coord_t newPos = oldPos;
 		switch (randDirection) {
-			case D_Up:
+			case Dir_Up:
 				newPos.y = oldPos.y - (radius * 2) - nextRadius;
 				break;
-			case D_Down:
+			case Dir_Down:
 				newPos.y = oldPos.y + (radius * 2) + nextRadius;
 				break;
-			case D_Left:
+			case Dir_Left:
 				newPos.x = oldPos.x - (radius * 2) - nextRadius;
 				break;
-			case D_Right:
+			case Dir_Right:
 				newPos.x = oldPos.x + (radius * 2) + nextRadius;
 				break;
 			default:
@@ -810,42 +810,42 @@ void GenerateCorridor(tile_t **world_tiles, coord_t starting_room, int corridor_
 
 	switch (direction) {
 
-		case D_Up:
+		case Dir_Up:
 			// Create opening for THIS room; create marked opening for NEXT room.
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - corridor_size), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - (corridor_size * 2)), '?', T_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - corridor_size), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - (corridor_size * 2)), '?', TileType_Empty, Clr_White, NULL, NULL);
 
 			// Connect rooms with the corridor.
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 			}
 			break;
-		case D_Down:
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + corridor_size), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + (corridor_size * 2)), '?', T_Empty, Clr_White, NULL, NULL);
+		case Dir_Down:
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + corridor_size), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + (corridor_size * 2)), '?', TileType_Empty, Clr_White, NULL, NULL);
 
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 			}
 			break;
-		case D_Left:
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size, starting_room.y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x - (corridor_size * 2), starting_room.y), '?', T_Empty, Clr_White, NULL, NULL);
+		case Dir_Left:
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size, starting_room.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x - (corridor_size * 2), starting_room.y), '?', TileType_Empty, Clr_White, NULL, NULL);
 
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y - 1), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y + 1), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y - 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y + 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 			}
 			break;
-		case D_Right:
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size, starting_room.y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x + (corridor_size * 2), starting_room.y), '?', T_Empty, Clr_White, NULL, NULL);
+		case Dir_Right:
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size, starting_room.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(starting_room.x + (corridor_size * 2), starting_room.y), '?', TileType_Empty, Clr_White, NULL, NULL);
 
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y - 1), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y + 1), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y - 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y + 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 			}
 			break;
 		default:
@@ -857,46 +857,46 @@ bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, i
 	assert(world_tiles != NULL);
 
 	switch (direction) {
-		case D_Up:
+		case Dir_Up:
 			for (int i = 0; i < corridor_size; i++) {
 				if (CheckMapBounds(NewCoord(starting_room.x, starting_room.y - corridor_size - (i + 1)))) {
 					return true;
-				} else if (world_tiles[starting_room.x][starting_room.y - corridor_size - (i + 1)].type == T_Solid
-					|| world_tiles[starting_room.x - 1][starting_room.y - corridor_size - (i + 1)].type == T_Solid
-					|| world_tiles[starting_room.x + 1][starting_room.y - corridor_size - (i + 1)].type == T_Solid) {
+				} else if (world_tiles[starting_room.x][starting_room.y - corridor_size - (i + 1)].type == TileType_Solid
+					|| world_tiles[starting_room.x - 1][starting_room.y - corridor_size - (i + 1)].type == TileType_Solid
+					|| world_tiles[starting_room.x + 1][starting_room.y - corridor_size - (i + 1)].type == TileType_Solid) {
 					return true;
 				}
 			}
 			return false;
-		case D_Down:
+		case Dir_Down:
 			for (int i = 0; i < corridor_size; i++) {
 				if (CheckMapBounds(NewCoord(starting_room.x, starting_room.y + corridor_size + (i + 1)))) {
 					return true;
-				} else if (world_tiles[starting_room.x][starting_room.y + corridor_size + (i + 1)].type == T_Solid
-					|| world_tiles[starting_room.x - 1][starting_room.y + corridor_size + (i + 1)].type == T_Solid
-					|| world_tiles[starting_room.x + 1][starting_room.y + corridor_size + (i + 1)].type == T_Solid) {
+				} else if (world_tiles[starting_room.x][starting_room.y + corridor_size + (i + 1)].type == TileType_Solid
+					|| world_tiles[starting_room.x - 1][starting_room.y + corridor_size + (i + 1)].type == TileType_Solid
+					|| world_tiles[starting_room.x + 1][starting_room.y + corridor_size + (i + 1)].type == TileType_Solid) {
 					return true;
 				}
 			}
 			return false;
-		case D_Left:
+		case Dir_Left:
 			for (int i = 0; i < corridor_size; i++) {
 				if (CheckMapBounds(NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y))) {
 					return true;
-				} else if (world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y].type == T_Solid
-					|| world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y - 1].type == T_Solid
-					|| world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y + 1].type == T_Solid) {
+				} else if (world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y].type == TileType_Solid
+					|| world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y - 1].type == TileType_Solid
+					|| world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y + 1].type == TileType_Solid) {
 					return true;
 				}
 			}
 			return false;
-		case D_Right:
+		case Dir_Right:
 			for (int i = 0; i < corridor_size; i++) {
 				if (CheckMapBounds(NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y))) {
 					return true;
-				} else if (world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y].type == T_Solid
-					|| world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y - 1].type == T_Solid
-					|| world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y + 1].type == T_Solid) {
+				} else if (world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y].type == TileType_Solid
+					|| world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y - 1].type == TileType_Solid
+					|| world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y + 1].type == TileType_Solid) {
 					return true;
 				}
 			}
@@ -931,29 +931,29 @@ void GenerateRoom(tile_t **world_tiles, const room_t *room) {
 	// Bottom and top walls.
 	for (int x = room->TL_corner.x; x <= room->TR_corner.x; x++) {
 		if (world_tiles[x][room->TL_corner.y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 
 		if (world_tiles[x][room->BL_corner.y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 	}
 
 	// Left and right walls.
 	for (int y = room->TR_corner.y; y <= room->BR_corner.y; y++) {
 		if (world_tiles[room->TR_corner.x][y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 		if (world_tiles[room->TL_corner.x][y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_WALL, T_Solid, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+			UpdateWorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 	}
 }
@@ -1007,7 +1007,7 @@ void EnemyCombatUpdate(game_state_t *state, enemy_node_t *enemy_list) {
 			node->enemy->curr_health--;
 			if (node->enemy->curr_health <= 0) {
 				node->enemy->is_alive = false;
-				UpdateWorldTile(state->world_tiles, node->enemy->pos, SPR_EMPTY, T_Empty, Clr_White, NULL, NULL);
+				UpdateWorldTile(state->world_tiles, node->enemy->pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 			}
 			break;
 		}
@@ -1030,25 +1030,25 @@ void NextPlayerInput(game_state_t *state) {
 		int key = GetKeyInput();
 		switch (key) {
 			case KEY_UP:
-				if (player->pos.y - 1 >= 0 + TOP_PANEL_OFFSET && state->world_tiles[player->pos.x][player->pos.y - 1].type != T_Solid) {
+				if (player->pos.y - 1 >= 0 + TOP_PANEL_OFFSET && state->world_tiles[player->pos.x][player->pos.y - 1].type != TileType_Solid) {
 					player->pos.y--;
 				}
 				valid_key_pressed = true;
 				break;
 			case KEY_DOWN:
-				if (player->pos.y + 1 < h - BOTTOM_PANEL_OFFSET && state->world_tiles[player->pos.x][player->pos.y + 1].type != T_Solid) {
+				if (player->pos.y + 1 < h - BOTTOM_PANEL_OFFSET && state->world_tiles[player->pos.x][player->pos.y + 1].type != TileType_Solid) {
 					player->pos.y++;
 				}
 				valid_key_pressed = true;
 				break;
 			case KEY_LEFT:
-				if (player->pos.x - 1 >= 0 && state->world_tiles[player->pos.x - 1][player->pos.y].type != T_Solid) {
+				if (player->pos.x - 1 >= 0 && state->world_tiles[player->pos.x - 1][player->pos.y].type != TileType_Solid) {
 					player->pos.x--;
 				}
 				valid_key_pressed = true;
 				break;
 			case KEY_RIGHT:
-				if (player->pos.x + 1 < w && state->world_tiles[player->pos.x + 1][player->pos.y].type != T_Solid) {
+				if (player->pos.x + 1 < w && state->world_tiles[player->pos.x + 1][player->pos.y].type != TileType_Solid) {
 					player->pos.x++;
 				}
 				valid_key_pressed = true;
