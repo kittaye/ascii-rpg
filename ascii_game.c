@@ -367,7 +367,7 @@ void Process(game_state_t *state) {
 	}
 }
 
-void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord_t oldPos) {
+void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord_t player_old_pos) {
 	assert(state != NULL);
 	assert(curr_world_tile != NULL);
 
@@ -423,7 +423,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 			}
 
 			// Moving into any enemy results in no movement from the player.
-			state->player.pos = oldPos;
+			state->player.pos = player_old_pos;
 			break;
 		case TileType_Special:
 			if (curr_world_tile->sprite == SPR_STAIRCASE) {
@@ -436,7 +436,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 			}
 
 			// Moving into a special object results in no movement from the player.
-			state->player.pos = oldPos;
+			state->player.pos = player_old_pos;
 			break;
 		case TileType_Npc:
 			if (curr_world_tile->sprite == SPR_MERCHANT) {
@@ -444,7 +444,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 				state->current_target = SPR_MERCHANT;
 			}
 			// Moving into an NPC results in no movement from the player.
-			state->player.pos = oldPos;
+			state->player.pos = player_old_pos;
 			break;
 		default:
 			if (state->game_log.line1[0] != ' ' || state->game_log.line2[0] != ' ' || state->game_log.line3[0] != ' ') {
@@ -603,7 +603,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 	}
 }
 
-void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size_specified) {
+void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size) {
 	assert(state != NULL);
 
 	int w = GEO_screen_width();
@@ -611,8 +611,8 @@ void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size
 	const int EXTENDED_BOUNDS_OFFSET = 2;
 
 	// If room size is larger than the smallest terminal dimension, clamp it to that dimension size.
-	if (room_size_specified > fmin(w - EXTENDED_BOUNDS_OFFSET, h - BOTTOM_PANEL_OFFSET - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET)) {
-		room_size_specified = fmin(w - EXTENDED_BOUNDS_OFFSET, h - BOTTOM_PANEL_OFFSET - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET);
+	if (room_size > fmin(w - EXTENDED_BOUNDS_OFFSET, h - BOTTOM_PANEL_OFFSET - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET)) {
+		room_size = fmin(w - EXTENDED_BOUNDS_OFFSET, h - BOTTOM_PANEL_OFFSET - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET);
 	}
 
 	for (int i = 0; i < num_rooms_specified; i++) {
@@ -621,7 +621,7 @@ void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size
 			valid_room = true;
 
 			// Define a new room.
-			DefineOpenRoom(&state->rooms[i], room_size_specified);
+			DefineOpenRoom(&state->rooms[i], room_size);
 
 			// Check that this new room doesnt collide with anything solid (extended room hitbox: means completely seperated rooms).
 			room_t extended_bounds_room = state->rooms[i];
@@ -657,7 +657,7 @@ void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size
 	}
 }
 
-void DefineOpenRoom(room_t *room, int room_size_specified) {
+void DefineOpenRoom(room_t *room, int room_size) {
 	assert(room != NULL);
 
 	int w = GEO_screen_width();
@@ -667,19 +667,19 @@ void DefineOpenRoom(room_t *room, int room_size_specified) {
 	do {
 		room->TL_corner.x = rand() % w;
 		room->TL_corner.y = (rand() % (h - BOTTOM_PANEL_OFFSET - TOP_PANEL_OFFSET)) + TOP_PANEL_OFFSET;
-	} while (room->TL_corner.x + room_size_specified - 1 >= w || room->TL_corner.y + room_size_specified - 1 >= (h - BOTTOM_PANEL_OFFSET));
+	} while (room->TL_corner.x + room_size - 1 >= w || room->TL_corner.y + room_size - 1 >= (h - BOTTOM_PANEL_OFFSET));
 
 	// TOP RIGHT CORNER
-	room->TR_corner.x = room->TL_corner.x + room_size_specified - 1;
+	room->TR_corner.x = room->TL_corner.x + room_size - 1;
 	room->TR_corner.y = room->TL_corner.y;
 
 	// BOTTOM LEFT CORNER
 	room->BL_corner.x = room->TL_corner.x;
-	room->BL_corner.y = room->TL_corner.y + room_size_specified - 1;
+	room->BL_corner.y = room->TL_corner.y + room_size - 1;
 
 	// BOTTOM RIGHT CORNER
-	room->BR_corner.x = room->TL_corner.x + room_size_specified - 1;
-	room->BR_corner.y = room->TL_corner.y + room_size_specified - 1;
+	room->BR_corner.x = room->TL_corner.x + room_size - 1;
+	room->BR_corner.y = room->TL_corner.y + room_size - 1;
 }
 
 coord_t GetRandRoomOpeningPos(const room_t *room) {
@@ -705,13 +705,12 @@ coord_t GetRandRoomOpeningPos(const room_t *room) {
 	return opening;
 }
 
-void CreateClosedRooms(game_state_t *state, int num_rooms_specified, int room_size_specified) {
+void CreateClosedRooms(game_state_t *state, int num_rooms_specified, int room_size) {
 	assert(state != NULL);
 
 	int w = GEO_screen_width();
 	int h = GEO_screen_height();
-	const int NUM_INITIAL_OPENINGS = 4;
-	int radius = (room_size_specified - 1) / 2;
+	int radius = (room_size - 1) / 2;
 
 	// Ensure space for first room created in center of map. Reduce radius if room is too big.
 	coord_t pos = NewCoord(w / 2, h / 2);
@@ -727,7 +726,8 @@ void CreateClosedRooms(game_state_t *state, int num_rooms_specified, int room_si
 	} while (!isValid);
 
 	// Create room.
-	InstantiateClosedRoomRecursive(state, pos, radius, NUM_INITIAL_OPENINGS, num_rooms_specified);
+	const int NUM_INITIAL_ITERATIONS = 100;
+	InstantiateClosedRoomRecursive(state, pos, radius, NUM_INITIAL_ITERATIONS, num_rooms_specified);
 }
 
 void InstantiateClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms) {
@@ -801,7 +801,7 @@ void InstantiateClosedRoomRecursive(game_state_t *state, coord_t pos, int radius
 	return;
 }
 
-int GetNextRoomRadius() {
+int GetNextRoomRadius(void) {
 	return (rand() % 6) + 2;
 }
 
@@ -1100,7 +1100,7 @@ void InteractWithNPC(game_state_t *state, char npc_target) {
 	}
 }
 
-void DrawHelpScreen() {
+void DrawHelpScreen(void) {
 	int w = GEO_screen_width() - 1;
 	int h = GEO_screen_height() - 1;
 
@@ -1118,7 +1118,7 @@ void DrawHelpScreen() {
 	GetKeyInput();
 }
 
-int GetKeyInput() {
+int GetKeyInput(void) {
 	while (true) {
 		int key = GEO_get_char();
 		switch (key) {
@@ -1134,7 +1134,7 @@ int GetKeyInput() {
 	}
 }
 
-void DrawDeathScreen() {
+void DrawDeathScreen(void) {
 	int h = GEO_screen_height() - 1;
 
 	GEO_clear_screen();
@@ -1220,14 +1220,14 @@ void DrawMerchantScreen(game_state_t *state) {
 	}
 }
 
-int AddHealth(player_t *player, int amt) {
+int AddHealth(player_t *player, int amount) {
 	assert(player != NULL);
 
-	if (player->stats.curr_health + amt > player->stats.max_health) {
-		amt = player->stats.max_health - player->stats.curr_health;
+	if (player->stats.curr_health + amount > player->stats.max_health) {
+		amount = player->stats.max_health - player->stats.curr_health;
 	}
-	player->stats.curr_health += amt;
-	return amt;
+	player->stats.curr_health += amount;
+	return amount;
 }
 
 void DrawPlayerInfoScreen(const game_state_t * state) {
