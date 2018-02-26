@@ -29,6 +29,7 @@
 #define DEBUG_RCS_LIMIT 100000	// Room collision limit.
 #define LOG_BUFFER_SIZE 250
 #define MIN_ROOMS 2
+#define MAX_ROOMS 1000
 #define MIN_ROOM_SIZE 5
 #define INVENTORY_SIZE 10
 
@@ -81,9 +82,9 @@ typedef struct player_stats {
 } stats_t;
 
 typedef struct log_list_t {
-	char line1[LOG_BUFFER_SIZE];	// First message that is shown in the game log.
-	char line2[LOG_BUFFER_SIZE];	// Second message that is shown in the game log.
-	char line3[LOG_BUFFER_SIZE];	// Third message that is shown in the game log.
+	char line1[LOG_BUFFER_SIZE + 1];	// First message that is shown in the game log.
+	char line2[LOG_BUFFER_SIZE + 1];	// Second message that is shown in the game log.
+	char line3[LOG_BUFFER_SIZE + 1];	// Third message that is shown in the game log.
 } log_list_t;
 
 typedef struct room_t {
