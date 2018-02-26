@@ -184,7 +184,7 @@ void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_s
 
 	// Every few floors, the hub layout is created instead of a random dungeon layout.
 	if (state->current_floor % HUB_MAP_FREQUENCY == 0) {
-		filename_specified = "hub.txt";
+		filename_specified = HUB_FILENAME;
 		state->player.stats.max_vision = PLAYER_MAX_VISION + 100;
 	} else {
 		state->player.stats.max_vision = PLAYER_MAX_VISION;
@@ -454,20 +454,20 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 	}
 }
 
-bool CheckRoomCollision(const tile_t **world_tiles, const room_t *a) {
+bool CheckRoomCollision(const tile_t **world_tiles, const room_t *room) {
 	assert(world_tiles != NULL);
-	assert(a != NULL);
+	assert(room != NULL);
 
-	if (CheckRoomMapBounds(a)) {
+	if (CheckRoomMapBounds(room)) {
 		return true;
 	}
 
-	int room_width = a->TR_corner.x - a->TL_corner.x;
-	int room_height = a->BL_corner.y - a->TL_corner.y;
+	int room_width = room->TR_corner.x - room->TL_corner.x;
+	int room_height = room->BL_corner.y - room->TL_corner.y;
 
 	for (int y = 0; y <= room_height; y++) {
 		for (int x = 0; x <= room_width; x++) {
-			if (world_tiles[a->TL_corner.x + x][a->TL_corner.y + y].type == TileType_Solid) {
+			if (world_tiles[room->TL_corner.x + x][room->TL_corner.y + y].type == TileType_Solid) {
 				return true;
 			}
 		}
@@ -475,10 +475,10 @@ bool CheckRoomCollision(const tile_t **world_tiles, const room_t *a) {
 	return false;
 }
 
-bool CheckRoomMapBounds(const room_t *a) {
-	assert(a != NULL);
+bool CheckRoomMapBounds(const room_t *room) {
+	assert(room != NULL);
 
-	if (CheckMapBounds(a->TL_corner) || CheckMapBounds(a->TR_corner) || CheckMapBounds(a->BL_corner)) {
+	if (CheckMapBounds(room->TL_corner) || CheckMapBounds(room->TR_corner) || CheckMapBounds(room->BL_corner)) {
 		return true;
 	}
 	return false;
@@ -712,7 +712,7 @@ void CreateClosedRooms(game_state_t *state, int num_rooms_specified, int room_si
 	int h = GEO_screen_height();
 	int radius = (room_size - 1) / 2;
 
-	// Ensure space for first room created in center of map. Reduce radius if room is too big.
+	// Ensure there is enough space to define the first room at the center of the map. Reduce radius if room is too big.
 	coord_t pos = NewCoord(w / 2, h / 2);
 	bool isValid;
 	do {
@@ -725,7 +725,7 @@ void CreateClosedRooms(game_state_t *state, int num_rooms_specified, int room_si
 		}
 	} while (!isValid);
 
-	// Create room.
+	// Begin creating rooms.
 	const int NUM_INITIAL_ITERATIONS = 100;
 	InstantiateClosedRoomRecursive(state, pos, radius, NUM_INITIAL_ITERATIONS, num_rooms_specified);
 }
@@ -733,7 +733,7 @@ void CreateClosedRooms(game_state_t *state, int num_rooms_specified, int room_si
 void InstantiateClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms) {
 	assert(state != NULL);
 
-	// Create the room.
+	// Create the latest defined room.
 	GenerateRoom(state->world_tiles, &state->rooms[state->num_rooms_created]);
 	state->num_rooms_created++;
 
@@ -743,7 +743,6 @@ void InstantiateClosedRoomRecursive(game_state_t *state, coord_t pos, int radius
 
 	// Try to initialise new rooms and draw corridors to them, until all retry iterations are used up OR max rooms are reached.
 	for (int i = 0; i < iterations; i++) {
-		// Check if max rooms hasn't been met, otherwise all nested calls will return to stop further room creation.
 		if (state->num_rooms_created == max_rooms) {
 			return;
 		}
@@ -1164,15 +1163,9 @@ void DrawMerchantScreen(game_state_t *state) {
 	int y = 2;
 	GEO_draw_align_center(y++, Clr_Yellow, "Trading with Merchant");
 	y++;
-
-	GEO_draw_string(x, y++, Clr_Yellow, "Option     Item               Price (gold)");
-	GEO_draw_formatted(x, y, Clr_White, "(1)        %s", GetItem(I_SmallFood)->name);
-	GEO_draw_formatted(x + 30, y, Clr_White, "%d", GetItem(I_SmallFood)->value);
-	y++;
-	GEO_draw_formatted(x, y, Clr_White, "(2)        %s", GetItem(I_BigFood)->name);
-	GEO_draw_formatted(x + 30, y, Clr_White, "%d", GetItem(I_BigFood)->value);
-	y++;
-
+	GEO_draw_string(x, y++, Clr_Yellow, "Option     Item                    Price (gold)");
+	GEO_draw_formatted(x, y++, Clr_White, "(1)        %-23s %d", GetItem(I_SmallFood)->name, GetItem(I_SmallFood)->value);
+	GEO_draw_formatted(x, y++, Clr_White, "(2)        %-23s %d", GetItem(I_BigFood)->name, GetItem(I_BigFood)->value);
 	y++;
 	GEO_draw_formatted(x, y++, Clr_White, "Your gold: %d", state->player.stats.num_gold);
 	y++;

@@ -21,6 +21,7 @@
 #define SPR_MERCHANT '1'
 
 // Other.
+#define HUB_FILENAME "hub.txt"
 #define PLAYER_MAX_VISION 100
 #define MAX_ENEMIES 1000
 #define BOTTOM_PANEL_OFFSET 6			
