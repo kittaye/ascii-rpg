@@ -29,9 +29,11 @@ int main(int argc, char *argv[]) {
 	int room_size_specified = 5;
 	const char *filename_specified = NULL;
 	{
-		num_rooms_specified = atoi(argv[1]);
+		num_rooms_specified = (int)strtol(argv[1], 0, 0);
 		if (num_rooms_specified < MIN_ROOMS) {
 			num_rooms_specified = MIN_ROOMS;
+		} else if (num_rooms_specified > MAX_ROOMS) {
+			num_rooms_specified = MAX_ROOMS;
 		}
 
 		if (argc == 3) {
