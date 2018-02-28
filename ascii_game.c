@@ -688,15 +688,19 @@ coord_t GetRandRoomOpeningPos(const room_t *room) {
 	assert(room != NULL);
 
 	coord_t opening;
+	// Choose a random x position.
 	if (rand() % 2 == 0) {
 		opening.x = room->TL_corner.x + 1 + (rand() % (room->TR_corner.x - room->TL_corner.x - 1));
+		// Choose between upper or lower wall.
 		if (rand() % 2 == 0) {
 			opening.y = room->TL_corner.y;
 		} else {
 			opening.y = room->BL_corner.y;
 		}
+	// Or choose a random y position.
 	} else {
 		opening.y = room->TL_corner.y + 1 + (rand() % (room->BR_corner.y - room->TL_corner.y - 1));
+		// Choose between left or right wall.
 		if (rand() % 2 == 0) {
 			opening.x = room->TL_corner.x;
 		} else {
