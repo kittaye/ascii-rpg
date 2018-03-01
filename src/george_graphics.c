@@ -189,13 +189,13 @@ void GEO_draw_line(int x1, int y1, int x2, int y2, const int color, const char v
 }
 
 void GEO_draw_string(const int x, const int y, const int color, const char * text) {
-	for ( int i = 0; text[i]; i++ ) {
+	for (int i = 0; text[i]; i++) {
 		GEO_draw_char(x + i, y, color, text[i]);
 	}
 }
 
-void GEO_draw_align_center(const int y, const int color, const char *text) {
-	int x = (GEO_screen_width() / 2) - (strlen(text) / 2);
+void GEO_draw_align_center(const int x_offset, const int y, const int color, const char *text) {
+	int x = ((GEO_screen_width() - x_offset) / 2) - (strlen(text) / 2);
 	GEO_draw_string(x, y, color, text);
 }
 
@@ -213,12 +213,12 @@ void GEO_draw_formatted(const int x, const int y, const int color, const char * 
 	va_end(args);
 }
 
-void GEO_draw_formatted_align_center(const int y, const int color, const char * format, ...) {
+void GEO_draw_formatted_align_center(const int x_offset, const int y, const int color, const char * format, ...) {
 	va_list args;
 	va_start(args, format);
 	char buffer[1000];
 	vsprintf(buffer, format, args);
-	GEO_draw_align_center(y, color, buffer);
+	GEO_draw_align_center(x_offset, y, color, buffer);
 	va_end(args);
 }
 
@@ -258,7 +258,6 @@ int GEO_screen_height(void) {
 }
 
 void GEO_override_screen_size(const int width, const int height) {
-
 	GEO_update_buffer(&GEO_zdk_screen, width, height);
 	GEO_update_buffer(&GEO_zdk_prev_screen, width, height);
 }

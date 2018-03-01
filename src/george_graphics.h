@@ -20,10 +20,10 @@ void GEO_show_screen(void);
 
 void GEO_draw_char(int x, int y, int color, char value);
 void GEO_draw_string(int x, int y, int color, const char *text);
-void GEO_draw_align_center(int y, int color, const char *text);
+void GEO_draw_align_center(int x_offset, int y, int color, const char *text);
 void GEO_draw_align_right(int y, int color, const char *text);
 void GEO_draw_formatted(int x, int y, int color, const char *format, ...);
-void GEO_draw_formatted_align_center(int y, int color, const char *format, ...);
+void GEO_draw_formatted_align_center(int x_offset, int y, int color, const char *format, ...);
 void GEO_draw_formatted_align_right(int y, int color, const char *format, ...);
 void GEO_draw_line(int x1, int y1, int x2, int y2, int color, char value);
 
