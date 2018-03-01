@@ -350,21 +350,38 @@ void Process(game_state_t *state) {
 	GEO_draw_formatted(0, terminal_h - 5, Clr_White, "* %s", state->game_log.line2);
 	GEO_draw_formatted(0, terminal_h - 4, Clr_White, "* %s", state->game_log.line1);
 
+	// Draw basic player info.
+	GEO_draw_formatted_align_center(-RIGHT_PANEL_OFFSET, terminal_h - 3, Clr_Cyan, "Health - %d/%d   Mana - %d/%d   Gold - %d",
+		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
+
 	// Draw DEBUG label.
 	GEO_draw_formatted(0, terminal_h - 1, Clr_Magenta, "   xy: (%d, %d)   rc(s): %d   seed: %d   rooms: %d   turns: %d",
 		state->player.pos.x, state->player.pos.y, state->debug_rcs, (int)state->debug_seed, state->num_rooms_created, state->game_turns);
 
-	// Draw right panel line.
-	GEO_draw_line(world_screen_w, 0, world_screen_w, terminal_h - 2, Clr_Magenta, '|');
+	// Draw right-hand panel info.
+	{
+		GEO_draw_line(world_screen_w, 0, world_screen_w, terminal_h - 2, Clr_Magenta, '|');
 
-	// Draw basic player info.
-	//GEO_draw_formatted(world_screen_w + 1, 1, Clr_Cyan, "Health - %d/%d", state->player.stats.curr_health, state->player.stats.max_health);
-	//GEO_draw_formatted(world_screen_w + 1, 2, Clr_Cyan, "Mana - %d/%d", state->player.stats.curr_mana, state->player.stats.max_mana);
-	//GEO_draw_formatted(world_screen_w + 1, 3, Clr_Cyan, "Gold - %d", state->player.stats.num_gold);
+		int x = world_screen_w + 2;
+		int y = 2;
 
-	// Draw basic player info.
-	GEO_draw_formatted_align_center(RIGHT_PANEL_OFFSET, terminal_h - 3, Clr_Cyan, "Health - %d/%d   Mana - %d/%d   Gold - %d",
-		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
+		GEO_draw_formatted_align_center(world_screen_w, y++, Clr_Cyan, "Hero,  Lvl. %d", state->player.stats.level);
+		GEO_draw_formatted_align_center(world_screen_w, y++, Clr_White, "Current floor: %d", state->current_floor);
+		y++;
+		GEO_draw_string(x, y++, Clr_Cyan, "Inventory");
+		for (int i = 0; i < INVENTORY_SIZE; i++) {
+			GEO_draw_formatted(x, y++, Clr_Yellow, "(%d) %s", i + 1, state->player.inventory[i]->name);
+		}
+		y++;
+		GEO_draw_string(x, y++, Clr_Cyan, "Stats");
+		GEO_draw_formatted(x, y++, Clr_Yellow, "STR - %d", state->player.stats.s_STR);
+		GEO_draw_formatted(x, y++, Clr_Yellow, "DEF - %d", state->player.stats.s_DEF);
+		GEO_draw_formatted(x, y++, Clr_Yellow, "VIT - %d", state->player.stats.s_VIT);
+		GEO_draw_formatted(x, y++, Clr_Yellow, "INT - %d", state->player.stats.s_INT);
+		GEO_draw_formatted(x, y++, Clr_Yellow, "LCK - %d", state->player.stats.s_LCK);
+		y++;
+		GEO_draw_formatted(x, y++, Clr_White, "Enemies slain - %d", state->player.stats.enemies_slain);
+	}
 
 	// Display drawn elements to screen.
 	GEO_show_screen();
