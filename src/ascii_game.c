@@ -976,9 +976,8 @@ void UpdateWorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_e
 void ApplyVision(const game_state_t *state, coord_t pos) {
 	assert(state != NULL);
 
-	int vision_to_tile = abs((pos.x - state->player.pos.x) * (pos.x - state->player.pos.x)) + abs((pos.y - state->player.pos.y) * (pos.y - state->player.pos.y));
-
 	if (state->fog_of_war) {
+		int vision_to_tile = abs((pos.x - state->player.pos.x) * (pos.x - state->player.pos.x)) + abs((pos.y - state->player.pos.y) * (pos.y - state->player.pos.y));
 		if (vision_to_tile < state->player.stats.max_vision) {
 			GEO_draw_char(pos.x, pos.y, state->world_tiles[pos.x][pos.y].color, state->world_tiles[pos.x][pos.y].sprite);
 		}
