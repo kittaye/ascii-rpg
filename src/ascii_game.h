@@ -171,6 +171,9 @@ int GetKeyInput(void);
 int AddHealth(player_t *player, int amount);
 bool AddToInventory(player_t *player, const item_t *item);
 
+int WorldScreenWidth(void);
+int WorldScreenHeight(void);
+
 void Cleanup_GameState(game_state_t *state);
 
 #endif /* ASCII_GAME_H_ */

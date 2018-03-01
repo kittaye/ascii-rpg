@@ -110,9 +110,6 @@ bool FContainsChar(FILE *fp, char char_to_find) {
 void InitGameState(game_state_t *state) {
 	assert(state != NULL);
 
-	int w = GEO_screen_width();
-	int h = GEO_screen_height();
-
 	state->debug_seed = time(NULL);
 	srand(state->debug_seed);
 
@@ -128,10 +125,13 @@ void InitGameState(game_state_t *state) {
 	state->player = InitPlayer(SPR_PLAYER);
 	state->enemy_list = (enemy_node_t*)NULL;
 
-	state->world_tiles = malloc(sizeof(*state->world_tiles) * (w + 1));
+	const int world_screen_w = WorldScreenWidth();
+	const int world_screen_h = WorldScreenHeight();
+
+	state->world_tiles = malloc(sizeof(*state->world_tiles) * (world_screen_w + 1));
 	assert(state->world_tiles != NULL);
-	for (int i = 0; i < w; i++) {
-		state->world_tiles[i] = malloc(sizeof(*state->world_tiles[i]) * (h + 1));
+	for (int i = 0; i < world_screen_w; i++) {
+		state->world_tiles[i] = malloc(sizeof(*state->world_tiles[i]) * (world_screen_h + 1));
 		assert(state->world_tiles[i] != NULL);
 	}
 
@@ -143,8 +143,8 @@ void InitGameState(game_state_t *state) {
 void Cleanup_GameState(game_state_t *state) {
 	assert(state != NULL);
 
-	int w = GEO_screen_width();
-	for (int i = 0; i < w; i++) {
+	const int world_screen_w = WorldScreenWidth();
+	for (int i = 0; i < world_screen_w; i++) {
 		free(state->world_tiles[i]);
 	}
 	free(state->world_tiles);
@@ -170,13 +170,13 @@ void ResetDungeonFloor(game_state_t *state) {
 void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified) {
 	assert(state != NULL);
 
-	int w = GEO_screen_width();
-	int h = GEO_screen_height();
+	const int world_screen_w = WorldScreenWidth();
+	const int world_screen_h = WorldScreenHeight();
 	const int HUB_MAP_FREQUENCY = 4;
 
 	// Create empty space.
-	for (int x = 0; x < w; x++) {
-		for (int y = 0; y < h; y++) {
+	for (int x = 0; x < world_screen_w; x++) {
+		for (int y = 0; y < world_screen_h; y++) {
 			UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 	}
@@ -313,16 +313,27 @@ void SetPlayerPos(player_t *player, coord_t pos) {
 	player->pos = pos;
 }
 
+int WorldScreenWidth() {
+	return GEO_screen_width();
+}
+
+int WorldScreenHeight() {
+	return GEO_screen_height() - BOTTOM_PANEL_OFFSET;
+}
+
 void Process(game_state_t *state) {
-	int w = GEO_screen_width();
-	int h = GEO_screen_height();
+	const int terminal_w = GEO_screen_width();
+	const int terminal_h = GEO_screen_height();
+
+	const int world_screen_w = WorldScreenWidth();
+	const int world_screen_h = WorldScreenHeight();
 
 	// Clear drawn elements from screen.
 	GEO_clear_screen();
 
 	// Draw all world tiles.
-	for (int x = 0; x < w; x++) {
-		for (int y = 0; y < h; y++) {
+	for (int x = 0; x < world_screen_w; x++) {
+		for (int y = 0; y < world_screen_h; y++) {
 			ApplyVision(state, NewCoord(x, y));
 		}
 	}
@@ -331,7 +342,7 @@ void Process(game_state_t *state) {
 	GEO_draw_char(state->player.pos.x, state->player.pos.y, state->player.color, state->player.sprite);
 
 	// Draw last 3 game log lines.
-	int y_start_pos = h - BOTTOM_PANEL_OFFSET;
+	int y_start_pos = terminal_h - BOTTOM_PANEL_OFFSET;
 	GEO_draw_formatted(0, y_start_pos + 0, Clr_White, "* %s", state->game_log.line3);
 	GEO_draw_formatted(0, y_start_pos + 1, Clr_White, "* %s", state->game_log.line2);
 	GEO_draw_formatted(0, y_start_pos + 2, Clr_White, "* %s", state->game_log.line1);
@@ -341,7 +352,7 @@ void Process(game_state_t *state) {
 		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
 
 	// Draw DEBUG line.
-	GEO_draw_line(0, y_start_pos + 4, w - 1, y_start_pos + 4, Clr_Magenta, '_');
+	GEO_draw_line(0, y_start_pos + 4, terminal_w - 1, y_start_pos + 4, Clr_Magenta, '_');
 
 	// Draw DEBUG label.
 	GEO_draw_formatted(0, y_start_pos + 5, Clr_Magenta, "   xy: (%d, %d)   rc(s): %d   seed: %d   |   Rooms: %d   Turns: %d",
@@ -487,10 +498,10 @@ bool CheckRoomMapBounds(const room_t *room) {
 }
 
 bool CheckMapBounds(coord_t coord) {
-	int w = GEO_screen_width();
-	int h = GEO_screen_height();
+	const int terminal_w = GEO_screen_width();
+	const int terminal_h = GEO_screen_height();
 
-	if (coord.x >= w || coord.x < 0 || coord.y < 0 + TOP_PANEL_OFFSET || coord.y >= h - BOTTOM_PANEL_OFFSET) {
+	if (coord.x >= terminal_w || coord.x < 0 || coord.y < 0 + TOP_PANEL_OFFSET || coord.y >= terminal_h - BOTTOM_PANEL_OFFSET) {
 		return true;
 	}
 	return false;
@@ -499,9 +510,6 @@ bool CheckMapBounds(coord_t coord) {
 void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 	assert(state != NULL);
 	assert(filename != NULL);
-
-	int w = GEO_screen_width();
-	int h = GEO_screen_height();
 
 	// Attempt to open the file.
 	FILE *fp = NULL;
@@ -520,7 +528,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 			lineWidth = read;
 			lineNum++;
 		}
-		coord_t anchor_centered_map_offset = NewCoord((w / 2) - (lineWidth / 2), (((h - BOTTOM_PANEL_OFFSET) / 2) - (lineNum / 2)));
+		coord_t anchor_centered_map_offset = NewCoord((WorldScreenWidth() / 2) - (lineWidth / 2), ((WorldScreenHeight() / 2) - (lineNum / 2)));
 		lineNum = 0;
 		len = 0;
 		free(line);
@@ -608,13 +616,11 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size) {
 	assert(state != NULL);
 
-	int w = GEO_screen_width();
-	int h = GEO_screen_height();
 	const int EXTENDED_BOUNDS_OFFSET = 2;
 
 	// If room size is larger than the smallest terminal dimension, clamp it to that dimension size.
-	if (room_size > fmin(w - EXTENDED_BOUNDS_OFFSET, h - BOTTOM_PANEL_OFFSET - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET)) {
-		room_size = fmin(w - EXTENDED_BOUNDS_OFFSET, h - BOTTOM_PANEL_OFFSET - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET);
+	if (room_size > fmin(WorldScreenWidth() - EXTENDED_BOUNDS_OFFSET, WorldScreenHeight() - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET)) {
+		room_size = fmin(WorldScreenWidth() - EXTENDED_BOUNDS_OFFSET, WorldScreenHeight() - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET);
 	}
 
 	for (int i = 0; i < num_rooms_specified; i++) {
@@ -662,14 +668,14 @@ void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size
 void DefineOpenRoom(room_t *room, int room_size) {
 	assert(room != NULL);
 
-	int w = GEO_screen_width();
-	int h = GEO_screen_height();
+	const int world_screen_w = WorldScreenWidth();
+	const int world_screen_h = WorldScreenHeight();
 
 	// TOP LEFT CORNER
 	do {
-		room->TL_corner.x = rand() % w;
-		room->TL_corner.y = (rand() % (h - BOTTOM_PANEL_OFFSET - TOP_PANEL_OFFSET)) + TOP_PANEL_OFFSET;
-	} while (room->TL_corner.x + room_size - 1 >= w || room->TL_corner.y + room_size - 1 >= (h - BOTTOM_PANEL_OFFSET));
+		room->TL_corner.x = rand() % world_screen_w;
+		room->TL_corner.y = (rand() % (world_screen_h - TOP_PANEL_OFFSET)) + TOP_PANEL_OFFSET;
+	} while (room->TL_corner.x + room_size - 1 >= world_screen_w || room->TL_corner.y + room_size - 1 >= world_screen_h);
 
 	// TOP RIGHT CORNER
 	room->TR_corner.x = room->TL_corner.x + room_size - 1;
@@ -714,12 +720,10 @@ coord_t GetRandRoomOpeningPos(const room_t *room) {
 void CreateClosedRooms(game_state_t *state, int num_rooms_specified, int room_size) {
 	assert(state != NULL);
 
-	int w = GEO_screen_width();
-	int h = GEO_screen_height();
 	int radius = (room_size - 1) / 2;
 
 	// Ensure there is enough space to define the first room at the center of the map. Reduce radius if room is too big.
-	coord_t pos = NewCoord(w / 2, h / 2);
+	coord_t pos = NewCoord(WorldScreenWidth() / 2, WorldScreenHeight() / 2);
 	bool isValid;
 	do {
 		DefineClosedRoom(&state->rooms[0], pos, radius);
@@ -1021,9 +1025,6 @@ void EnemyCombatUpdate(game_state_t *state, enemy_node_t *enemy_list) {
 void NextPlayerInput(game_state_t *state) {
 	assert(state != NULL);
 
-	int w = GEO_screen_width();
-	int h = GEO_screen_height();
-
 	player_t *player = &state->player;
 	coord_t oldPos = player->pos;
 
@@ -1040,7 +1041,7 @@ void NextPlayerInput(game_state_t *state) {
 				valid_key_pressed = true;
 				break;
 			case KEY_DOWN:
-				if (player->pos.y + 1 < h - BOTTOM_PANEL_OFFSET && state->world_tiles[player->pos.x][player->pos.y + 1].type != TileType_Solid) {
+				if (player->pos.y + 1 < WorldScreenHeight() && state->world_tiles[player->pos.x][player->pos.y + 1].type != TileType_Solid) {
 					player->pos.y++;
 				}
 				valid_key_pressed = true;
@@ -1052,7 +1053,7 @@ void NextPlayerInput(game_state_t *state) {
 				valid_key_pressed = true;
 				break;
 			case KEY_RIGHT:
-				if (player->pos.x + 1 < w && state->world_tiles[player->pos.x + 1][player->pos.y].type != TileType_Solid) {
+				if (player->pos.x + 1 < WorldScreenWidth() && state->world_tiles[player->pos.x + 1][player->pos.y].type != TileType_Solid) {
 					player->pos.x++;
 				}
 				valid_key_pressed = true;
@@ -1105,18 +1106,18 @@ void InteractWithNPC(game_state_t *state, char npc_target) {
 }
 
 void DrawHelpScreen(void) {
-	int w = GEO_screen_width() - 1;
-	int h = GEO_screen_height() - 1;
+	const int terminal_w = GEO_screen_width() - 1;
+	const int terminal_h = GEO_screen_height() - 1;
 
 	GEO_clear_screen();
 
-	GEO_draw_align_center(h / 2 - 4, Clr_White, "Asciiscape by George Delosa");
-	GEO_draw_align_center(h / 2 - 2, Clr_White, "up/down/left/right: movement keys");
-	GEO_draw_string(w / 2 - 11, h / 2 - 1, Clr_White, "h: show this help screen");
-	GEO_draw_string(w / 2 - 11, h / 2 - 0, Clr_White, "i: show player info screen");
-	GEO_draw_string(w / 2 - 11, h / 2 + 1, Clr_White, "f: toggle fog of war");
-	GEO_draw_string(w / 2 - 11, h / 2 + 2, Clr_White, "q: quit game");
-	GEO_draw_align_center(h / 2 + 4, Clr_White, "Press any key to continue...");
+	GEO_draw_align_center(terminal_h / 2 - 4, Clr_White, "Asciiscape by George Delosa");
+	GEO_draw_align_center(terminal_h / 2 - 2, Clr_White, "up/down/left/right: movement keys");
+	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 - 1, Clr_White, "h: show this help screen");
+	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 - 0, Clr_White, "i: show player info screen");
+	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 + 1, Clr_White, "f: toggle fog of war");
+	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 + 2, Clr_White, "q: quit game");
+	GEO_draw_align_center(terminal_h / 2 + 4, Clr_White, "Press any key to continue...");
 
 	GEO_show_screen();
 	GetKeyInput();
@@ -1139,11 +1140,9 @@ int GetKeyInput(void) {
 }
 
 void DrawDeathScreen(void) {
-	int h = GEO_screen_height() - 1;
-
 	GEO_clear_screen();
 
-	GEO_draw_align_center(h / 2, Clr_Red, "YOU DIED");
+	GEO_draw_align_center(GEO_screen_height() / 2, Clr_Red, "YOU DIED");
 
 	GEO_show_screen();
 	GetKeyInput();
@@ -1152,16 +1151,16 @@ void DrawDeathScreen(void) {
 void DrawMerchantScreen(game_state_t *state) {
 	assert(state != NULL);
 
-	int w = GEO_screen_width() - 1;
-	int h = GEO_screen_height() - 1;
+	const int terminal_w = GEO_screen_width() - 1;
+	const int terminal_h = GEO_screen_height() - 1;
 
 	GEO_clear_screen();
 
 	// Draw screen border.
-	GEO_draw_line(0, 0, w, 0, Clr_White, '*');
-	GEO_draw_line(0, 0, 0, h, Clr_White, '*');
-	GEO_draw_line(w, 0, w, h, Clr_White, '*');
-	GEO_draw_line(0, h, w, h, Clr_White, '*');
+	GEO_draw_line(0, 0, terminal_w, 0, Clr_White, '*');
+	GEO_draw_line(0, 0, 0, terminal_h, Clr_White, '*');
+	GEO_draw_line(terminal_w, 0, terminal_w, terminal_h, Clr_White, '*');
+	GEO_draw_line(0, terminal_h, terminal_w, terminal_h, Clr_White, '*');
 
 	// Draw the merchant shop interface.
 	int x = 3;
@@ -1231,15 +1230,15 @@ int AddHealth(player_t *player, int amount) {
 void DrawPlayerInfoScreen(const game_state_t * state) {
 	assert(state != NULL);
 
-	int w = GEO_screen_width() - 1;
-	int h = GEO_screen_height() - 1;
+	const int terminal_w = GEO_screen_width() - 1;
+	const int terminal_h = GEO_screen_height() - 1;
 
 	GEO_clear_screen();
 
-	GEO_draw_line(0, 0, w, 0, Clr_White, '*');
-	GEO_draw_line(0, 0, 0, h, Clr_White, '*');
-	GEO_draw_line(w, 0, w, h, Clr_White, '*');
-	GEO_draw_line(0, h, w, h, Clr_White, '*');
+	GEO_draw_line(0, 0, terminal_w, 0, Clr_White, '*');
+	GEO_draw_line(0, 0, 0, terminal_h, Clr_White, '*');
+	GEO_draw_line(terminal_w, 0, terminal_w, terminal_h, Clr_White, '*');
+	GEO_draw_line(0, terminal_h, terminal_w, terminal_h, Clr_White, '*');
 
 	int x = 3;
 	int y = 2;
