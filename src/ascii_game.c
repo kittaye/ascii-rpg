@@ -110,6 +110,9 @@ bool FContainsChar(FILE *fp, char char_to_find) {
 void InitGameState(game_state_t *state) {
 	assert(state != NULL);
 
+	const int world_screen_w = WorldScreenWidth();
+	const int world_screen_h = WorldScreenHeight();
+
 	state->debug_seed = time(NULL);
 	srand(state->debug_seed);
 
@@ -124,9 +127,6 @@ void InitGameState(game_state_t *state) {
 
 	state->player = InitPlayer(SPR_PLAYER);
 	state->enemy_list = (enemy_node_t*)NULL;
-
-	const int world_screen_w = WorldScreenWidth();
-	const int world_screen_h = WorldScreenHeight();
 
 	state->world_tiles = malloc(sizeof(*state->world_tiles) * world_screen_w);
 	assert(state->world_tiles != NULL);
@@ -144,6 +144,7 @@ void Cleanup_GameState(game_state_t *state) {
 	assert(state != NULL);
 
 	const int world_screen_w = WorldScreenWidth();
+
 	for (int i = 0; i < world_screen_w; i++) {
 		free(state->world_tiles[i]);
 	}
@@ -209,9 +210,10 @@ void PopulateRooms(game_state_t *state) {
 	assert(state != NULL);
 	assert(state->num_rooms_created > 0);
 
-	// Choose a random room for the player spawn (except the last room created).
-	int player_spawn_room_index = rand() % (state->num_rooms_created - 1);
-	for (int i = 0; i < state->num_rooms_created; i++) {
+	// Choose a random room for the player spawn (except the last room created which is reserved for staircase room).
+	const int player_spawn_room_index = rand() % (state->num_rooms_created - 1);
+
+	for (int i = 0; i < state->num_rooms_created - 1; i++) {
 		if (i == player_spawn_room_index) {
 			coord_t pos = NewCoord(
 				state->rooms[i].TL_corner.x + ((state->rooms[i].TR_corner.x - state->rooms[i].TL_corner.x) / 2),
@@ -247,17 +249,16 @@ void PopulateRooms(game_state_t *state) {
 				}
 			}
 		}
-
-		// Spawn staircase in the last room created (tends to be near center of map due to dungeon creation algorithm).
-		if (i == state->num_rooms_created - 1) {
-			coord_t pos = NewCoord(
-				state->rooms[i].TL_corner.x + ((state->rooms[i].TR_corner.x - state->rooms[i].TL_corner.x) / 2),
-				state->rooms[i].TR_corner.y + ((state->rooms[i].BR_corner.y - state->rooms[i].TR_corner.y) / 2)
-			);
-			// TODO: staircase may spawn ontop of enemy, removing them from the world in an unexpected way. Find fix.
-			UpdateWorldTile(state->world_tiles, pos, SPR_STAIRCASE, TileType_Special, Clr_Yellow, NULL, NULL);
-		}
 	}
+
+	// Spawn staircase in the last room created (tends to be near center of map due to dungeon creation algorithm).
+	const int last_room = state->num_rooms_created - 1;
+	coord_t pos = NewCoord(
+		state->rooms[last_room].TL_corner.x + ((state->rooms[last_room].TR_corner.x - state->rooms[last_room].TL_corner.x) / 2),
+		state->rooms[last_room].TR_corner.y + ((state->rooms[last_room].BR_corner.y - state->rooms[last_room].TR_corner.y) / 2)
+	);
+	// TODO: staircase may spawn ontop of enemy, removing them from the world in an unexpected way. Find fix.
+	UpdateWorldTile(state->world_tiles, pos, SPR_STAIRCASE, TileType_Special, Clr_Yellow, NULL, NULL);
 }
 
 enemy_t* InitAndCreateEnemy(const enemy_data_t *enemy_data, coord_t pos) {
