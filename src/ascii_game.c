@@ -128,10 +128,10 @@ void InitGameState(game_state_t *state) {
 	const int world_screen_w = WorldScreenWidth();
 	const int world_screen_h = WorldScreenHeight();
 
-	state->world_tiles = malloc(sizeof(*state->world_tiles) * (world_screen_w + 1));
+	state->world_tiles = malloc(sizeof(*state->world_tiles) * world_screen_w);
 	assert(state->world_tiles != NULL);
 	for (int i = 0; i < world_screen_w; i++) {
-		state->world_tiles[i] = malloc(sizeof(*state->world_tiles[i]) * (world_screen_h + 1));
+		state->world_tiles[i] = malloc(sizeof(*state->world_tiles[i]) * world_screen_h);
 		assert(state->world_tiles[i] != NULL);
 	}
 
