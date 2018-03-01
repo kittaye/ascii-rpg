@@ -195,7 +195,7 @@ void GEO_draw_string(const int x, const int y, const int color, const char * tex
 }
 
 void GEO_draw_align_center(const int x_offset, const int y, const int color, const char *text) {
-	int x = ((GEO_screen_width() - x_offset) / 2) - (strlen(text) / 2);
+	int x = ((GEO_screen_width() + x_offset) / 2) - (strlen(text) / 2);
 	GEO_draw_string(x, y, color, text);
 }
 
