@@ -475,8 +475,8 @@ bool CheckRoomCollision(const tile_t **world_tiles, const room_t *room) {
 		return true;
 	}
 
-	int room_width = room->TR_corner.x - room->TL_corner.x;
-	int room_height = room->BL_corner.y - room->TL_corner.y;
+	const int room_width = room->TR_corner.x - room->TL_corner.x;
+	const int room_height = room->BL_corner.y - room->TL_corner.y;
 
 	for (int y = 0; y <= room_height; y++) {
 		for (int x = 0; x <= room_width; x++) {
@@ -981,7 +981,7 @@ void ApplyVision(const game_state_t *state, coord_t pos) {
 	assert(state != NULL);
 
 	if (state->fog_of_war) {
-		int vision_to_tile = abs((pos.x - state->player.pos.x) * (pos.x - state->player.pos.x)) + abs((pos.y - state->player.pos.y) * (pos.y - state->player.pos.y));
+		const int vision_to_tile = abs((pos.x - state->player.pos.x) * (pos.x - state->player.pos.x)) + abs((pos.y - state->player.pos.y) * (pos.y - state->player.pos.y));
 		if (vision_to_tile < state->player.stats.max_vision) {
 			GEO_draw_char(pos.x, pos.y, state->world_tiles[pos.x][pos.y].color, state->world_tiles[pos.x][pos.y].sprite);
 		}
@@ -1032,7 +1032,7 @@ void NextPlayerInput(game_state_t *state) {
 	// This method of input processing allows for interrupt handling (dealing with resizes).
 	bool valid_key_pressed = false;
 	while (!valid_key_pressed) {
-		int key = GetKeyInput();
+		const int key = GetKeyInput();
 		switch (key) {
 			case KEY_UP:
 				if (player->pos.y - 1 >= 0 + TOP_PANEL_OFFSET && state->world_tiles[player->pos.x][player->pos.y - 1].type != TileType_Solid) {
@@ -1125,7 +1125,7 @@ void DrawHelpScreen(void) {
 
 int GetKeyInput(void) {
 	while (true) {
-		int key = GEO_get_char();
+		const int key = GEO_get_char();
 		switch (key) {
 			case KEY_RESIZE:
 				g_resize_error = true;
@@ -1181,7 +1181,7 @@ void DrawMerchantScreen(game_state_t *state) {
 	bool validKeyPress = false;
 	item_slug_en chosen_item = I_None;
 	while (!validKeyPress) {
-		int key = GetKeyInput();
+		const int key = GetKeyInput();
 		switch (key) {
 			case '1':
 				chosen_item = I_SmallFood;
