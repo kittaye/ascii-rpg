@@ -315,7 +315,7 @@ void SetPlayerPos(player_t *player, coord_t pos) {
 }
 
 int WorldScreenWidth() {
-	return GEO_screen_width();
+	return GEO_screen_width() - RIGHT_PANEL_OFFSET;
 }
 
 int WorldScreenHeight() {
@@ -323,7 +323,7 @@ int WorldScreenHeight() {
 }
 
 void Process(game_state_t *state) {
-	const int terminal_w = GEO_screen_width();
+	//const int terminal_w = GEO_screen_width();
 	const int terminal_h = GEO_screen_height();
 
 	const int world_screen_w = WorldScreenWidth();
@@ -342,22 +342,29 @@ void Process(game_state_t *state) {
 	// Draw player.
 	GEO_draw_char(state->player.pos.x, state->player.pos.y, state->player.color, state->player.sprite);
 
+	// Draw bottom panel line.
+	GEO_draw_line(0, terminal_h - 2, world_screen_w, terminal_h - 2, Clr_Magenta, '_');
+
 	// Draw last 3 game log lines.
-	int y_start_pos = terminal_h - BOTTOM_PANEL_OFFSET;
-	GEO_draw_formatted(0, y_start_pos + 0, Clr_White, "* %s", state->game_log.line3);
-	GEO_draw_formatted(0, y_start_pos + 1, Clr_White, "* %s", state->game_log.line2);
-	GEO_draw_formatted(0, y_start_pos + 2, Clr_White, "* %s", state->game_log.line1);
-
-	// Draw basic player info.
-	GEO_draw_formatted_align_center(y_start_pos + 3, Clr_Cyan, "Health - %d/%d   Mana - %d/%d   Gold - %d",
-		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
-
-	// Draw DEBUG line.
-	GEO_draw_line(0, y_start_pos + 4, terminal_w - 1, y_start_pos + 4, Clr_Magenta, '_');
+	GEO_draw_formatted(0, terminal_h - 6, Clr_White, "* %s", state->game_log.line3);
+	GEO_draw_formatted(0, terminal_h - 5, Clr_White, "* %s", state->game_log.line2);
+	GEO_draw_formatted(0, terminal_h - 4, Clr_White, "* %s", state->game_log.line1);
 
 	// Draw DEBUG label.
-	GEO_draw_formatted(0, y_start_pos + 5, Clr_Magenta, "   xy: (%d, %d)   rc(s): %d   seed: %d   |   Rooms: %d   Turns: %d",
+	GEO_draw_formatted(0, terminal_h - 1, Clr_Magenta, "   xy: (%d, %d)   rc(s): %d   seed: %d   rooms: %d   turns: %d",
 		state->player.pos.x, state->player.pos.y, state->debug_rcs, (int)state->debug_seed, state->num_rooms_created, state->game_turns);
+
+	// Draw right panel line.
+	GEO_draw_line(world_screen_w, 0, world_screen_w, terminal_h - 2, Clr_Magenta, '|');
+
+	// Draw basic player info.
+	//GEO_draw_formatted(world_screen_w + 1, 1, Clr_Cyan, "Health - %d/%d", state->player.stats.curr_health, state->player.stats.max_health);
+	//GEO_draw_formatted(world_screen_w + 1, 2, Clr_Cyan, "Mana - %d/%d", state->player.stats.curr_mana, state->player.stats.max_mana);
+	//GEO_draw_formatted(world_screen_w + 1, 3, Clr_Cyan, "Gold - %d", state->player.stats.num_gold);
+
+	// Draw basic player info.
+	GEO_draw_formatted_align_center(RIGHT_PANEL_OFFSET, terminal_h - 3, Clr_Cyan, "Health - %d/%d   Mana - %d/%d   Gold - %d",
+		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
 
 	// Display drawn elements to screen.
 	GEO_show_screen();
@@ -1109,13 +1116,13 @@ void DrawHelpScreen(void) {
 
 	GEO_clear_screen();
 
-	GEO_draw_align_center(terminal_h / 2 - 4, Clr_White, "Asciiscape by George Delosa");
-	GEO_draw_align_center(terminal_h / 2 - 2, Clr_White, "up/down/left/right: movement keys");
+	GEO_draw_align_center(0, terminal_h / 2 - 4, Clr_White, "Asciiscape by George Delosa");
+	GEO_draw_align_center(0, terminal_h / 2 - 2, Clr_White, "up/down/left/right: movement keys");
 	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 - 1, Clr_White, "h: show this help screen");
 	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 - 0, Clr_White, "i: show player info screen");
 	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 + 1, Clr_White, "f: toggle fog of war");
 	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 + 2, Clr_White, "q: quit game");
-	GEO_draw_align_center(terminal_h / 2 + 4, Clr_White, "Press any key to continue...");
+	GEO_draw_align_center(0, terminal_h / 2 + 4, Clr_White, "Press any key to continue...");
 
 	GEO_show_screen();
 	GetKeyInput();
@@ -1140,7 +1147,7 @@ int GetKeyInput(void) {
 void DrawDeathScreen(void) {
 	GEO_clear_screen();
 
-	GEO_draw_align_center(GEO_screen_height() / 2, Clr_Red, "YOU DIED");
+	GEO_draw_align_center(0, GEO_screen_height() / 2, Clr_Red, "YOU DIED");
 
 	GEO_show_screen();
 	GetKeyInput();
@@ -1163,7 +1170,7 @@ void DrawMerchantScreen(game_state_t *state) {
 	// Draw the merchant shop interface.
 	int x = 3;
 	int y = 2;
-	GEO_draw_align_center(y++, Clr_Yellow, "Trading with Merchant");
+	GEO_draw_align_center(0, y++, Clr_Yellow, "Trading with Merchant");
 	y++;
 	GEO_draw_string(x, y++, Clr_Yellow, "Option     Item                    Price (gold)");
 	GEO_draw_formatted(x, y++, Clr_White, "(1)        %-23s %d", GetItem(I_SmallFood)->name, GetItem(I_SmallFood)->value);
@@ -1241,10 +1248,10 @@ void DrawPlayerInfoScreen(const game_state_t * state) {
 	int x = 3;
 	int y = 2;
 
-	GEO_draw_formatted_align_center(y++, Clr_Cyan, "Hero,  Lvl. %d", state->player.stats.level);
-	GEO_draw_formatted_align_center(y++, Clr_White, "Current floor: %d", state->current_floor);
+	GEO_draw_formatted_align_center(0, y++, Clr_Cyan, "Hero,  Lvl. %d", state->player.stats.level);
+	GEO_draw_formatted_align_center(0, y++, Clr_White, "Current floor: %d", state->current_floor);
 	y++;
-	GEO_draw_formatted_align_center(y++, Clr_White, "Health - %d/%d   Mana - %d/%d   Gold - %d",
+	GEO_draw_formatted_align_center(0, y++, Clr_White, "Health - %d/%d   Mana - %d/%d   Gold - %d",
 		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
 	y++;
 	GEO_draw_string(x, y++, Clr_Cyan, "Inventory");

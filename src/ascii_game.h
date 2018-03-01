@@ -24,6 +24,7 @@
 #define HUB_FILENAME "hub.txt"
 #define PLAYER_MAX_VISION 100
 #define MAX_ENEMIES 1000
+#define RIGHT_PANEL_OFFSET 36
 #define BOTTOM_PANEL_OFFSET 6			
 #define TOP_PANEL_OFFSET 0		
 #define DEBUG_RCS_LIMIT 100000	// Room collision limit.
@@ -33,9 +34,9 @@
 #define MIN_ROOM_SIZE 5
 #define INVENTORY_SIZE 10
 
-// NOTE: These min values should be the largest txt dimension size of a dungeon layout from a file!
-#define MIN_SCREEN_WIDTH 85	
-#define MIN_SCREEN_HEIGHT 56
+// NOTE: These min values should be the largest txt dimension size of a dungeon layout from a file, + the panel offsets!
+#define MIN_SCREEN_WIDTH 85 + 36	
+#define MIN_SCREEN_HEIGHT 50 + 6
 
 typedef enum colour_en {
 	Clr_White = 0,
