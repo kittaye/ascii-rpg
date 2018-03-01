@@ -150,8 +150,8 @@ void GenerateCorridor(tile_t **world_tiles, coord_t starting_room, int corridor_
 void PopulateRooms(game_state_t *state);
 coord_t GetRandRoomOpeningPos(const room_t *room);
 bool CheckRoomCollision(const tile_t **world_tiles, const room_t *room);
-bool CheckRoomMapBounds(const room_t *room);
-bool CheckMapBounds(coord_t coord);
+bool CheckRoomWorldBounds(const room_t *room);
+bool CheckWorldBounds(coord_t coord);
 bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
 
 void UpdateWorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, enemy_t *enemy_occupier, const item_t *item_occupier);

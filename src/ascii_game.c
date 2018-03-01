@@ -303,6 +303,7 @@ player_t InitPlayer(char sprite) {
 	player.stats.s_INT = 1;
 	player.stats.s_LCK = 1;
 
+
 	player.stats.enemies_slain = 0;
 	player.stats.num_gold = 0;
 
@@ -471,7 +472,7 @@ bool CheckRoomCollision(const tile_t **world_tiles, const room_t *room) {
 	assert(world_tiles != NULL);
 	assert(room != NULL);
 
-	if (CheckRoomMapBounds(room)) {
+	if (CheckRoomWorldBounds(room)) {
 		return true;
 	}
 
@@ -488,20 +489,17 @@ bool CheckRoomCollision(const tile_t **world_tiles, const room_t *room) {
 	return false;
 }
 
-bool CheckRoomMapBounds(const room_t *room) {
+bool CheckRoomWorldBounds(const room_t *room) {
 	assert(room != NULL);
 
-	if (CheckMapBounds(room->TL_corner) || CheckMapBounds(room->TR_corner) || CheckMapBounds(room->BL_corner)) {
+	if (CheckWorldBounds(room->TL_corner) || CheckWorldBounds(room->TR_corner) || CheckWorldBounds(room->BL_corner)) {
 		return true;
 	}
 	return false;
 }
 
-bool CheckMapBounds(coord_t coord) {
-	const int terminal_w = GEO_screen_width();
-	const int terminal_h = GEO_screen_height();
-
-	if (coord.x >= terminal_w || coord.x < 0 || coord.y < 0 + TOP_PANEL_OFFSET || coord.y >= terminal_h - BOTTOM_PANEL_OFFSET) {
+bool CheckWorldBounds(coord_t coord) {
+	if (coord.x >= WorldScreenWidth() || coord.x < 0 || coord.y < 0 + TOP_PANEL_OFFSET || coord.y >= WorldScreenHeight()) {
 		return true;
 	}
 	return false;
@@ -868,7 +866,7 @@ bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, i
 	switch (direction) {
 		case Dir_Up:
 			for (int i = 0; i < corridor_size; i++) {
-				if (CheckMapBounds(NewCoord(starting_room.x, starting_room.y - corridor_size - (i + 1)))) {
+				if (CheckWorldBounds(NewCoord(starting_room.x, starting_room.y - corridor_size - (i + 1)))) {
 					return true;
 				} else if (world_tiles[starting_room.x][starting_room.y - corridor_size - (i + 1)].type == TileType_Solid
 					|| world_tiles[starting_room.x - 1][starting_room.y - corridor_size - (i + 1)].type == TileType_Solid
@@ -879,7 +877,7 @@ bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, i
 			return false;
 		case Dir_Down:
 			for (int i = 0; i < corridor_size; i++) {
-				if (CheckMapBounds(NewCoord(starting_room.x, starting_room.y + corridor_size + (i + 1)))) {
+				if (CheckWorldBounds(NewCoord(starting_room.x, starting_room.y + corridor_size + (i + 1)))) {
 					return true;
 				} else if (world_tiles[starting_room.x][starting_room.y + corridor_size + (i + 1)].type == TileType_Solid
 					|| world_tiles[starting_room.x - 1][starting_room.y + corridor_size + (i + 1)].type == TileType_Solid
@@ -890,7 +888,7 @@ bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, i
 			return false;
 		case Dir_Left:
 			for (int i = 0; i < corridor_size; i++) {
-				if (CheckMapBounds(NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y))) {
+				if (CheckWorldBounds(NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y))) {
 					return true;
 				} else if (world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y].type == TileType_Solid
 					|| world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y - 1].type == TileType_Solid
@@ -901,7 +899,7 @@ bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, i
 			return false;
 		case Dir_Right:
 			for (int i = 0; i < corridor_size; i++) {
-				if (CheckMapBounds(NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y))) {
+				if (CheckWorldBounds(NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y))) {
 					return true;
 				} else if (world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y].type == TileType_Solid
 					|| world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y - 1].type == TileType_Solid
