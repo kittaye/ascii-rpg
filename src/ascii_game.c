@@ -33,7 +33,6 @@ void InitGameState(game_state_t *state) {
 	state->fog_of_war = true;
 	state->player_turn_over = false;
 	state->floor_complete = false;
-	state->current_target = ' ';
 	state->debug_rcs = 0;
 
 	state->player = InitPlayer(SPR_PLAYER);
@@ -197,6 +196,8 @@ player_t InitPlayer(char sprite) {
 	player.sprite = sprite;
 	player.pos = NewCoord(0, 0);
 	player.color = Clr_Cyan;
+	player.current_target = ' ';
+
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
 		player.inventory[i] = GetItem(I_None);
 	}
@@ -321,7 +322,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 	assert(state != NULL);
 	assert(curr_world_tile != NULL);
 
-	state->current_target = ' ';
+	state->player.current_target = ' ';
 
 	switch (curr_world_tile->type) {
 		case TileType_Item:
@@ -391,7 +392,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 		case TileType_Npc:
 			if (curr_world_tile->sprite == SPR_MERCHANT) {
 				UpdateGameLog(&state->game_log, LOGMSG_PLR_INTERACT_MERCHANT);
-				state->current_target = SPR_MERCHANT;
+				state->player.current_target = SPR_MERCHANT;
 			}
 			// Moving into an NPC results in no movement from the player.
 			state->player.pos = player_old_pos;
@@ -1012,8 +1013,8 @@ void NextPlayerInput(game_state_t *state) {
 				valid_key_pressed = true;
 			case '\n':
 			case KEY_ENTER:
-				if (state->current_target != ' ') {
-					InteractWithNPC(state, state->current_target);
+				if (state->player.current_target != ' ') {
+					InteractWithNPC(state, state->player.current_target);
 					valid_key_pressed = true;
 				}
 				break;

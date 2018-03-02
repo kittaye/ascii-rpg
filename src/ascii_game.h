@@ -70,6 +70,7 @@ typedef struct player_stats {
 	int curr_health;
 	int max_mana;
 	int curr_mana;
+
 	int max_vision;
 
 	int s_STR;	
@@ -101,6 +102,7 @@ typedef struct player_t {
 	const item_t *inventory[INVENTORY_SIZE];
 	char sprite;
 	int color;
+	char current_target;			// The player-targetted sprite, used to interact with NPCs.
 } player_t;
 
 typedef struct tile_t {
@@ -118,7 +120,6 @@ typedef struct game_state_t {
 	bool player_turn_over;			// Determines when the player has finished their turn.
 	bool floor_complete;			// Determines when the player has completed the dungeon floor.
 	int current_floor;				
-	char current_target;			// The player-targetted sprite, used to interact with NPCs.
 
 	player_t player;				
 	tile_t **world_tiles;			// Stores information about every (x, y) coordinate in the terminal, for use in the game.
