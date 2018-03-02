@@ -63,16 +63,18 @@ int main(int argc, char *argv[]) {
 		exit(1);
 	}
 
+	g_resize_error = false;
+	g_process_over = false;
+
 	game_state_t game_state;
 	InitGameState(&game_state);
+	game_state.player = CreatePlayer();
 
 	DrawHelpScreen();
 	UpdateGameLog(&game_state.game_log, LOGMSG_WELCOME);
 	CreateDungeonFloor(&game_state, num_rooms_specified, room_size_specified, filename_specified);
 
 	// Main game loop.
-	g_resize_error = false;
-	g_process_over = false;
 	while (!g_process_over) {
 		Process(&game_state);
 		if (game_state.floor_complete) {
