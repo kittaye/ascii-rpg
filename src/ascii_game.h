@@ -130,6 +130,9 @@ typedef struct game_state_t {
 	double debug_seed;				// RNG seed used to create this game.
 } game_state_t;
 
+// Global variables.
+extern bool g_resize_error;
+extern bool g_process_over;
 
 // Function initialization.
 void InitGameState(game_state_t *state);
@@ -166,7 +169,6 @@ void DrawPlayerInfoScreen(const game_state_t *state);
 void DrawDeathScreen(void);
 void DrawMerchantScreen(game_state_t *state);
 void SetPlayerPos(player_t *player, coord_t pos);
-bool FContainsChar(FILE *fp, char char_to_find);
 void InteractWithNPC(game_state_t *state, char npc_target);
 int GetKeyInput(void);
 int AddHealth(player_t *player, int amount);
