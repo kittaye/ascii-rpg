@@ -35,7 +35,7 @@ void InitGameState(game_state_t *state) {
 	state->floor_complete = false;
 	state->debug_rcs = 0;
 
-	state->player = InitPlayer();
+	state->player = CreatePlayer();
 	state->enemy_list = (enemy_node_t*)NULL;
 
 	state->world_tiles = malloc(sizeof(*state->world_tiles) * world_screen_w);
@@ -190,7 +190,7 @@ enemy_t* InitAndCreateEnemy(const enemy_data_t *enemy_data, coord_t pos) {
 	return enemy;
 }
 
-player_t InitPlayer(void) {
+player_t CreatePlayer(void) {
 	player_t player;
 
 	player.sprite = SPR_PLAYER;

@@ -139,7 +139,7 @@ extern bool g_process_over;
 void InitGameState(game_state_t *state);
 void ResetDungeonFloor(game_state_t *state);
 void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified);
-player_t InitPlayer(void);
+player_t CreatePlayer(void);
 enemy_t* InitAndCreateEnemy(const enemy_data_t *enemy_data, coord_t pos);
 void Process(game_state_t *state);
 
