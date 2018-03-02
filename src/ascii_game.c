@@ -35,7 +35,6 @@ void InitGameState(game_state_t *state) {
 	state->floor_complete = false;
 	state->debug_rcs = 0;
 
-	state->player = CreatePlayer();
 	state->enemy_list = (enemy_node_t*)NULL;
 
 	state->world_tiles = malloc(sizeof(*state->world_tiles) * world_screen_w);
