@@ -131,46 +131,39 @@ typedef struct game_state_t {
 	double debug_seed;				// RNG seed used to create this game.
 } game_state_t;
 
+
 // Global variables.
 extern bool g_resize_error;
 extern bool g_process_over;
+
 
 // Function declarations.
 void Init_GameState(game_state_t *state);
 void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified);
 player_t Create_Player(void);
 enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos);
-void Process(game_state_t *state);
 
-int Get_NextRoomRadius(void);
 void Create_OpenRooms(game_state_t *state, int num_rooms_specified, int room_size);
 void Create_ClosedRooms(game_state_t *state, int num_rooms_specified, int room_size);
 void Create_RoomsFromFile(game_state_t *state, const char *filename);
-void Create_ClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms);
-void Define_OpenRoom(room_t *room, int room_size);
-void Define_ClosedRoom(room_t *room, coord_t pos, int radius);
-void Generate_Room(tile_t **world_tiles, const room_t *room);
-void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
 void Populate_Rooms(game_state_t *state);
-coord_t Get_RandRoomOpeningPos(const room_t *room);
 bool Check_RoomCollision(const tile_t **world_tiles, const room_t *room);
 bool Check_RoomWorldBounds(const room_t *room);
 bool Check_WorldBounds(coord_t coord);
-bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
 
+void Process(game_state_t *state);
+void Draw_HelpScreen(void);
+void Draw_PlayerInfoScreen(const game_state_t *state);
+void Draw_DeathScreen(void);
+void Draw_MerchantScreen(game_state_t *state);
 void Update_WorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, enemy_t *enemy_occupier, const item_t *item_occupier);
 void Update_GameLog(log_list_t *game_log, const char *format, ...);
 void Update_AllEnemyCombat(game_state_t *state, enemy_node_t *enemy_list);
 void Perform_WorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord_t player_old_pos);
 void Get_NextPlayerInput(game_state_t *state);
 void Apply_Vision(const game_state_t *state, coord_t pos);
-void Draw_HelpScreen(void);
-void Draw_PlayerInfoScreen(const game_state_t *state);
-void Draw_DeathScreen(void);
-void Draw_MerchantScreen(game_state_t *state);
 void Set_PlayerPos(player_t *player, coord_t pos);
 void Interact_NPC(game_state_t *state, char npc_target);
-int Get_KeyInput(void);
 int AddTo_Health(player_t *player, int amount);
 bool AddTo_Inventory(player_t *player, const item_t *item);
 

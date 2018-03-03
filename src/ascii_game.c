@@ -15,8 +15,20 @@
 #include "coord.h"
 #include "ascii_game.h"
 
+// Define extern global variables.
 bool g_resize_error = false;
 bool g_process_over = false;
+
+// Private functions.
+static int Get_NextRoomRadius(void);
+static int Get_KeyInput(void);
+static coord_t Get_RandRoomOpeningPos(const room_t *room);
+static void Create_ClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms);
+static void Define_OpenRoom(room_t *room, int room_size);
+static void Define_ClosedRoom(room_t *room, coord_t pos, int radius);
+static void Generate_Room(tile_t **world_tiles, const room_t *room);
+static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
+static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
 
 void Init_GameState(game_state_t *state) {
 	assert(state != NULL);
@@ -598,7 +610,7 @@ void Create_OpenRooms(game_state_t *state, int num_rooms_specified, int room_siz
 	}
 }
 
-void Define_OpenRoom(room_t *room, int room_size) {
+static void Define_OpenRoom(room_t *room, int room_size) {
 	assert(room != NULL);
 
 	const int world_screen_w = Get_WorldScreenWidth();
@@ -623,7 +635,7 @@ void Define_OpenRoom(room_t *room, int room_size) {
 	room->BR_corner.y = room->TL_corner.y + room_size - 1;
 }
 
-coord_t Get_RandRoomOpeningPos(const room_t *room) {
+static coord_t Get_RandRoomOpeningPos(const room_t *room) {
 	assert(room != NULL);
 
 	coord_t opening;
@@ -673,7 +685,7 @@ void Create_ClosedRooms(game_state_t *state, int num_rooms_specified, int room_s
 	Create_ClosedRoomRecursive(state, pos, radius, NUM_INITIAL_ITERATIONS, num_rooms_specified);
 }
 
-void Create_ClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms) {
+static void Create_ClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms) {
 	assert(state != NULL);
 
 	// Create the latest defined room.
@@ -743,11 +755,11 @@ void Create_ClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, in
 	return;
 }
 
-int Get_NextRoomRadius(void) {
+static int Get_NextRoomRadius(void) {
 	return (rand() % 6) + 2;
 }
 
-void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction) {
+static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction) {
 	assert(world_tiles != NULL);
 
 	switch (direction) {
@@ -795,7 +807,7 @@ void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor
 	}
 }
 
-bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction) {
+static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction) {
 	assert(world_tiles != NULL);
 
 	switch (direction) {
@@ -848,7 +860,7 @@ bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_room, 
 	}
 }
 
-void Define_ClosedRoom(room_t *room, coord_t pos, int radius) {
+static void Define_ClosedRoom(room_t *room, coord_t pos, int radius) {
 	assert(room != NULL);
 
 	room->TL_corner.x = pos.x - radius;
@@ -864,7 +876,7 @@ void Define_ClosedRoom(room_t *room, coord_t pos, int radius) {
 	room->BR_corner.y = pos.y + radius;
 }
 
-void Generate_Room(tile_t **world_tiles, const room_t *room) {
+static void Generate_Room(tile_t **world_tiles, const room_t *room) {
 	assert(world_tiles != NULL);
 	assert(room != NULL);
 
@@ -1056,7 +1068,7 @@ void Draw_HelpScreen(void) {
 	Get_KeyInput();
 }
 
-int Get_KeyInput(void) {
+static int Get_KeyInput(void) {
 	while (true) {
 		const int key = GEO_get_char();
 		switch (key) {
