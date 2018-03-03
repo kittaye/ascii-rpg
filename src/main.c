@@ -58,20 +58,20 @@ int main(int argc, char *argv[]) {
 	g_process_over = false;
 
 	game_state_t game_state;
-	InitGameState(&game_state);
-	game_state.player = CreatePlayer();
+	Init_GameState(&game_state);
+	game_state.player = Create_Player();
 
 	DrawHelpScreen();
 	UpdateGameLog(&game_state.game_log, LOGMSG_WELCOME);
-	CreateDungeonFloor(&game_state, num_rooms_specified, room_size_specified, filename_specified);
+	InitCreate_DungeonFloor(&game_state, num_rooms_specified, room_size_specified, filename_specified);
 
 	// Main game loop.
 	while (!g_process_over) {
 		Process(&game_state);
 		if (game_state.floor_complete) {
 			game_state.current_floor++;
-			ResetDungeonFloor(&game_state);
-			CreateDungeonFloor(&game_state, num_rooms_specified, room_size_specified, NULL);
+			Cleanup_DungeonFloor(&game_state);
+			InitCreate_DungeonFloor(&game_state, num_rooms_specified, room_size_specified, NULL);
 			game_state.floor_complete = false;
 		}
 	}

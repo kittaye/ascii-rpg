@@ -21,8 +21,8 @@ bool g_process_over = false;
 void Init_GameState(game_state_t *state) {
 	assert(state != NULL);
 
-	const int world_screen_w = WorldScreenWidth();
-	const int world_screen_h = WorldScreenHeight();
+	const int world_screen_w = Get_WorldScreenWidth();
+	const int world_screen_h = Get_WorldScreenHeight();
 
 	state->debug_seed = time(NULL);
 	srand(state->debug_seed);
@@ -53,7 +53,7 @@ void Init_GameState(game_state_t *state) {
 void Cleanup_GameState(game_state_t *state) {
 	assert(state != NULL);
 
-	const int world_screen_w = WorldScreenWidth();
+	const int world_screen_w = Get_WorldScreenWidth();
 
 	for (int i = 0; i < world_screen_w; i++) {
 		free(state->world_tiles[i]);
@@ -79,14 +79,14 @@ void Cleanup_DungeonFloor(game_state_t *state) {
 void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified) {
 	assert(state != NULL);
 
-	const int world_screen_w = WorldScreenWidth();
-	const int world_screen_h = WorldScreenHeight();
+	const int world_screen_w = Get_WorldScreenWidth();
+	const int world_screen_h = Get_WorldScreenHeight();
 	const int HUB_MAP_FREQUENCY = 4;
 
 	// Create empty space.
 	for (int x = 0; x < world_screen_w; x++) {
 		for (int y = 0; y < world_screen_h; y++) {
-			UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 	}
 
@@ -108,13 +108,13 @@ void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int r
 		//CreateOpenRooms(state, num_rooms_specified, room_size_specified);
 		Create_ClosedRooms(state, num_rooms_specified, room_size_specified);
 
-		PopulateRooms(state);
+		Populate_Rooms(state);
 	}
 
-	UpdateGameLog(&state->game_log, LOGMSG_PLR_NEW_FLOOR, state->current_floor);
+	Update_GameLog(&state->game_log, LOGMSG_PLR_NEW_FLOOR, state->current_floor);
 }
 
-void PopulateRooms(game_state_t *state) {
+void Populate_Rooms(game_state_t *state) {
 	assert(state != NULL);
 	assert(state->num_rooms_created > 0);
 
@@ -127,7 +127,7 @@ void PopulateRooms(game_state_t *state) {
 				state->rooms[i].TL_corner.x + ((state->rooms[i].TR_corner.x - state->rooms[i].TL_corner.x) / 2),
 				state->rooms[i].TR_corner.y + ((state->rooms[i].BR_corner.y - state->rooms[i].TR_corner.y) / 2)
 			);
-			SetPlayerPos(&state->player, pos);
+			Set_PlayerPos(&state->player, pos);
 			continue;
 		}
 
@@ -143,17 +143,17 @@ void PopulateRooms(game_state_t *state) {
 					} else if (val == 100) {
 						enemy = InitCreate_Enemy(GetEnemyData(E_Werewolf), NewCoord(x, y));
 					}
-					UpdateWorldTile(state->world_tiles, enemy->pos, enemy->data->sprite, TileType_Enemy, Clr_Red, enemy, NULL);
+					Update_WorldTile(state->world_tiles, enemy->pos, enemy->data->sprite, TileType_Enemy, Clr_Red, enemy, NULL);
 					AddToEnemyList(&state->enemy_list, enemy);
 
 				} else if (val <= 2) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGGOLD, TileType_Item, Clr_Green, NULL, NULL);
+					Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGGOLD, TileType_Item, Clr_Green, NULL, NULL);
 				} else if (val <= 4) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_GOLD, TileType_Item, Clr_Green, NULL, NULL);
+					Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_GOLD, TileType_Item, Clr_Green, NULL, NULL);
 				} else if (val <= 5) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, TileType_Item, Clr_Green, NULL, GetItem(I_SmallFood));
+					Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, TileType_Item, Clr_Green, NULL, GetItem(I_SmallFood));
 				} else if (val <= 6) {
-					UpdateWorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, TileType_Item, Clr_Green, NULL, GetItem(I_BigFood));
+					Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, TileType_Item, Clr_Green, NULL, GetItem(I_BigFood));
 				}
 			}
 		}
@@ -166,7 +166,7 @@ void PopulateRooms(game_state_t *state) {
 		state->rooms[last_room].TR_corner.y + ((state->rooms[last_room].BR_corner.y - state->rooms[last_room].TR_corner.y) / 2)
 	);
 	// TODO: staircase may spawn ontop of enemy, removing them from the world in an unexpected way. Find fix.
-	UpdateWorldTile(state->world_tiles, pos, SPR_STAIRCASE, TileType_Special, Clr_Yellow, NULL, NULL);
+	Update_WorldTile(state->world_tiles, pos, SPR_STAIRCASE, TileType_Special, Clr_Yellow, NULL, NULL);
 }
 
 enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos) {
@@ -221,15 +221,15 @@ player_t Create_Player(void) {
 	return player;
 }
 
-void SetPlayerPos(player_t *player, coord_t pos) {
+void Set_PlayerPos(player_t *player, coord_t pos) {
 	player->pos = pos;
 }
 
-int WorldScreenWidth() {
+int Get_WorldScreenWidth() {
 	return GEO_screen_width() - RIGHT_PANEL_OFFSET;
 }
 
-int WorldScreenHeight() {
+int Get_WorldScreenHeight() {
 	return GEO_screen_height() - BOTTOM_PANEL_OFFSET;
 }
 
@@ -237,8 +237,8 @@ void Process(game_state_t *state) {
 	//const int terminal_w = GEO_screen_width();
 	const int terminal_h = GEO_screen_height();
 
-	const int world_screen_w = WorldScreenWidth();
-	const int world_screen_h = WorldScreenHeight();
+	const int world_screen_w = Get_WorldScreenWidth();
+	const int world_screen_h = Get_WorldScreenHeight();
 
 	// Clear drawn elements from screen.
 	GEO_clear_screen();
@@ -246,7 +246,7 @@ void Process(game_state_t *state) {
 	// Draw all world tiles.
 	for (int x = 0; x < world_screen_w; x++) {
 		for (int y = 0; y < world_screen_h; y++) {
-			ApplyVision(state, NewCoord(x, y));
+			Apply_Vision(state, NewCoord(x, y));
 		}
 	}
 
@@ -301,14 +301,14 @@ void Process(game_state_t *state) {
 	coord_t oldPos = state->player.pos;
 
 	// Wait for next player input.
-	NextPlayerInput(state);
+	Get_NextPlayerInput(state);
 
 	// If the player made a move, do world logic for this turn.
 	if (state->player_turn_over) {
-		PerformWorldLogic(state, &(state->world_tiles[state->player.pos.x][state->player.pos.y]), oldPos);
+		Perform_WorldLogic(state, &(state->world_tiles[state->player.pos.x][state->player.pos.y]), oldPos);
 		if (state->player.stats.curr_health <= 0) {
 			// GAME OVER.
-			DrawDeathScreen();
+			Draw_DeathScreen();
 			g_process_over = true;
 		}
 		state->player_turn_over = false;
@@ -316,7 +316,7 @@ void Process(game_state_t *state) {
 	}
 }
 
-void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord_t player_old_pos) {
+void Perform_WorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord_t player_old_pos) {
 	assert(state != NULL);
 	assert(curr_world_tile != NULL);
 
@@ -336,39 +336,39 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 
 				state->player.stats.num_gold += amt;
 				if (amt == 1) {
-					UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_GOLD_SINGLE, amt);
+					Update_GameLog(&state->game_log, LOGMSG_PLR_GET_GOLD_SINGLE, amt);
 				} else {
-					UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_GOLD_PLURAL, amt);
+					Update_GameLog(&state->game_log, LOGMSG_PLR_GET_GOLD_PLURAL, amt);
 				}
-				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+				Update_WorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 				return;
 			}
 
 			// All other items are "picked up" (removed from world) if the player has room in their inventory.
-			if (AddToInventory(&state->player, curr_world_tile->item_occupier)) {
-				UpdateGameLog(&state->game_log, LOGMSG_PLR_GET_ITEM, curr_world_tile->item_occupier->name);
-				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			if (AddTo_Inventory(&state->player, curr_world_tile->item_occupier)) {
+				Update_GameLog(&state->game_log, LOGMSG_PLR_GET_ITEM, curr_world_tile->item_occupier->name);
+				Update_WorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 			} else {
-				UpdateGameLog(&state->game_log, LOGMSG_PLR_INVENTORY_FULL);
+				Update_GameLog(&state->game_log, LOGMSG_PLR_INVENTORY_FULL);
 			}
 			break;
 		case TileType_Enemy:;
 			enemy_t *attackedEnemy = curr_world_tile->enemy_occupier;
 			attackedEnemy->curr_health--;
-			UpdateGameLog(&state->game_log, LOGMSG_PLR_DMG_ENEMY, attackedEnemy->data->name, 1);
+			Update_GameLog(&state->game_log, LOGMSG_PLR_DMG_ENEMY, attackedEnemy->data->name, 1);
 
 			if (attackedEnemy->curr_health <= 0) {
-				UpdateGameLog(&state->game_log, LOGMSG_PLR_KILL_ENEMY, attackedEnemy->data->name);
+				Update_GameLog(&state->game_log, LOGMSG_PLR_KILL_ENEMY, attackedEnemy->data->name);
 				attackedEnemy->is_alive = false;
 				state->player.stats.enemies_slain++;
-				UpdateWorldTile(state->world_tiles, attackedEnemy->pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+				Update_WorldTile(state->world_tiles, attackedEnemy->pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 
 				if (attackedEnemy->loot == GetItem(I_Map)) {
-					UpdateWorldTile(state->world_tiles, attackedEnemy->pos, SPR_MAP, TileType_Special, Clr_Yellow, NULL, NULL);
+					Update_WorldTile(state->world_tiles, attackedEnemy->pos, SPR_MAP, TileType_Special, Clr_Yellow, NULL, NULL);
 				}
 			} else {
 				state->player.stats.curr_health--;
-				UpdateGameLog(&state->game_log, LOGMSG_ENEMY_DMG_PLR, attackedEnemy->data->name, 1);
+				Update_GameLog(&state->game_log, LOGMSG_ENEMY_DMG_PLR, attackedEnemy->data->name, 1);
 			}
 
 			// Moving into any enemy results in no movement from the player.
@@ -376,12 +376,12 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 			break;
 		case TileType_Special:
 			if (curr_world_tile->sprite == SPR_STAIRCASE) {
-				UpdateGameLog(&state->game_log, LOGMSG_PLR_INTERACT_STAIRCASE);
+				Update_GameLog(&state->game_log, LOGMSG_PLR_INTERACT_STAIRCASE);
 				state->floor_complete = true;
 			} else if (curr_world_tile->sprite == SPR_MAP) {
-				UpdateGameLog(&state->game_log, LOGMSG_PLR_USE_MAP);
+				Update_GameLog(&state->game_log, LOGMSG_PLR_USE_MAP);
 				state->fog_of_war = false;
-				UpdateWorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+				Update_WorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 			}
 
 			// Moving into a special object results in no movement from the player.
@@ -389,7 +389,7 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 			break;
 		case TileType_Npc:
 			if (curr_world_tile->sprite == SPR_MERCHANT) {
-				UpdateGameLog(&state->game_log, LOGMSG_PLR_INTERACT_MERCHANT);
+				Update_GameLog(&state->game_log, LOGMSG_PLR_INTERACT_MERCHANT);
 				state->player.current_target = SPR_MERCHANT;
 			}
 			// Moving into an NPC results in no movement from the player.
@@ -397,17 +397,17 @@ void PerformWorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord
 			break;
 		default:
 			if (state->game_log.line1[0] != ' ' || state->game_log.line2[0] != ' ' || state->game_log.line3[0] != ' ') {
-				UpdateGameLog(&state->game_log, LOGMSG_EMPTY_SPACE);
+				Update_GameLog(&state->game_log, LOGMSG_EMPTY_SPACE);
 			}
 			break;
 	}
 }
 
-bool CheckRoomCollision(const tile_t **world_tiles, const room_t *room) {
+bool Check_RoomCollision(const tile_t **world_tiles, const room_t *room) {
 	assert(world_tiles != NULL);
 	assert(room != NULL);
 
-	if (CheckRoomWorldBounds(room)) {
+	if (Check_RoomWorldBounds(room)) {
 		return true;
 	}
 
@@ -424,17 +424,17 @@ bool CheckRoomCollision(const tile_t **world_tiles, const room_t *room) {
 	return false;
 }
 
-bool CheckRoomWorldBounds(const room_t *room) {
+bool Check_RoomWorldBounds(const room_t *room) {
 	assert(room != NULL);
 
-	if (CheckWorldBounds(room->TL_corner) || CheckWorldBounds(room->TR_corner) || CheckWorldBounds(room->BL_corner)) {
+	if (Check_WorldBounds(room->TL_corner) || Check_WorldBounds(room->TR_corner) || Check_WorldBounds(room->BL_corner)) {
 		return true;
 	}
 	return false;
 }
 
-bool CheckWorldBounds(coord_t coord) {
-	if (coord.x >= WorldScreenWidth() || coord.x < 0 || coord.y < 0 + TOP_PANEL_OFFSET || coord.y >= WorldScreenHeight()) {
+bool Check_WorldBounds(coord_t coord) {
+	if (coord.x >= Get_WorldScreenWidth() || coord.x < 0 || coord.y < 0 + TOP_PANEL_OFFSET || coord.y >= Get_WorldScreenHeight()) {
 		return true;
 	}
 	return false;
@@ -461,7 +461,7 @@ void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 			lineWidth = read;
 			lineNum++;
 		}
-		coord_t anchor_centered_map_offset = NewCoord((WorldScreenWidth() / 2) - (lineWidth / 2), ((WorldScreenHeight() / 2) - (lineNum / 2)));
+		coord_t anchor_centered_map_offset = NewCoord((Get_WorldScreenWidth() / 2) - (lineWidth / 2), ((Get_WorldScreenHeight() / 2) - (lineNum / 2)));
 		lineNum = 0;
 		len = 0;
 		free(line);
@@ -489,7 +489,7 @@ void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 
 				switch (line[i]) {
 					case SPR_PLAYER:
-						SetPlayerPos(&state->player, pos);
+						Set_PlayerPos(&state->player, pos);
 						line[i] = SPR_EMPTY;
 						break;
 					case SPR_WALL:
@@ -536,7 +536,7 @@ void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 					colour = Clr_Green;
 				}
 
-				UpdateWorldTile(state->world_tiles, pos, line[i], type, colour, enemy, item);
+				Update_WorldTile(state->world_tiles, pos, line[i], type, colour, enemy, item);
 			}
 			line = NULL;
 			lineNum++;
@@ -552,8 +552,8 @@ void Create_OpenRooms(game_state_t *state, int num_rooms_specified, int room_siz
 	const int EXTENDED_BOUNDS_OFFSET = 2;
 
 	// If room size is larger than the smallest terminal dimension, clamp it to that dimension size.
-	if (room_size > fmin(WorldScreenWidth() - EXTENDED_BOUNDS_OFFSET, WorldScreenHeight() - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET)) {
-		room_size = fmin(WorldScreenWidth() - EXTENDED_BOUNDS_OFFSET, WorldScreenHeight() - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET);
+	if (room_size > fmin(Get_WorldScreenWidth() - EXTENDED_BOUNDS_OFFSET, Get_WorldScreenHeight() - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET)) {
+		room_size = fmin(Get_WorldScreenWidth() - EXTENDED_BOUNDS_OFFSET, Get_WorldScreenHeight() - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET);
 	}
 
 	for (int i = 0; i < num_rooms_specified; i++) {
@@ -562,7 +562,7 @@ void Create_OpenRooms(game_state_t *state, int num_rooms_specified, int room_siz
 			valid_room = true;
 
 			// Define a new room.
-			DefineOpenRoom(&state->rooms[i], room_size);
+			Define_OpenRoom(&state->rooms[i], room_size);
 
 			// Check that this new room doesnt collide with anything solid (extended room hitbox: means completely seperated rooms).
 			room_t extended_bounds_room = state->rooms[i];
@@ -574,7 +574,7 @@ void Create_OpenRooms(game_state_t *state, int num_rooms_specified, int room_siz
 			extended_bounds_room.BL_corner.y++;
 			extended_bounds_room.BR_corner.x++;
 			extended_bounds_room.BR_corner.y++;
-			if (CheckRoomCollision((const tile_t **)state->world_tiles, &extended_bounds_room)) {
+			if (Check_RoomCollision((const tile_t **)state->world_tiles, &extended_bounds_room)) {
 				state->debug_rcs++;
 				valid_room = false;
 			}
@@ -586,23 +586,23 @@ void Create_OpenRooms(game_state_t *state, int num_rooms_specified, int room_siz
 		} while (!valid_room);
 
 		// Pick a random position for an opening.
-		coord_t opening = GetRandRoomOpeningPos(&state->rooms[i]);
+		coord_t opening = Get_RandRoomOpeningPos(&state->rooms[i]);
 
 		// Create marked opening.
-		UpdateWorldTile(state->world_tiles, opening, '?', TileType_Empty, Clr_White, NULL, NULL);
+		Update_WorldTile(state->world_tiles, opening, '?', TileType_Empty, Clr_White, NULL, NULL);
 
 		//Connect corners with walls and convert marked opening to a real opening.
-		GenerateRoom(state->world_tiles, &state->rooms[i]);
+		Generate_Room(state->world_tiles, &state->rooms[i]);
 
 		state->num_rooms_created++;
 	}
 }
 
-void DefineOpenRoom(room_t *room, int room_size) {
+void Define_OpenRoom(room_t *room, int room_size) {
 	assert(room != NULL);
 
-	const int world_screen_w = WorldScreenWidth();
-	const int world_screen_h = WorldScreenHeight();
+	const int world_screen_w = Get_WorldScreenWidth();
+	const int world_screen_h = Get_WorldScreenHeight();
 
 	// TOP LEFT CORNER
 	do {
@@ -623,7 +623,7 @@ void DefineOpenRoom(room_t *room, int room_size) {
 	room->BR_corner.y = room->TL_corner.y + room_size - 1;
 }
 
-coord_t GetRandRoomOpeningPos(const room_t *room) {
+coord_t Get_RandRoomOpeningPos(const room_t *room) {
 	assert(room != NULL);
 
 	coord_t opening;
@@ -656,12 +656,12 @@ void Create_ClosedRooms(game_state_t *state, int num_rooms_specified, int room_s
 	int radius = (room_size - 1) / 2;
 
 	// Ensure there is enough space to define the first room at the center of the map. Reduce radius if room is too big.
-	coord_t pos = NewCoord(WorldScreenWidth() / 2, WorldScreenHeight() / 2);
+	coord_t pos = NewCoord(Get_WorldScreenWidth() / 2, Get_WorldScreenHeight() / 2);
 	bool isValid;
 	do {
-		DefineClosedRoom(&state->rooms[0], pos, radius);
+		Define_ClosedRoom(&state->rooms[0], pos, radius);
 		isValid = true;
-		if (CheckRoomCollision((const tile_t**)state->world_tiles, &state->rooms[0])) {
+		if (Check_RoomCollision((const tile_t**)state->world_tiles, &state->rooms[0])) {
 			isValid = false;
 			state->debug_rcs++;
 			radius--;
@@ -670,19 +670,19 @@ void Create_ClosedRooms(game_state_t *state, int num_rooms_specified, int room_s
 
 	// Begin creating rooms.
 	const int NUM_INITIAL_ITERATIONS = 100;
-	InstantiateClosedRoomRecursive(state, pos, radius, NUM_INITIAL_ITERATIONS, num_rooms_specified);
+	Create_ClosedRoomRecursive(state, pos, radius, NUM_INITIAL_ITERATIONS, num_rooms_specified);
 }
 
-void InstantiateClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms) {
+void Create_ClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms) {
 	assert(state != NULL);
 
 	// Create the latest defined room.
-	GenerateRoom(state->world_tiles, &state->rooms[state->num_rooms_created]);
+	Generate_Room(state->world_tiles, &state->rooms[state->num_rooms_created]);
 	state->num_rooms_created++;
 
 	coord_t oldPos = pos;
 	int randDirection = rand() % 4;
-	int nextRadius = GetNextRoomRadius();
+	int nextRadius = Get_NextRoomRadius();
 
 	// Try to initialise new rooms and draw corridors to them, until all retry iterations are used up OR max rooms are reached.
 	for (int i = 0; i < iterations; i++) {
@@ -719,75 +719,75 @@ void InstantiateClosedRoomRecursive(game_state_t *state, coord_t pos, int radius
 		}
 
 		// Define the new room.
-		DefineClosedRoom(&state->rooms[state->num_rooms_created], newPos, nextRadius);
+		Define_ClosedRoom(&state->rooms[state->num_rooms_created], newPos, nextRadius);
 
 		// Check that this new room doesnt collide with map boundaries or anything solid.
-		if (CheckRoomCollision((const tile_t **)state->world_tiles, &state->rooms[state->num_rooms_created])) {
+		if (Check_RoomCollision((const tile_t **)state->world_tiles, &state->rooms[state->num_rooms_created])) {
 			state->debug_rcs++;
 			continue;
 		}
 
 		// Check that the corridor that will connect this room and the new room doesnt collide with anything solid.
-		if (CheckCorridorCollision((const tile_t**)state->world_tiles, oldPos, radius, randDirection)) {
+		if (Check_CorridorCollision((const tile_t**)state->world_tiles, oldPos, radius, randDirection)) {
 			state->debug_rcs++;
 			continue;
 		}
 
 		// Generate the corridor, connecting this room to the next (next room's opening is marked with '?').
-		GenerateCorridor(state->world_tiles, oldPos, radius, randDirection);
+		Generate_Corridor(state->world_tiles, oldPos, radius, randDirection);
 
 		// Instantiate conjoined room.
 		int newMaxIterations = 100;
-		InstantiateClosedRoomRecursive(state, newPos, nextRadius, newMaxIterations, max_rooms);
+		Create_ClosedRoomRecursive(state, newPos, nextRadius, newMaxIterations, max_rooms);
 	}
 	return;
 }
 
-int GetNextRoomRadius(void) {
+int Get_NextRoomRadius(void) {
 	return (rand() % 6) + 2;
 }
 
-void GenerateCorridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction) {
+void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction) {
 	assert(world_tiles != NULL);
 
 	switch (direction) {
 
 		case Dir_Up:
 			// Create opening for THIS room; create marked opening for NEXT room.
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - corridor_size), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - (corridor_size * 2)), '?', TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - corridor_size), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - (corridor_size * 2)), '?', TileType_Empty, Clr_White, NULL, NULL);
 
 			// Connect rooms with the corridor.
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 			}
 			break;
 		case Dir_Down:
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + corridor_size), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + (corridor_size * 2)), '?', TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + corridor_size), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + (corridor_size * 2)), '?', TileType_Empty, Clr_White, NULL, NULL);
 
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 			}
 			break;
 		case Dir_Left:
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size, starting_room.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x - (corridor_size * 2), starting_room.y), '?', TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x - corridor_size, starting_room.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x - (corridor_size * 2), starting_room.y), '?', TileType_Empty, Clr_White, NULL, NULL);
 
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y - 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y + 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y - 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y + 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 			}
 			break;
 		case Dir_Right:
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size, starting_room.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
-			UpdateWorldTile(world_tiles, NewCoord(starting_room.x + (corridor_size * 2), starting_room.y), '?', TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x + corridor_size, starting_room.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x + (corridor_size * 2), starting_room.y), '?', TileType_Empty, Clr_White, NULL, NULL);
 
 			for (int i = 0; i < corridor_size; i++) {
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y - 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
-				UpdateWorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y + 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y - 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y + 1), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 			}
 			break;
 		default:
@@ -795,13 +795,13 @@ void GenerateCorridor(tile_t **world_tiles, coord_t starting_room, int corridor_
 	}
 }
 
-bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction) {
+bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction) {
 	assert(world_tiles != NULL);
 
 	switch (direction) {
 		case Dir_Up:
 			for (int i = 0; i < corridor_size; i++) {
-				if (CheckWorldBounds(NewCoord(starting_room.x, starting_room.y - corridor_size - (i + 1)))) {
+				if (Check_WorldBounds(NewCoord(starting_room.x, starting_room.y - corridor_size - (i + 1)))) {
 					return true;
 				} else if (world_tiles[starting_room.x][starting_room.y - corridor_size - (i + 1)].type == TileType_Solid
 					|| world_tiles[starting_room.x - 1][starting_room.y - corridor_size - (i + 1)].type == TileType_Solid
@@ -812,7 +812,7 @@ bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, i
 			return false;
 		case Dir_Down:
 			for (int i = 0; i < corridor_size; i++) {
-				if (CheckWorldBounds(NewCoord(starting_room.x, starting_room.y + corridor_size + (i + 1)))) {
+				if (Check_WorldBounds(NewCoord(starting_room.x, starting_room.y + corridor_size + (i + 1)))) {
 					return true;
 				} else if (world_tiles[starting_room.x][starting_room.y + corridor_size + (i + 1)].type == TileType_Solid
 					|| world_tiles[starting_room.x - 1][starting_room.y + corridor_size + (i + 1)].type == TileType_Solid
@@ -823,7 +823,7 @@ bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, i
 			return false;
 		case Dir_Left:
 			for (int i = 0; i < corridor_size; i++) {
-				if (CheckWorldBounds(NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y))) {
+				if (Check_WorldBounds(NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y))) {
 					return true;
 				} else if (world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y].type == TileType_Solid
 					|| world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y - 1].type == TileType_Solid
@@ -834,7 +834,7 @@ bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, i
 			return false;
 		case Dir_Right:
 			for (int i = 0; i < corridor_size; i++) {
-				if (CheckWorldBounds(NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y))) {
+				if (Check_WorldBounds(NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y))) {
 					return true;
 				} else if (world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y].type == TileType_Solid
 					|| world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y - 1].type == TileType_Solid
@@ -848,7 +848,7 @@ bool CheckCorridorCollision(const tile_t **world_tiles, coord_t starting_room, i
 	}
 }
 
-void DefineClosedRoom(room_t *room, coord_t pos, int radius) {
+void Define_ClosedRoom(room_t *room, coord_t pos, int radius) {
 	assert(room != NULL);
 
 	room->TL_corner.x = pos.x - radius;
@@ -864,7 +864,7 @@ void DefineClosedRoom(room_t *room, coord_t pos, int radius) {
 	room->BR_corner.y = pos.y + radius;
 }
 
-void GenerateRoom(tile_t **world_tiles, const room_t *room) {
+void Generate_Room(tile_t **world_tiles, const room_t *room) {
 	assert(world_tiles != NULL);
 	assert(room != NULL);
 
@@ -873,34 +873,34 @@ void GenerateRoom(tile_t **world_tiles, const room_t *room) {
 	// Bottom and top walls.
 	for (int x = room->TL_corner.x; x <= room->TR_corner.x; x++) {
 		if (world_tiles[x][room->TL_corner.y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 
 		if (world_tiles[x][room->BL_corner.y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 	}
 
 	// Left and right walls.
 	for (int y = room->TR_corner.y; y <= room->BR_corner.y; y++) {
 		if (world_tiles[room->TR_corner.x][y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 		if (world_tiles[room->TL_corner.x][y].sprite != '?') {
-			UpdateWorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_WALL, TileType_Solid, Clr_White, NULL, NULL);
 		} else {
-			UpdateWorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+			Update_WorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 	}
 }
 
-void UpdateWorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, enemy_t *enemy_occupier, const item_t *item_occupier) {
+void Update_WorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, enemy_t *enemy_occupier, const item_t *item_occupier) {
 	assert(world_tiles != NULL);
 
 	world_tiles[pos.x][pos.y].sprite = sprite;
@@ -910,7 +910,7 @@ void UpdateWorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_e
 	world_tiles[pos.x][pos.y].item_occupier = item_occupier;
 }
 
-void ApplyVision(const game_state_t *state, coord_t pos) {
+void Apply_Vision(const game_state_t *state, coord_t pos) {
 	assert(state != NULL);
 
 	if (state->fog_of_war) {
@@ -923,7 +923,7 @@ void ApplyVision(const game_state_t *state, coord_t pos) {
 	}
 }
 
-void UpdateGameLog(log_list_t *game_log, const char *format, ...) {
+void Update_GameLog(log_list_t *game_log, const char *format, ...) {
 	assert(game_log != NULL);
 
 	// Cycle old log messages upwards.
@@ -937,7 +937,7 @@ void UpdateGameLog(log_list_t *game_log, const char *format, ...) {
 	va_end(argp);
 }
 
-void EnemyCombatUpdate(game_state_t *state, enemy_node_t *enemy_list) {
+void Update_AllEnemyCombat(game_state_t *state, enemy_node_t *enemy_list) {
 	assert(state != NULL);
 	assert(enemy_list != NULL);
 
@@ -948,14 +948,14 @@ void EnemyCombatUpdate(game_state_t *state, enemy_node_t *enemy_list) {
 			node->enemy->curr_health--;
 			if (node->enemy->curr_health <= 0) {
 				node->enemy->is_alive = false;
-				UpdateWorldTile(state->world_tiles, node->enemy->pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
+				Update_WorldTile(state->world_tiles, node->enemy->pos, SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 			}
 			break;
 		}
 	}
 }
 
-void NextPlayerInput(game_state_t *state) {
+void Get_NextPlayerInput(game_state_t *state) {
 	assert(state != NULL);
 
 	player_t *player = &state->player;
@@ -965,7 +965,7 @@ void NextPlayerInput(game_state_t *state) {
 	// This method of input processing allows for interrupt handling (dealing with resizes).
 	bool valid_key_pressed = false;
 	while (!valid_key_pressed) {
-		const int key = GetKeyInput();
+		const int key = Get_KeyInput();
 		switch (key) {
 			case KEY_UP:
 				if (player->pos.y - 1 >= 0 + TOP_PANEL_OFFSET && state->world_tiles[player->pos.x][player->pos.y - 1].type != TileType_Solid) {
@@ -974,7 +974,7 @@ void NextPlayerInput(game_state_t *state) {
 				valid_key_pressed = true;
 				break;
 			case KEY_DOWN:
-				if (player->pos.y + 1 < WorldScreenHeight() && state->world_tiles[player->pos.x][player->pos.y + 1].type != TileType_Solid) {
+				if (player->pos.y + 1 < Get_WorldScreenHeight() && state->world_tiles[player->pos.x][player->pos.y + 1].type != TileType_Solid) {
 					player->pos.y++;
 				}
 				valid_key_pressed = true;
@@ -986,17 +986,17 @@ void NextPlayerInput(game_state_t *state) {
 				valid_key_pressed = true;
 				break;
 			case KEY_RIGHT:
-				if (player->pos.x + 1 < WorldScreenWidth() && state->world_tiles[player->pos.x + 1][player->pos.y].type != TileType_Solid) {
+				if (player->pos.x + 1 < Get_WorldScreenWidth() && state->world_tiles[player->pos.x + 1][player->pos.y].type != TileType_Solid) {
 					player->pos.x++;
 				}
 				valid_key_pressed = true;
 				break;
 			case 'h':
-				DrawHelpScreen();
+				Draw_HelpScreen();
 				valid_key_pressed = true;
 				break;
 			case 'i':
-				DrawPlayerInfoScreen(state);
+				Draw_PlayerInfoScreen(state);
 				valid_key_pressed = true;
 				break;
 			case 'f':
@@ -1012,7 +1012,7 @@ void NextPlayerInput(game_state_t *state) {
 			case '\n':
 			case KEY_ENTER:
 				if (state->player.current_target != ' ') {
-					InteractWithNPC(state, state->player.current_target);
+					Interact_NPC(state, state->player.current_target);
 					valid_key_pressed = true;
 				}
 				break;
@@ -1028,17 +1028,17 @@ void NextPlayerInput(game_state_t *state) {
 	}
 }
 
-void InteractWithNPC(game_state_t *state, char npc_target) {
+void Interact_NPC(game_state_t *state, char npc_target) {
 	switch (npc_target) {
 		case SPR_MERCHANT:
-			DrawMerchantScreen(state);
+			Draw_MerchantScreen(state);
 			return;
 		default:
 			return;
 	}
 }
 
-void DrawHelpScreen(void) {
+void Draw_HelpScreen(void) {
 	const int terminal_w = GEO_screen_width() - 1;
 	const int terminal_h = GEO_screen_height() - 1;
 
@@ -1053,10 +1053,10 @@ void DrawHelpScreen(void) {
 	GEO_draw_align_center(0, terminal_h / 2 + 4, Clr_White, "Press any key to continue...");
 
 	GEO_show_screen();
-	GetKeyInput();
+	Get_KeyInput();
 }
 
-int GetKeyInput(void) {
+int Get_KeyInput(void) {
 	while (true) {
 		const int key = GEO_get_char();
 		switch (key) {
@@ -1072,16 +1072,16 @@ int GetKeyInput(void) {
 	}
 }
 
-void DrawDeathScreen(void) {
+void Draw_DeathScreen(void) {
 	GEO_clear_screen();
 
 	GEO_draw_align_center(0, GEO_screen_height() / 2, Clr_Red, "YOU DIED");
 
 	GEO_show_screen();
-	GetKeyInput();
+	Get_KeyInput();
 }
 
-void DrawMerchantScreen(game_state_t *state) {
+void Draw_MerchantScreen(game_state_t *state) {
 	assert(state != NULL);
 
 	const int terminal_w = GEO_screen_width() - 1;
@@ -1114,7 +1114,7 @@ void DrawMerchantScreen(game_state_t *state) {
 	bool validKeyPress = false;
 	item_slug_en chosen_item = I_None;
 	while (!validKeyPress) {
-		const int key = GetKeyInput();
+		const int key = Get_KeyInput();
 		switch (key) {
 			case '1':
 				chosen_item = I_SmallFood;
@@ -1138,19 +1138,19 @@ void DrawMerchantScreen(game_state_t *state) {
 	// If player bought something...
 	if (chosen_item != I_None) {
 		if (state->player.stats.num_gold >= GetItem(chosen_item)->value) {
-			if (AddToInventory(&state->player, GetItem(chosen_item))) {
+			if (AddTo_Inventory(&state->player, GetItem(chosen_item))) {
 				state->player.stats.num_gold -= GetItem(chosen_item)->value;
-				UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_MERCHANT, GetItem(chosen_item)->name);
+				Update_GameLog(&state->game_log, LOGMSG_PLR_BUY_MERCHANT, GetItem(chosen_item)->name);
 			} else {
-				UpdateGameLog(&state->game_log, LOGMSG_PLR_BUY_FULL_MERCHANT);
+				Update_GameLog(&state->game_log, LOGMSG_PLR_BUY_FULL_MERCHANT);
 			}
 		} else {
-			UpdateGameLog(&state->game_log, LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT);
+			Update_GameLog(&state->game_log, LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT);
 		}
 	}
 }
 
-int AddHealth(player_t *player, int amount) {
+int AddTo_Health(player_t *player, int amount) {
 	assert(player != NULL);
 
 	if (player->stats.curr_health + amount > player->stats.max_health) {
@@ -1160,7 +1160,7 @@ int AddHealth(player_t *player, int amount) {
 	return amount;
 }
 
-void DrawPlayerInfoScreen(const game_state_t * state) {
+void Draw_PlayerInfoScreen(const game_state_t * state) {
 	assert(state != NULL);
 
 	const int terminal_w = GEO_screen_width() - 1;
@@ -1197,10 +1197,10 @@ void DrawPlayerInfoScreen(const game_state_t * state) {
 	GEO_draw_formatted(x, y++, Clr_White, "Enemies slain - %d", state->player.stats.enemies_slain);
 
 	GEO_show_screen();
-	GetKeyInput();
+	Get_KeyInput();
 }
 
-bool AddToInventory(player_t *player, const item_t *item) {
+bool AddTo_Inventory(player_t *player, const item_t *item) {
 	assert(player != NULL);
 	assert(item != NULL);
 
