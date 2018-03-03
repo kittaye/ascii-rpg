@@ -81,11 +81,6 @@ void Cleanup_DungeonFloor(game_state_t *state) {
 
 	free(state->rooms);
 	state->rooms = (room_t*)NULL;
-
-	// Reset other floor-specific variables.
-	state->fog_of_war = true;
-	state->num_rooms_created = 0;
-	state->debug_rcs = 0;
 }
 
 void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified) {
@@ -95,15 +90,17 @@ void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int r
 	const int world_screen_h = Get_WorldScreenHeight();
 	const int HUB_MAP_FREQUENCY = 4;
 
+	// Reset dungeon floor values from the previous floor.
+	state->fog_of_war = true;
+	state->num_rooms_created = 0;
+	state->debug_rcs = 0;
+
 	// Create empty space.
 	for (int x = 0; x < world_screen_w; x++) {
 		for (int y = 0; y < world_screen_h; y++) {
 			Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, TileType_Empty, Clr_White, NULL, NULL);
 		}
 	}
-
-	state->rooms = malloc(sizeof(*state->rooms) * num_rooms_specified);
-	assert(state->rooms != NULL);
 
 	// Every few floors, the hub layout is created instead of a random dungeon layout.
 	if (state->current_floor % HUB_MAP_FREQUENCY == 0) {
@@ -112,6 +109,9 @@ void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int r
 	} else {
 		state->player.stats.max_vision = PLAYER_MAX_VISION;
 	}
+
+	state->rooms = malloc(sizeof(*state->rooms) * num_rooms_specified);
+	assert(state->rooms != NULL);
 
 	// Create the floor.
 	if (filename_specified != NULL) {
