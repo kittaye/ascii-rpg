@@ -1,18 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
 #include <assert.h>
-#include <math.h>
-#include <curses.h>
 #include <stdbool.h>
 #include "george_graphics.h"
 #include "log_messages.h"
-#include "items.h"
-#include "enemies.h"
-#include "coord.h"
 #include "ascii_game.h"
 
 static bool FContainsChar(FILE *fp, char char_to_find);
