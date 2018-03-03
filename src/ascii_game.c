@@ -18,7 +18,7 @@
 bool g_resize_error = false;
 bool g_process_over = false;
 
-void InitGameState(game_state_t *state) {
+void Init_GameState(game_state_t *state) {
 	assert(state != NULL);
 
 	const int world_screen_w = WorldScreenWidth();
@@ -36,6 +36,7 @@ void InitGameState(game_state_t *state) {
 	state->debug_rcs = 0;
 
 	state->enemy_list = (enemy_node_t*)NULL;
+	state->rooms = (room_t*)NULL;
 
 	state->world_tiles = malloc(sizeof(*state->world_tiles) * world_screen_w);
 	assert(state->world_tiles != NULL);
@@ -58,11 +59,9 @@ void Cleanup_GameState(game_state_t *state) {
 		free(state->world_tiles[i]);
 	}
 	free(state->world_tiles);
-	free(state->rooms);
-	FreeEnemyList(&state->enemy_list);
 }
 
-void ResetDungeonFloor(game_state_t *state) {
+void Cleanup_DungeonFloor(game_state_t *state) {
 	assert(state != NULL);
 
 	FreeEnemyList(&state->enemy_list);
@@ -77,7 +76,7 @@ void ResetDungeonFloor(game_state_t *state) {
 	state->debug_rcs = 0;
 }
 
-void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified) {
+void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified) {
 	assert(state != NULL);
 
 	const int world_screen_w = WorldScreenWidth();
@@ -104,10 +103,10 @@ void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_s
 
 	// Create the floor.
 	if (filename_specified != NULL) {
-		CreateRoomsFromFile(state, filename_specified);
+		Create_RoomsFromFile(state, filename_specified);
 	} else {
 		//CreateOpenRooms(state, num_rooms_specified, room_size_specified);
-		CreateClosedRooms(state, num_rooms_specified, room_size_specified);
+		Create_ClosedRooms(state, num_rooms_specified, room_size_specified);
 
 		PopulateRooms(state);
 	}
@@ -140,9 +139,9 @@ void PopulateRooms(game_state_t *state) {
 				if (val >= 99) {
 					enemy_t *enemy = NULL;
 					if (val == 99) {
-						enemy = InitAndCreateEnemy(GetEnemyData(E_Zombie), NewCoord(x, y));
+						enemy = InitCreate_Enemy(GetEnemyData(E_Zombie), NewCoord(x, y));
 					} else if (val == 100) {
-						enemy = InitAndCreateEnemy(GetEnemyData(E_Werewolf), NewCoord(x, y));
+						enemy = InitCreate_Enemy(GetEnemyData(E_Werewolf), NewCoord(x, y));
 					}
 					UpdateWorldTile(state->world_tiles, enemy->pos, enemy->data->sprite, TileType_Enemy, Clr_Red, enemy, NULL);
 					AddToEnemyList(&state->enemy_list, enemy);
@@ -170,7 +169,7 @@ void PopulateRooms(game_state_t *state) {
 	UpdateWorldTile(state->world_tiles, pos, SPR_STAIRCASE, TileType_Special, Clr_Yellow, NULL, NULL);
 }
 
-enemy_t* InitAndCreateEnemy(const enemy_data_t *enemy_data, coord_t pos) {
+enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos) {
 	assert(enemy_data != NULL);
 
 	enemy_t *enemy = malloc(sizeof(*enemy));
@@ -189,7 +188,7 @@ enemy_t* InitAndCreateEnemy(const enemy_data_t *enemy_data, coord_t pos) {
 	return enemy;
 }
 
-player_t CreatePlayer(void) {
+player_t Create_Player(void) {
 	player_t player;
 
 	player.sprite = SPR_PLAYER;
@@ -441,7 +440,7 @@ bool CheckWorldBounds(coord_t coord) {
 	return false;
 }
 
-void CreateRoomsFromFile(game_state_t *state, const char *filename) {
+void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 	assert(state != NULL);
 	assert(filename != NULL);
 
@@ -510,11 +509,11 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 						break;
 					case SPR_ZOMBIE:
 						isEnemy = true;
-						enemy = InitAndCreateEnemy(GetEnemyData(E_Zombie), pos);
+						enemy = InitCreate_Enemy(GetEnemyData(E_Zombie), pos);
 						break;
 					case SPR_WEREWOLF:
 						isEnemy = true;
-						enemy = InitAndCreateEnemy(GetEnemyData(E_Werewolf), pos);
+						enemy = InitCreate_Enemy(GetEnemyData(E_Werewolf), pos);
 						break;
 					case SPR_STAIRCASE:
 						type = TileType_Special;
@@ -547,7 +546,7 @@ void CreateRoomsFromFile(game_state_t *state, const char *filename) {
 	}
 }
 
-void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size) {
+void Create_OpenRooms(game_state_t *state, int num_rooms_specified, int room_size) {
 	assert(state != NULL);
 
 	const int EXTENDED_BOUNDS_OFFSET = 2;
@@ -651,7 +650,7 @@ coord_t GetRandRoomOpeningPos(const room_t *room) {
 	return opening;
 }
 
-void CreateClosedRooms(game_state_t *state, int num_rooms_specified, int room_size) {
+void Create_ClosedRooms(game_state_t *state, int num_rooms_specified, int room_size) {
 	assert(state != NULL);
 
 	int radius = (room_size - 1) / 2;

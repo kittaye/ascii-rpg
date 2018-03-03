@@ -135,18 +135,17 @@ typedef struct game_state_t {
 extern bool g_resize_error;
 extern bool g_process_over;
 
-// Function initialization.
-void InitGameState(game_state_t *state);
-void ResetDungeonFloor(game_state_t *state);
-void CreateDungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified);
-player_t CreatePlayer(void);
-enemy_t* InitAndCreateEnemy(const enemy_data_t *enemy_data, coord_t pos);
+// Function declarations.
+void Init_GameState(game_state_t *state);
+void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified);
+player_t Create_Player(void);
+enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos);
 void Process(game_state_t *state);
 
 int GetNextRoomRadius(void);
-void CreateOpenRooms(game_state_t *state, int num_rooms_specified, int room_size);
-void CreateClosedRooms(game_state_t *state, int num_rooms_specified, int room_size);
-void CreateRoomsFromFile(game_state_t *state, const char *filename);
+void Create_OpenRooms(game_state_t *state, int num_rooms_specified, int room_size);
+void Create_ClosedRooms(game_state_t *state, int num_rooms_specified, int room_size);
+void Create_RoomsFromFile(game_state_t *state, const char *filename);
 void DefineOpenRoom(room_t *room, int room_size);
 void DefineClosedRoom(room_t *room, coord_t pos, int radius);
 void InstantiateClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms);
@@ -178,6 +177,7 @@ bool AddToInventory(player_t *player, const item_t *item);
 int WorldScreenWidth(void);
 int WorldScreenHeight(void);
 
+void Cleanup_DungeonFloor(game_state_t *state);
 void Cleanup_GameState(game_state_t *state);
 
 #endif /* ASCII_GAME_H_ */
