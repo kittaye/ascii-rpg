@@ -594,7 +594,7 @@ static void Create_Rooms(game_state_t *state, int num_rooms_specified) {
 static void Create_RoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms) {
 	assert(state != NULL);
 
-	// Create the latest defined room.
+	// Create the latest room.
 	Generate_Room(state->world_tiles, &state->rooms[state->num_rooms_created]);
 	state->num_rooms_created++;
 
@@ -645,16 +645,16 @@ static void Create_RoomRecursive(game_state_t *state, coord_t pos, int radius, i
 			continue;
 		}
 
-		// Check that the corridor that will connect this room and the new room doesnt collide with anything solid.
+		// Check that the corridor that will connect the last created room with this new room doesnt collide with anything solid.
 		if (Check_CorridorCollision((const tile_t**)state->world_tiles, oldPos, radius, randDirection)) {
 			state->debug_rcs++;
 			continue;
 		}
 
-		// Generate the corridor, connecting this room to the next (next room's opening is marked with '?').
+		// Generate the corridor, connecting the last created room to the new one (new room's opening is marked with '?').
 		Generate_Corridor(state->world_tiles, oldPos, radius, randDirection);
 
-		// Instantiate conjoined room.
+		// Instantiate the new conjoined room.
 		int newMaxIterations = 100;
 		Create_RoomRecursive(state, newPos, nextRadius, newMaxIterations, max_rooms);
 	}
@@ -905,10 +905,6 @@ void Get_NextPlayerInput(game_state_t *state) {
 				Draw_HelpScreen();
 				valid_key_pressed = true;
 				break;
-			case 'i':
-				Draw_PlayerInfoScreen(state);
-				valid_key_pressed = true;
-				break;
 			case 'f':
 				state->fog_of_war = !state->fog_of_war;
 				valid_key_pressed = true;
@@ -939,6 +935,8 @@ void Get_NextPlayerInput(game_state_t *state) {
 }
 
 void Interact_NPC(game_state_t *state, char npc_target) {
+	assert(state != NULL);
+
 	switch (npc_target) {
 		case SPR_MERCHANT:
 			Draw_MerchantScreen(state);
@@ -957,10 +955,9 @@ void Draw_HelpScreen(void) {
 	GEO_draw_align_center(0, terminal_h / 2 - 4, Clr_White, "Asciiscape by George Delosa");
 	GEO_draw_align_center(0, terminal_h / 2 - 2, Clr_White, "up/down/left/right: movement keys");
 	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 - 1, Clr_White, "h: show this help screen");
-	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 - 0, Clr_White, "i: show player info screen");
-	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 + 1, Clr_White, "f: toggle fog of war");
-	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 + 2, Clr_White, "q: quit game");
-	GEO_draw_align_center(0, terminal_h / 2 + 4, Clr_White, "Press any key to continue...");
+	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 + 0, Clr_White, "f: toggle fog of war");
+	GEO_draw_string(terminal_w / 2 - 11, terminal_h / 2 + 1, Clr_White, "q: quit game");
+	GEO_draw_align_center(0, terminal_h / 2 + 3, Clr_White, "Press any key to continue...");
 
 	GEO_show_screen();
 	Get_KeyInput();
@@ -1066,46 +1063,6 @@ int AddTo_Health(player_t *player, int amount) {
 	player->stats.curr_health = CLAMP(player->stats.curr_health + amount, 0, player->stats.max_health);
 
 	return amount;
-}
-
-void Draw_PlayerInfoScreen(const game_state_t * state) {
-	assert(state != NULL);
-
-	const int terminal_w = GEO_screen_width() - 1;
-	const int terminal_h = GEO_screen_height() - 1;
-
-	GEO_clear_screen();
-
-	GEO_draw_line(0, 0, terminal_w, 0, Clr_White, '*');
-	GEO_draw_line(0, 0, 0, terminal_h, Clr_White, '*');
-	GEO_draw_line(terminal_w, 0, terminal_w, terminal_h, Clr_White, '*');
-	GEO_draw_line(0, terminal_h, terminal_w, terminal_h, Clr_White, '*');
-
-	int x = 3;
-	int y = 2;
-
-	GEO_draw_formatted_align_center(0, y++, Clr_Cyan, "Hero,  Lvl. %d", state->player.stats.level);
-	GEO_draw_formatted_align_center(0, y++, Clr_White, "Current floor: %d", state->current_floor);
-	y++;
-	GEO_draw_formatted_align_center(0, y++, Clr_White, "Health - %d/%d   Mana - %d/%d   Gold - %d",
-		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
-	y++;
-	GEO_draw_string(x, y++, Clr_Cyan, "Inventory");
-	for (int i = 0; i < INVENTORY_SIZE; i++) {
-		GEO_draw_formatted(x, y++, Clr_Yellow, "(%d) %s", i + 1, state->player.inventory[i]->name);
-	}
-	y++;
-	GEO_draw_string(x, y++, Clr_Cyan, "Stats");
-	GEO_draw_formatted(x, y++, Clr_Yellow, "STR - %d", state->player.stats.s_STR);
-	GEO_draw_formatted(x, y++, Clr_Yellow, "DEF - %d", state->player.stats.s_DEF);
-	GEO_draw_formatted(x, y++, Clr_Yellow, "VIT - %d", state->player.stats.s_VIT);
-	GEO_draw_formatted(x, y++, Clr_Yellow, "INT - %d", state->player.stats.s_INT);
-	GEO_draw_formatted(x, y++, Clr_Yellow, "LCK - %d", state->player.stats.s_LCK);
-	y++;
-	GEO_draw_formatted(x, y++, Clr_White, "Enemies slain - %d", state->player.stats.enemies_slain);
-
-	GEO_show_screen();
-	Get_KeyInput();
 }
 
 bool AddTo_Inventory(player_t *player, const item_t *item) {
