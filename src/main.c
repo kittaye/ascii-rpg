@@ -6,10 +6,6 @@
 #include "log_messages.h"
 #include "ascii_game.h"
 
-// Global variable definitions.
-bool g_resize_error = false;
-bool g_process_over = false;
-
 // Private function.
 static bool FContainsChar(FILE *fp, char char_to_find);
 
@@ -24,11 +20,7 @@ int main(int argc, char *argv[]) {
 	const char *filename_specified = NULL;
 	{
 		num_rooms_specified = (int)strtol(argv[1], 0, 0);
-		if (num_rooms_specified < MIN_ROOMS) {
-			num_rooms_specified = MIN_ROOMS;
-		} else if (num_rooms_specified > MAX_ROOMS) {
-			num_rooms_specified = MAX_ROOMS;
-		}
+		num_rooms_specified = CLAMP(num_rooms_specified, MIN_ROOMS, MAX_ROOMS);
 
 		if (argc == 3) {
 			filename_specified = argv[2];
