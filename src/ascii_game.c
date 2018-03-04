@@ -31,7 +31,7 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename);
 static void Populate_Rooms(game_state_t *state);
 static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
 static bool Check_RoomCollision(const tile_t **world_tiles, const room_t *room);
-static bool Check_RoomWorldBounds(const room_t *room);
+static bool Check_RoomOutOfWorldBounds(const room_t *room);
 
 void Init_GameState(game_state_t *state) {
 	assert(state != NULL);
@@ -142,7 +142,7 @@ static void Populate_Rooms(game_state_t *state) {
 				state->rooms[i].TL_corner.x + ((state->rooms[i].TR_corner.x - state->rooms[i].TL_corner.x) / 2),
 				state->rooms[i].TR_corner.y + ((state->rooms[i].BR_corner.y - state->rooms[i].TR_corner.y) / 2)
 			);
-			Set_PlayerPos(state, pos);
+			Try_SetPlayerPos(state, pos);
 			continue;
 		}
 
@@ -236,11 +236,11 @@ player_t Create_Player(void) {
 	return player;
 }
 
-bool Set_PlayerPos(game_state_t *state, coord_t pos) {
-	assert(player != NULL);
+bool Try_SetPlayerPos(game_state_t *state, coord_t pos) {
+	assert(state != NULL);
 
-	if (Check_WorldBounds(pos) && state->world_tiles[pos.x][pos.y].type != TileType_Solid) {
-		player->pos = pos;
+	if (!Check_OutOfWorldBounds(pos) && state->world_tiles[pos.x][pos.y].type != TileType_Solid) {
+		state->player.pos = pos;
 		return true;
 	}
 	return false;
@@ -428,7 +428,7 @@ static bool Check_RoomCollision(const tile_t **world_tiles, const room_t *room) 
 	assert(world_tiles != NULL);
 	assert(room != NULL);
 
-	if (Check_RoomWorldBounds(room)) {
+	if (Check_RoomOutOfWorldBounds(room)) {
 		return true;
 	}
 
@@ -445,16 +445,16 @@ static bool Check_RoomCollision(const tile_t **world_tiles, const room_t *room) 
 	return false;
 }
 
-static bool Check_RoomWorldBounds(const room_t *room) {
+static bool Check_RoomOutOfWorldBounds(const room_t *room) {
 	assert(room != NULL);
 
-	if (Check_WorldBounds(room->TL_corner) || Check_WorldBounds(room->TR_corner) || Check_WorldBounds(room->BL_corner)) {
+	if (Check_OutOfWorldBounds(room->TL_corner) || Check_OutOfWorldBounds(room->TR_corner) || Check_OutOfWorldBounds(room->BL_corner)) {
 		return true;
 	}
 	return false;
 }
 
-bool Check_WorldBounds(coord_t coord) {
+bool Check_OutOfWorldBounds(coord_t coord) {
 	if (coord.x >= Get_WorldScreenWidth() || coord.x < 0 || coord.y < 0 + TOP_PANEL_OFFSET || coord.y >= Get_WorldScreenHeight()) {
 		return true;
 	}
@@ -510,7 +510,7 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 
 				switch (line[i]) {
 					case SPR_PLAYER:
-						Set_PlayerPos(state, pos);
+						Try_SetPlayerPos(state, pos);
 						line[i] = SPR_EMPTY;
 						break;
 					case SPR_WALL:
@@ -719,7 +719,7 @@ static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting
 	switch (direction) {
 		case Dir_Up:
 			for (int i = 0; i < corridor_size; i++) {
-				if (Check_WorldBounds(NewCoord(starting_room.x, starting_room.y - corridor_size - (i + 1)))) {
+				if (Check_OutOfWorldBounds(NewCoord(starting_room.x, starting_room.y - corridor_size - (i + 1)))) {
 					return true;
 				} else if (world_tiles[starting_room.x][starting_room.y - corridor_size - (i + 1)].type == TileType_Solid
 					|| world_tiles[starting_room.x - 1][starting_room.y - corridor_size - (i + 1)].type == TileType_Solid
@@ -730,7 +730,7 @@ static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting
 			return false;
 		case Dir_Down:
 			for (int i = 0; i < corridor_size; i++) {
-				if (Check_WorldBounds(NewCoord(starting_room.x, starting_room.y + corridor_size + (i + 1)))) {
+				if (Check_OutOfWorldBounds(NewCoord(starting_room.x, starting_room.y + corridor_size + (i + 1)))) {
 					return true;
 				} else if (world_tiles[starting_room.x][starting_room.y + corridor_size + (i + 1)].type == TileType_Solid
 					|| world_tiles[starting_room.x - 1][starting_room.y + corridor_size + (i + 1)].type == TileType_Solid
@@ -741,7 +741,7 @@ static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting
 			return false;
 		case Dir_Left:
 			for (int i = 0; i < corridor_size; i++) {
-				if (Check_WorldBounds(NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y))) {
+				if (Check_OutOfWorldBounds(NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y))) {
 					return true;
 				} else if (world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y].type == TileType_Solid
 					|| world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y - 1].type == TileType_Solid
@@ -752,7 +752,7 @@ static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting
 			return false;
 		case Dir_Right:
 			for (int i = 0; i < corridor_size; i++) {
-				if (Check_WorldBounds(NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y))) {
+				if (Check_OutOfWorldBounds(NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y))) {
 					return true;
 				} else if (world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y].type == TileType_Solid
 					|| world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y - 1].type == TileType_Solid
@@ -886,27 +886,19 @@ void Get_NextPlayerInput(game_state_t *state) {
 		const int key = Get_KeyInput();
 		switch (key) {
 			case KEY_UP:
-				if (player->pos.y - 1 >= 0 + TOP_PANEL_OFFSET && state->world_tiles[player->pos.x][player->pos.y - 1].type != TileType_Solid) {
-					player->pos.y--;
-				}
+				Try_SetPlayerPos(state, NewCoord(player->pos.x, player->pos.y - 1));
 				valid_key_pressed = true;
 				break;
 			case KEY_DOWN:
-				if (player->pos.y + 1 < Get_WorldScreenHeight() && state->world_tiles[player->pos.x][player->pos.y + 1].type != TileType_Solid) {
-					player->pos.y++;
-				}
+				Try_SetPlayerPos(state, NewCoord(player->pos.x, player->pos.y + 1));
 				valid_key_pressed = true;
 				break;
 			case KEY_LEFT:
-				if (player->pos.x - 1 >= 0 && state->world_tiles[player->pos.x - 1][player->pos.y].type != TileType_Solid) {
-					player->pos.x--;
-				}
+				Try_SetPlayerPos(state, NewCoord(player->pos.x - 1, player->pos.y));
 				valid_key_pressed = true;
 				break;
 			case KEY_RIGHT:
-				if (player->pos.x + 1 < Get_WorldScreenWidth() && state->world_tiles[player->pos.x + 1][player->pos.y].type != TileType_Solid) {
-					player->pos.x++;
-				}
+				Try_SetPlayerPos(state, NewCoord(player->pos.x + 1, player->pos.y));
 				valid_key_pressed = true;
 				break;
 			case 'h':
