@@ -86,8 +86,10 @@ void Cleanup_DungeonFloor(game_state_t *state) {
 	state->rooms = (room_t*)NULL;
 }
 
-void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, const char *filename_specified) {
+void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specified, const char *filename_specified) {
 	assert(state != NULL);
+	assert(num_rooms_specified >= MIN_ROOMS);
+	assert(num_rooms_specified <= MAX_ROOMS);
 
 	const int world_screen_w = Get_WorldScreenWidth();
 	const int world_screen_h = Get_WorldScreenHeight();
@@ -129,7 +131,7 @@ void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, const
 
 static void Populate_Rooms(game_state_t *state) {
 	assert(state != NULL);
-	assert(state->num_rooms_created > 0);
+	assert(state->num_rooms_created >= MIN_ROOMS);
 
 	// Choose a random room for the player spawn (except the last room created which is reserved for staircase room).
 	const int player_spawn_room_index = rand() % (state->num_rooms_created - 1);
@@ -596,7 +598,7 @@ static void Create_RoomRecursive(game_state_t *state, coord_t pos, int radius, i
 
 	// Try to initialise new rooms and draw corridors to them, until all retry iterations are used up OR max rooms are reached.
 	for (int i = 0; i < iterations; i++) {
-		if (state->num_rooms_created == max_rooms) {
+		if (state->num_rooms_created >= max_rooms) {
 			return;
 		}
 
@@ -1063,10 +1065,8 @@ void Draw_MerchantScreen(game_state_t *state) {
 int AddTo_Health(player_t *player, int amount) {
 	assert(player != NULL);
 
-	if (player->stats.curr_health + amount > player->stats.max_health) {
-		amount = player->stats.max_health - player->stats.curr_health;
-	}
-	player->stats.curr_health += amount;
+	player->stats.curr_health = CLAMP(player->stats.curr_health + amount, 0, player->stats.max_health);
+
 	return amount;
 }
 
