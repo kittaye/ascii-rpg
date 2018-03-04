@@ -143,14 +143,6 @@ void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int r
 player_t Create_Player(void);
 enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos);
 
-void Create_OpenRooms(game_state_t *state, int num_rooms_specified, int room_size);
-void Create_ClosedRooms(game_state_t *state, int num_rooms_specified, int room_size);
-void Create_RoomsFromFile(game_state_t *state, const char *filename);
-void Populate_Rooms(game_state_t *state);
-bool Check_RoomCollision(const tile_t **world_tiles, const room_t *room);
-bool Check_RoomWorldBounds(const room_t *room);
-bool Check_WorldBounds(coord_t coord);
-
 void Process(game_state_t *state);
 void Draw_HelpScreen(void);
 void Draw_PlayerInfoScreen(const game_state_t *state);
@@ -166,6 +158,7 @@ void Set_PlayerPos(player_t *player, coord_t pos);
 void Interact_NPC(game_state_t *state, char npc_target);
 int AddTo_Health(player_t *player, int amount);
 bool AddTo_Inventory(player_t *player, const item_t *item);
+bool Check_WorldBounds(coord_t coord);
 
 int Get_WorldScreenWidth(void);
 int Get_WorldScreenHeight(void);
