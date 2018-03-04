@@ -134,12 +134,9 @@ typedef struct game_state_t {
 } game_state_t;
 
 
-// Global variable declarations.
-extern bool g_resize_error;
-extern bool g_process_over;
+extern bool g_resize_error;			
+extern bool g_process_over;			
 
-
-// Function declarations.
 
 /* 
 	Initialises a game state struct to it's default values, including dynamic allocations.

@@ -15,9 +15,8 @@
 #include "coord.h"
 #include "ascii_game.h"
 
-// Define extern global variables.
-bool g_resize_error = false;
-bool g_process_over = false;
+bool g_resize_error = false;	// Global flag which is set when a terminal resize interrupt occurs.
+bool g_process_over = false;	// Global flag which controls the main while loop of the application.
 
 // Private functions.
 static int Get_KeyInput(void);
