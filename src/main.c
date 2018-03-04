@@ -61,8 +61,8 @@ int main(int argc, char *argv[]) {
 	Init_GameState(&game_state);
 	game_state.player = Create_Player();
 
-	DrawHelpScreen();
-	UpdateGameLog(&game_state.game_log, LOGMSG_WELCOME);
+	Draw_HelpScreen();
+	Update_GameLog(&game_state.game_log, LOGMSG_WELCOME);
 	InitCreate_DungeonFloor(&game_state, num_rooms_specified, room_size_specified, filename_specified);
 
 	// Main game loop.

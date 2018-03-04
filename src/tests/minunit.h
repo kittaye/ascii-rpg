@@ -8,7 +8,7 @@
 #ifndef MINUNIT_H_
 #define MINUNIT_H_
 
-#define mu_assert(func, test) do { if (!(test)) { snprintf(G_TEST_FAILED_BUF, 1024, "%s(): Line %d: assertion (%s) failed", func, __LINE__, #test); return 1; } } while (0)
+#define mu_assert(func, test) do { if (!(test)) { snprintf(G_TEST_FAILED_BUF, 1024, "%s(): Line %d: assertion '%s' failed", func, __LINE__, #test); return 1; } } while (0)
 #define mu_run_test(test) do { int result = test(); tests_run++; if (result) return result; } while (0)
 char G_TEST_FAILED_BUF[1024];
 extern int tests_run;
