@@ -122,17 +122,17 @@ typedef struct game_state_t {
 	int current_floor;				
 
 	player_t player;				
-	tile_t **world_tiles;			// Stores information about every (x, y) coordinate in the terminal, for use in the game.
-	room_t *rooms;					// Array of all created rooms after CreateDungeonRooms returns.
+	tile_t **world_tiles;			// Stores information about every (x, y) coordinate in the world map, for use in the game.
+	room_t *rooms;					// Array of all created rooms after dungeon generation.
 	log_list_t game_log;			
-	enemy_node_t *enemy_list;		// Linked list of all enemies created in game.
+	enemy_node_t *enemy_list;		// Linked list of all enemies created in a dungeon.
 
 	int debug_rcs;					// Room collisions during room creation.
 	double debug_seed;				// RNG seed used to create this game.
 } game_state_t;
 
 
-// Global variables.
+// Global variable declarations.
 extern bool g_resize_error;
 extern bool g_process_over;
 

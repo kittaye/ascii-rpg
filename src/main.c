@@ -6,6 +6,11 @@
 #include "log_messages.h"
 #include "ascii_game.h"
 
+// Global variable definitions.
+bool g_resize_error = false;
+bool g_process_over = false;
+
+// Private function.
 static bool FContainsChar(FILE *fp, char char_to_find);
 
 int main(int argc, char *argv[]) {
@@ -52,9 +57,6 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Terminal screen dimensions must be at least %dx%d to run this application. Exiting...\n", MIN_SCREEN_WIDTH, MIN_SCREEN_HEIGHT);
 		exit(1);
 	}
-
-	g_resize_error = false;
-	g_process_over = false;
 
 	game_state_t game_state;
 	Init_GameState(&game_state);
