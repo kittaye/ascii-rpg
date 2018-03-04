@@ -139,7 +139,7 @@ extern bool g_process_over;
 
 // Function declarations.
 void Init_GameState(game_state_t *state);
-void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified);
+void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, const char *filename_specified);
 player_t Create_Player(void);
 enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos);
 

@@ -25,7 +25,7 @@ static int Get_NextRoomRadius(void);
 static void Define_Room(room_t *room, coord_t pos, int radius);
 static void Generate_Room(tile_t **world_tiles, const room_t *room);
 static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
-static void Create_Rooms(game_state_t *state, int num_rooms_specified, int room_size);
+static void Create_Rooms(game_state_t *state, int num_rooms_specified);
 static void Create_RoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms);
 static void Create_RoomsFromFile(game_state_t *state, const char *filename);
 static void Populate_Rooms(game_state_t *state);
@@ -86,7 +86,7 @@ void Cleanup_DungeonFloor(game_state_t *state) {
 	state->rooms = (room_t*)NULL;
 }
 
-void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int room_size_specified, const char *filename_specified) {
+void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, const char *filename_specified) {
 	assert(state != NULL);
 
 	const int world_screen_w = Get_WorldScreenWidth();
@@ -120,7 +120,7 @@ void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int r
 	if (filename_specified != NULL) {
 		Create_RoomsFromFile(state, filename_specified);
 	} else {
-		Create_Rooms(state, num_rooms_specified, room_size_specified);
+		Create_Rooms(state, num_rooms_specified);
 		Populate_Rooms(state);
 	}
 
@@ -559,10 +559,11 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 	}
 }
 
-static void Create_Rooms(game_state_t *state, int num_rooms_specified, int room_size) {
+static void Create_Rooms(game_state_t *state, int num_rooms_specified) {
 	assert(state != NULL);
 
-	int radius = (room_size - 1) / 2;
+	// Arbitrary starting room size.
+	int radius = (5 - 1) / 2;
 
 	// Ensure there is enough space to define the first room at the center of the map. Reduce radius if room is too big.
 	coord_t pos = NewCoord(Get_WorldScreenWidth() / 2, Get_WorldScreenHeight() / 2);

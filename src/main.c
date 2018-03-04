@@ -16,7 +16,6 @@ int main(int argc, char *argv[]) {
 
 	// Get command line info.
 	int num_rooms_specified = 0;
-	int room_size_specified = 5;
 	const char *filename_specified = NULL;
 	{
 		num_rooms_specified = (int)strtol(argv[1], 0, 0);
@@ -63,7 +62,7 @@ int main(int argc, char *argv[]) {
 
 	Draw_HelpScreen();
 	Update_GameLog(&game_state.game_log, LOGMSG_WELCOME);
-	InitCreate_DungeonFloor(&game_state, num_rooms_specified, room_size_specified, filename_specified);
+	InitCreate_DungeonFloor(&game_state, num_rooms_specified, filename_specified);
 
 	// Main game loop.
 	while (!g_process_over) {
@@ -71,7 +70,7 @@ int main(int argc, char *argv[]) {
 		if (game_state.floor_complete) {
 			game_state.current_floor++;
 			Cleanup_DungeonFloor(&game_state);
-			InitCreate_DungeonFloor(&game_state, num_rooms_specified, room_size_specified, NULL);
+			InitCreate_DungeonFloor(&game_state, num_rooms_specified, NULL);
 			game_state.floor_complete = false;
 		}
 	}
