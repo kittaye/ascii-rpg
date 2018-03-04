@@ -6,6 +6,8 @@
 #include "enemies.h"
 #include "coord.h"
 
+#define CLAMP(x, min_val, max_val) (((x) < (min_val)) ? (min_val) : (((x) > (max_val)) ? (max_val) : (x)))
+
 // Sprites.
 #define SPR_EMPTY ' '
 #define SPR_PLAYER '@'
@@ -139,7 +141,7 @@ extern bool g_process_over;
 
 // Function declarations.
 void Init_GameState(game_state_t *state);
-void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, const char *filename_specified);
+void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specified, const char *filename_specified);
 player_t Create_Player(void);
 enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos);
 
