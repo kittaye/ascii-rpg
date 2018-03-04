@@ -20,16 +20,13 @@ bool g_resize_error = false;
 bool g_process_over = false;
 
 // Private functions.
-static int Get_NextRoomRadius(void);
 static int Get_KeyInput(void);
-static coord_t Get_RandRoomOpeningPos(const room_t *room);
-static void Define_OpenRoom(room_t *room, int room_size);
-static void Define_ClosedRoom(room_t *room, coord_t pos, int radius);
+static int Get_NextRoomRadius(void);
+static void Define_Room(room_t *room, coord_t pos, int radius);
 static void Generate_Room(tile_t **world_tiles, const room_t *room);
 static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
-static void Create_OpenRooms(game_state_t *state, int num_rooms_specified, int room_size);
-static void Create_ClosedRooms(game_state_t *state, int num_rooms_specified, int room_size);
-static void Create_ClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms);
+static void Create_Rooms(game_state_t *state, int num_rooms_specified, int room_size);
+static void Create_RoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms);
 static void Create_RoomsFromFile(game_state_t *state, const char *filename);
 static void Populate_Rooms(game_state_t *state);
 static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
@@ -123,9 +120,7 @@ void InitCreate_DungeonFloor(game_state_t *state, int num_rooms_specified, int r
 	if (filename_specified != NULL) {
 		Create_RoomsFromFile(state, filename_specified);
 	} else {
-		//CreateOpenRooms(state, num_rooms_specified, room_size_specified);
-		Create_ClosedRooms(state, num_rooms_specified, room_size_specified);
-
+		Create_Rooms(state, num_rooms_specified, room_size_specified);
 		Populate_Rooms(state);
 	}
 
@@ -564,111 +559,7 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 	}
 }
 
-static void Create_OpenRooms(game_state_t *state, int num_rooms_specified, int room_size) {
-	assert(state != NULL);
-
-	const int EXTENDED_BOUNDS_OFFSET = 2;
-
-	// If room size is larger than the smallest terminal dimension, clamp it to that dimension size.
-	if (room_size > fmin(Get_WorldScreenWidth() - EXTENDED_BOUNDS_OFFSET, Get_WorldScreenHeight() - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET)) {
-		room_size = fmin(Get_WorldScreenWidth() - EXTENDED_BOUNDS_OFFSET, Get_WorldScreenHeight() - EXTENDED_BOUNDS_OFFSET - TOP_PANEL_OFFSET);
-	}
-
-	for (int i = 0; i < num_rooms_specified; i++) {
-		bool valid_room;
-		do {
-			valid_room = true;
-
-			// Define a new room.
-			Define_OpenRoom(&state->rooms[i], room_size);
-
-			// Check that this new room doesnt collide with anything solid (extended room hitbox: means completely seperated rooms).
-			room_t extended_bounds_room = state->rooms[i];
-			extended_bounds_room.TL_corner.x--;
-			extended_bounds_room.TL_corner.y--;
-			extended_bounds_room.TR_corner.x++;
-			extended_bounds_room.TR_corner.y--;
-			extended_bounds_room.BL_corner.x--;
-			extended_bounds_room.BL_corner.y++;
-			extended_bounds_room.BR_corner.x++;
-			extended_bounds_room.BR_corner.y++;
-			if (Check_RoomCollision((const tile_t **)state->world_tiles, &extended_bounds_room)) {
-				state->debug_rcs++;
-				valid_room = false;
-			}
-
-			// If number of room collisions passes threshold, prematurely stop room creation.
-			if (state->debug_rcs >= DEBUG_RCS_LIMIT) {
-				return;
-			}
-		} while (!valid_room);
-
-		// Pick a random position for an opening.
-		coord_t opening = Get_RandRoomOpeningPos(&state->rooms[i]);
-
-		// Create marked opening.
-		Update_WorldTile(state->world_tiles, opening, '?', TileType_Empty, Clr_White, NULL, NULL);
-
-		//Connect corners with walls and convert marked opening to a real opening.
-		Generate_Room(state->world_tiles, &state->rooms[i]);
-
-		state->num_rooms_created++;
-	}
-}
-
-static void Define_OpenRoom(room_t *room, int room_size) {
-	assert(room != NULL);
-
-	const int world_screen_w = Get_WorldScreenWidth();
-	const int world_screen_h = Get_WorldScreenHeight();
-
-	// TOP LEFT CORNER
-	do {
-		room->TL_corner.x = rand() % world_screen_w;
-		room->TL_corner.y = (rand() % (world_screen_h - TOP_PANEL_OFFSET)) + TOP_PANEL_OFFSET;
-	} while (room->TL_corner.x + room_size - 1 >= world_screen_w || room->TL_corner.y + room_size - 1 >= world_screen_h);
-
-	// TOP RIGHT CORNER
-	room->TR_corner.x = room->TL_corner.x + room_size - 1;
-	room->TR_corner.y = room->TL_corner.y;
-
-	// BOTTOM LEFT CORNER
-	room->BL_corner.x = room->TL_corner.x;
-	room->BL_corner.y = room->TL_corner.y + room_size - 1;
-
-	// BOTTOM RIGHT CORNER
-	room->BR_corner.x = room->TL_corner.x + room_size - 1;
-	room->BR_corner.y = room->TL_corner.y + room_size - 1;
-}
-
-static coord_t Get_RandRoomOpeningPos(const room_t *room) {
-	assert(room != NULL);
-
-	coord_t opening;
-	// Choose a random x position.
-	if (rand() % 2 == 0) {
-		opening.x = room->TL_corner.x + 1 + (rand() % (room->TR_corner.x - room->TL_corner.x - 1));
-		// Choose between upper or lower wall.
-		if (rand() % 2 == 0) {
-			opening.y = room->TL_corner.y;
-		} else {
-			opening.y = room->BL_corner.y;
-		}
-	// Or choose a random y position.
-	} else {
-		opening.y = room->TL_corner.y + 1 + (rand() % (room->BR_corner.y - room->TL_corner.y - 1));
-		// Choose between left or right wall.
-		if (rand() % 2 == 0) {
-			opening.x = room->TL_corner.x;
-		} else {
-			opening.x = room->TR_corner.x;
-		}
-	}
-
-	return opening;
-}
-
-static void Create_ClosedRooms(game_state_t *state, int num_rooms_specified, int room_size) {
+static void Create_Rooms(game_state_t *state, int num_rooms_specified, int room_size) {
 	assert(state != NULL);
 
 	int radius = (room_size - 1) / 2;
@@ -677,7 +568,7 @@ static void Create_ClosedRooms(game_state_t *state, int num_rooms_specified, int
 	coord_t pos = NewCoord(Get_WorldScreenWidth() / 2, Get_WorldScreenHeight() / 2);
 	bool isValid;
 	do {
-		Define_ClosedRoom(&state->rooms[0], pos, radius);
+		Define_Room(&state->rooms[0], pos, radius);
 		isValid = true;
 		if (Check_RoomCollision((const tile_t**)state->world_tiles, &state->rooms[0])) {
 			isValid = false;
@@ -688,10 +579,10 @@ static void Create_ClosedRooms(game_state_t *state, int num_rooms_specified, int
 
 	// Begin creating rooms.
 	const int NUM_INITIAL_ITERATIONS = 100;
-	Create_ClosedRoomRecursive(state, pos, radius, NUM_INITIAL_ITERATIONS, num_rooms_specified);
+	Create_RoomRecursive(state, pos, radius, NUM_INITIAL_ITERATIONS, num_rooms_specified);
 }
 
-static void Create_ClosedRoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms) {
+static void Create_RoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms) {
 	assert(state != NULL);
 
 	// Create the latest defined room.
@@ -737,7 +628,7 @@ static void Create_ClosedRoomRecursive(game_state_t *state, coord_t pos, int rad
 		}
 
 		// Define the new room.
-		Define_ClosedRoom(&state->rooms[state->num_rooms_created], newPos, nextRadius);
+		Define_Room(&state->rooms[state->num_rooms_created], newPos, nextRadius);
 
 		// Check that this new room doesnt collide with map boundaries or anything solid.
 		if (Check_RoomCollision((const tile_t **)state->world_tiles, &state->rooms[state->num_rooms_created])) {
@@ -756,7 +647,7 @@ static void Create_ClosedRoomRecursive(game_state_t *state, coord_t pos, int rad
 
 		// Instantiate conjoined room.
 		int newMaxIterations = 100;
-		Create_ClosedRoomRecursive(state, newPos, nextRadius, newMaxIterations, max_rooms);
+		Create_RoomRecursive(state, newPos, nextRadius, newMaxIterations, max_rooms);
 	}
 	return;
 }
@@ -866,7 +757,7 @@ static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting
 	}
 }
 
-static void Define_ClosedRoom(room_t *room, coord_t pos, int radius) {
+static void Define_Room(room_t *room, coord_t pos, int radius) {
 	assert(room != NULL);
 
 	room->TL_corner.x = pos.x - radius;
