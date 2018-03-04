@@ -142,7 +142,7 @@ static void Populate_Rooms(game_state_t *state) {
 				state->rooms[i].TL_corner.x + ((state->rooms[i].TR_corner.x - state->rooms[i].TL_corner.x) / 2),
 				state->rooms[i].TR_corner.y + ((state->rooms[i].BR_corner.y - state->rooms[i].TR_corner.y) / 2)
 			);
-			Set_PlayerPos(&state->player, pos);
+			Set_PlayerPos(state, pos);
 			continue;
 		}
 
@@ -236,10 +236,10 @@ player_t Create_Player(void) {
 	return player;
 }
 
-bool Set_PlayerPos(player_t *player, coord_t pos) {
+bool Set_PlayerPos(game_state_t *state, coord_t pos) {
 	assert(player != NULL);
 
-	if (Check_WorldBounds(pos)) {
+	if (Check_WorldBounds(pos) && state->world_tiles[pos.x][pos.y].type != TileType_Solid) {
 		player->pos = pos;
 		return true;
 	}
@@ -510,7 +510,7 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 
 				switch (line[i]) {
 					case SPR_PLAYER:
-						Set_PlayerPos(&state->player, pos);
+						Set_PlayerPos(state, pos);
 						line[i] = SPR_EMPTY;
 						break;
 					case SPR_WALL:
