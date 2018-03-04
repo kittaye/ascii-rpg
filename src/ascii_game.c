@@ -236,11 +236,14 @@ player_t Create_Player(void) {
 	return player;
 }
 
-void Set_PlayerPos(player_t *player, coord_t pos) {
+bool Set_PlayerPos(player_t *player, coord_t pos) {
 	assert(player != NULL);
-	assert(Check_WorldBounds(pos));
 
-	player->pos = pos;
+	if (Check_WorldBounds(pos)) {
+		player->pos = pos;
+		return true;
+	}
+	return false;
 }
 
 int Get_WorldScreenWidth() {

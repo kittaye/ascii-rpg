@@ -156,10 +156,10 @@ void Update_AllEnemyCombat(game_state_t *state, enemy_node_t *enemy_list);
 void Perform_WorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord_t player_old_pos);
 void Get_NextPlayerInput(game_state_t *state);
 void Apply_Vision(const game_state_t *state, coord_t pos);
-void Set_PlayerPos(player_t *player, coord_t pos);
 void Interact_NPC(game_state_t *state, char npc_target);
 int AddTo_Health(player_t *player, int amount);
 bool AddTo_Inventory(player_t *player, const item_t *item);
+bool Set_PlayerPos(player_t *player, coord_t pos);
 bool Check_WorldBounds(coord_t coord);
 
 int Get_WorldScreenWidth(void);
