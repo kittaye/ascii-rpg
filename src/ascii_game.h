@@ -140,32 +140,122 @@ extern bool g_process_over;
 
 
 // Function declarations.
+
+/* 
+	Initialises a game state struct to it's default values, including dynamic allocations.
+*/
 void Init_GameState(game_state_t *state);
+
+/* 
+	Initialises and creates a dungeon floor which consists of, at least, a player spawn room and a staircase room, with rooms connected inbetween filled with enemies and items. 
+	Optionally specify a text file to use a custom layout for the dungeon floor.
+*/
 void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specified, const char *filename_specified);
+
+/*
+	Initialises a player struct to it's default values and returns it.
+*/
 player_t Create_Player(void);
+
+/*
+	Initalises and creates an enemy with it's default values set according to the enemy_data struct. It's current position is set to 'pos'. The created enemy is returned.
+*/
 enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos);
 
+/*
+	The main loop of the game: Draws all elements to the screen, waits for user input, then performs world logic in response.
+*/
 void Process(game_state_t *state);
+
+/*
+	Draws the help screen. Waits for user input before exiting.
+*/
 void Draw_HelpScreen(void);
-void Draw_PlayerInfoScreen(const game_state_t *state);
+
+/*
+	Draws the player death screen. Waits for user input before exiting.
+*/
 void Draw_DeathScreen(void);
+
+/*
+	Draws the Merchant trading screen. User input can buy a listed item, or exit.
+*/
 void Draw_MerchantScreen(game_state_t *state);
+
+/*
+	Updates a world tile at position 'pos' with a new sprite, type, colour, and enemy OR item occupier.
+*/
 void Update_WorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, enemy_t *enemy_occupier, const item_t *item_occupier);
+
+/*
+	Updates the game log consisting of 3 lines with a new formatted line of text, pushing the previous two lines of text upwards. The last line of text is removed.
+*/
 void Update_GameLog(log_list_t *game_log, const char *format, ...);
+
+/*
+	Loops through all enemies on the dungeon floor and computes their logic for the current game turn.
+*/
 void Update_AllEnemyCombat(game_state_t *state, enemy_node_t *enemy_list);
+
+/*
+	Performs world logic for the current game turn. This involves world objects responding to user's input that ended the player's turn.
+*/
 void Perform_WorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord_t player_old_pos);
+
+/*
+	Waits for the user's next input. Some inputs count towards ending the player's turn, while others do not (for e.g. opening the help screen).
+*/
 void Get_NextPlayerInput(game_state_t *state);
+
+/*
+	Loops through all world tiles on the dungeon floor and determines which should be shown to the user. 
+	Game state variable 'fog_of_war' and player variable 'max_vision' are the determining factors.
+*/
 void Apply_Vision(const game_state_t *state, coord_t pos);
+
+/*
+	Interacts with the player's currently targeted NPC.
+*/
 void Interact_NPC(game_state_t *state, char npc_target);
+
+/*
+	Adds to the player's current health. Negative values are used to deal damage to the player.
+*/
 int AddTo_Health(player_t *player, int amount);
+
+/*
+	Adds an item to the player's inventory. Returns true if the item is successfully added, false if the player's inventory is full.
+*/
 bool AddTo_Inventory(player_t *player, const item_t *item);
+
+/*
+	Tries to set the player's position to 'pos'. Returns true if successful, false if 'pos' is outside world bounds or on a world tile that is solid.
+*/
 bool Try_SetPlayerPos(game_state_t *state, coord_t pos);
+
+/*
+	Checks if 'coord' is outside of the world bounds. Returns true if it is, false otherwise.
+*/
 bool Check_OutOfWorldBounds(coord_t coord);
 
+/*
+	Returns the width of the world screen.
+*/
 int Get_WorldScreenWidth(void);
+
+/*
+	Returns the height of the world screen.
+*/
 int Get_WorldScreenHeight(void);
 
+/*
+	Frees all memory allocated from calling 'InitCreate_DungeonFloor'.
+*/
 void Cleanup_DungeonFloor(game_state_t *state);
+
+/*
+	Frees all memory allocated from calling 'Init_GameState'.
+*/
 void Cleanup_GameState(game_state_t *state);
 
 #endif /* ASCII_GAME_H_ */
