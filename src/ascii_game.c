@@ -237,6 +237,9 @@ player_t Create_Player(void) {
 }
 
 void Set_PlayerPos(player_t *player, coord_t pos) {
+	assert(player != NULL);
+	assert(Check_WorldBounds(pos));
+
 	player->pos = pos;
 }
 
