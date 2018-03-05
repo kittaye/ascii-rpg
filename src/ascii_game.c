@@ -206,7 +206,7 @@ player_t Create_Player(void) {
 	player_t player;
 
 	player.sprite = SPR_PLAYER;
-	player.pos = NewCoord(0, 0);
+	player.pos = NewCoord(-1, -1);
 	player.color = Clr_Cyan;
 	player.current_target = ' ';
 
