@@ -64,7 +64,7 @@ int test_create_player_correct_values() {
 	player_t player = Create_Player();
 
 	mu_assert(__func__, player.sprite == SPR_PLAYER);
-	mu_assert(__func__, CoordsEqual(player.pos, NewCoord(0, 0)));
+	mu_assert(__func__, CoordsEqual(player.pos, NewCoord(-1, -1)));
 	mu_assert(__func__, player.color == Clr_Cyan);
 	mu_assert(__func__, player.current_target == ' ');
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
@@ -118,10 +118,36 @@ int test_get_world_height_correct_value() {
 	return 0;
 }
 
-// Test for c-asserts/exception failures.
-int test_create_valid_dungeon_floor() {
+int test_created_dungeon_floor_contains_staircase() {
 	game_state_t state = Setup_Test_GameState();
+	state.player = Create_Player();
 	InitCreate_DungeonFloor(&state, 10, NULL);
+	bool contains_staircase = false;
+
+	// Ensure a staircase exists in the last generated room.
+	room_t staircase_room = state.rooms[state.num_rooms_created - 1];
+	for (int x = staircase_room.TL_corner.x + 1; x < staircase_room.TR_corner.x; x++) {
+		for (int y = staircase_room.TL_corner.y + 1; y < staircase_room.BL_corner.y; y++) {
+			if (state.world_tiles[x][y].sprite == SPR_STAIRCASE) {
+				contains_staircase = true;
+				break;
+			}
+		}
+	}
+
+	mu_assert(__func__, contains_staircase == true);
+
+	Cleanup_DungeonFloor(&state);
+	Cleanup_GameState(&state);
+	return 0;
+}
+
+int test_created_dungeon_floor_contains_player() {
+	game_state_t state = Setup_Test_GameState();
+	state.player = Create_Player();
+	InitCreate_DungeonFloor(&state, 10, NULL);
+
+	mu_assert(__func__, CoordsEqual(state.player.pos, NewCoord(-1, -1)) == false);
 
 	Cleanup_DungeonFloor(&state);
 	Cleanup_GameState(&state);
@@ -233,18 +259,62 @@ int test_set_player_pos_to_different_location_types() {
 	return 0;
 }
 
+int test_update_game_log_normal_behaviour() {
+	game_state_t state = Setup_Test_GameState();
+
+	Update_GameLog(&state.game_log, "Hello");
+	mu_assert(__func__, strcmp(state.game_log.line3, " ") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line2, " ") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line1, "Hello") == 0);
+
+	Update_GameLog(&state.game_log, "World");
+	mu_assert(__func__, strcmp(state.game_log.line3, " ") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line2, "Hello") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line1, "World") == 0);
+
+	Update_GameLog(&state.game_log, " ");
+	mu_assert(__func__, strcmp(state.game_log.line3, "Hello") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line2, "World") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line1, " ") == 0);
+
+	Update_GameLog(&state.game_log, "Test");
+	Update_GameLog(&state.game_log, " ");
+	mu_assert(__func__, strcmp(state.game_log.line3, " ") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line2, "Test") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line1, " ") == 0);
+
+	Cleanup_GameState(&state);
+	return 0;
+}
+
+int test_update_game_log_buffer_overflow_clamped() {
+	game_state_t state = Setup_Test_GameState();
+	char long_string[LOG_BUFFER_SIZE + 123];
+	memset(long_string, 'a', LOG_BUFFER_SIZE + 123);
+
+	Update_GameLog(&state.game_log, long_string);
+
+	mu_assert(__func__, strlen(state.game_log.line1) == LOG_BUFFER_SIZE - 1);
+
+	Cleanup_GameState(&state);
+	return 0;
+}
+
 int run_all_tests() {
 	mu_run_test(test_init_game_state_correct_values);
 	mu_run_test(test_create_player_correct_values);
 	mu_run_test(test_init_create_enemy_correct_values);
 	mu_run_test(test_get_world_width_correct_value);
 	mu_run_test(test_get_world_height_correct_value);
-	mu_run_test(test_create_valid_dungeon_floor);
+	mu_run_test(test_created_dungeon_floor_contains_staircase);
+	mu_run_test(test_created_dungeon_floor_contains_player);
 	mu_run_test(test_addto_player_health_normal);
 	mu_run_test(test_addto_player_health_over_limit);
 	mu_run_test(test_set_player_pos_bounds_valid);
 	mu_run_test(test_set_player_pos_out_of_bounds);
 	mu_run_test(test_set_player_pos_to_different_location_types);
+	mu_run_test(test_update_game_log_normal_behaviour);
+	mu_run_test(test_update_game_log_buffer_overflow_clamped);
 	return 0;
 }
 
@@ -257,7 +327,7 @@ int main(int argc, char **argv) {
 
 	if (result != 0) {
 		printf("TEST FAILED!\n\t%s\n", G_TEST_FAILED_BUF);
-		printf("\tSeed used: %d\n", last_seed_used);
+		printf("\tLast seed used: %d\n", last_seed_used);
 	} else {
 		printf("ALL TESTS PASSED\n");
 	}
