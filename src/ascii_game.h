@@ -86,9 +86,9 @@ typedef struct player_stats {
 } stats_t;
 
 typedef struct log_list_t {
-	char line1[LOG_BUFFER_SIZE + 1];	// First message that is shown in the game log.
-	char line2[LOG_BUFFER_SIZE + 1];	// Second message that is shown in the game log.
-	char line3[LOG_BUFFER_SIZE + 1];	// Third message that is shown in the game log.
+	char line1[LOG_BUFFER_SIZE];	// First message that is shown in the game log.
+	char line2[LOG_BUFFER_SIZE];	// Second message that is shown in the game log.
+	char line3[LOG_BUFFER_SIZE];	// Third message that is shown in the game log.
 } log_list_t;
 
 typedef struct room_t {
@@ -165,17 +165,17 @@ enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos);
 void Process(game_state_t *state);
 
 /*
-	Draws the help screen. Waits for user input before exiting.
+	Draws the help screen. Waits for user input before returning.
 */
 void Draw_HelpScreen(void);
 
 /*
-	Draws the player death screen. Waits for user input before exiting.
+	Draws the player death screen. Waits for user input before returning.
 */
 void Draw_DeathScreen(void);
 
 /*
-	Draws the Merchant trading screen. User input can buy a listed item, or exit.
+	Draws the Merchant trading screen. User input can buy a listed item or exit.
 */
 void Draw_MerchantScreen(game_state_t *state);
 
