@@ -205,7 +205,7 @@ int test_created_dungeon_floor_contains_player() {
 
 	mu_assert(__func__, CoordsEqual(state.player.pos, NewCoord(-1, -1)) == false);
 
-	Cleanup_Test_GameStatePlayerAndDungeon();
+	Cleanup_Test_GameStatePlayerAndDungeon(&state);
 	return 0;
 }
 
