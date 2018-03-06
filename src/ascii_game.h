@@ -121,7 +121,7 @@ typedef struct game_state_t {
 	bool fog_of_war;				// Toggle whether all world tiles are shown or only those within range of the player.
 	bool player_turn_over;			// Determines when the player has finished their turn.
 	bool floor_complete;			// Determines when the player has completed the dungeon floor.
-	int current_floor;				
+	int current_floor;			
 
 	player_t player;				
 	tile_t **world_tiles;			// Stores information about every (x, y) coordinate in the world map, for use in the game.
@@ -131,6 +131,8 @@ typedef struct game_state_t {
 
 	int debug_rcs;					// Room collisions during room creation.
 	double debug_seed;				// RNG seed used to create this game.
+
+	int latest_user_input;			// The latest value returned from the latest getch call. This field is used for simulating input in tests.
 } game_state_t;
 
 
@@ -167,12 +169,12 @@ void Process(game_state_t *state);
 /*
 	Draws the help screen. Waits for user input before returning.
 */
-void Draw_HelpScreen(void);
+void Draw_HelpScreen(game_state_t *state);
 
 /*
 	Draws the player death screen. Waits for user input before returning.
 */
-void Draw_DeathScreen(void);
+void Draw_DeathScreen(game_state_t *state);
 
 /*
 	Draws the Merchant trading screen. User input can buy a listed item or exit.
@@ -213,12 +215,12 @@ void Apply_Vision(const game_state_t *state, coord_t pos);
 /*
 	Interacts with the player's currently targeted NPC.
 */
-void Interact_TargetedNPC(game_state_t *state);
+void Interact_CurrentlyTargetedNPC(game_state_t *state);
 
 /*
 	Interacts with the player's currently selected item in a way specified by the key press.
 */
-void Interact_SelectedItem(game_state_t *state, item_select_control_en key_pressed);
+void Interact_CurrentlySelectedItem(game_state_t *state, item_select_control_en key_pressed);
 
 /*
 	Examines the item by displaying text to the game log.

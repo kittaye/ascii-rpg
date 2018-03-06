@@ -19,7 +19,7 @@ bool g_resize_error = false;	// Global flag which is set when a terminal resize 
 bool g_process_over = false;	// Global flag which controls the main while loop of the application.
 
 // Private functions.
-static int Get_KeyInput(void);
+static int Get_KeyInput(game_state_t *state);
 static int Get_NextRoomRadius(void);
 static void Define_Room(room_t *room, coord_t pos, int radius);
 static void Generate_Room(tile_t **world_tiles, const room_t *room);
@@ -48,6 +48,7 @@ void Init_GameState(game_state_t *state) {
 	state->player_turn_over = false;
 	state->floor_complete = false;
 	state->debug_rcs = 0;
+	state->latest_user_input = ERR;
 
 	state->enemy_list = (enemy_node_t*)NULL;
 	state->rooms = (room_t*)NULL;
@@ -346,7 +347,7 @@ void Process(game_state_t *state) {
 		Perform_WorldLogic(state, &(state->world_tiles[state->player.pos.x][state->player.pos.y]), oldPos);
 		if (state->player.stats.curr_health <= 0) {
 			// GAME OVER.
-			Draw_DeathScreen();
+			Draw_DeathScreen(state);
 			g_process_over = true;
 		}
 		state->player_turn_over = false;
@@ -900,7 +901,7 @@ void Get_NextPlayerInput(game_state_t *state) {
 	// This method of input processing allows for interrupt handling (dealing with resizes).
 	bool valid_key_pressed = false;
 	while (!valid_key_pressed) {
-		const int key = Get_KeyInput();
+		const int key = Get_KeyInput(state);
 		switch (key) {
 			case KEY_UP:
 				Try_SetPlayerPos(state, NewCoord(player->pos.x, player->pos.y - 1));
@@ -919,7 +920,7 @@ void Get_NextPlayerInput(game_state_t *state) {
 				valid_key_pressed = true;
 				break;
 			case 'h':
-				Draw_HelpScreen();
+				Draw_HelpScreen(state);
 				valid_key_pressed = true;
 				break;
 			case 'f':
@@ -934,7 +935,7 @@ void Get_NextPlayerInput(game_state_t *state) {
 			case 'd':
 			case 'x':
 				if (player->current_item_index_selected != -1) {
-					Interact_SelectedItem(state, key);
+					Interact_CurrentlySelectedItem(state, key);
 					player->current_item_index_selected = -1;
 				}
 				valid_key_pressed = true;
@@ -958,7 +959,7 @@ void Get_NextPlayerInput(game_state_t *state) {
 			case '\n':
 			case KEY_ENTER:
 				if (state->player.current_npc_target != ' ') {
-					Interact_TargetedNPC(state);
+					Interact_CurrentlyTargetedNPC(state);
 					valid_key_pressed = true;
 				}
 				break;
@@ -974,7 +975,7 @@ void Get_NextPlayerInput(game_state_t *state) {
 	}
 }
 
-void Interact_SelectedItem(game_state_t *state, item_select_control_en key_pressed) {
+void Interact_CurrentlySelectedItem(game_state_t *state, item_select_control_en key_pressed) {
 	assert(state != NULL);
 
 	const item_t *item_selected = state->player.inventory[state->player.current_item_index_selected];
@@ -1030,7 +1031,7 @@ void Examine_Item(game_state_t *state, const item_t *item) {
 	}
 }
 
-void Interact_TargetedNPC(game_state_t *state) {
+void Interact_CurrentlyTargetedNPC(game_state_t *state) {
 	assert(state != NULL);
 
 	switch (state->player.current_npc_target) {
@@ -1042,7 +1043,7 @@ void Interact_TargetedNPC(game_state_t *state) {
 	}
 }
 
-void Draw_HelpScreen(void) {
+void Draw_HelpScreen(game_state_t *state) {
 	const int terminal_w = GEO_screen_width() - 1;
 	const int terminal_h = GEO_screen_height() - 1;
 
@@ -1056,32 +1057,31 @@ void Draw_HelpScreen(void) {
 	GEO_draw_printf_align_center(0, terminal_h / 2 + 3, Clr_WHITE, "Press any key to continue...");
 
 	GEO_show_screen();
-	Get_KeyInput();
+	Get_KeyInput(state);
 }
 
-static int Get_KeyInput(void) {
+static int Get_KeyInput(game_state_t *state) {
 	while (true) {
-		const int key = GEO_get_char();
-		switch (key) {
+		state->latest_user_input = GEO_get_char();
+		switch (state->latest_user_input) {
+			case ERR:
+				break;
 			case KEY_RESIZE:
 				g_resize_error = true;
 				g_process_over = true;
-				return KEY_RESIZE;
-			case ERR:
-				break;
 			default:
-				return key;
+				return state->latest_user_input;
 		}
 	}
 }
 
-void Draw_DeathScreen(void) {
+void Draw_DeathScreen(game_state_t *state) {
 	GEO_clear_screen();
 
 	GEO_draw_printf_align_center(0, GEO_screen_height() / 2, Clr_RED, "YOU DIED");
 
 	GEO_show_screen();
-	Get_KeyInput();
+	Get_KeyInput(state);
 }
 
 void Draw_MerchantScreen(game_state_t *state) {
@@ -1117,7 +1117,7 @@ void Draw_MerchantScreen(game_state_t *state) {
 	bool validKeyPress = false;
 	item_slug_en chosen_item = ItmSlug_NONE;
 	while (!validKeyPress) {
-		const int key = Get_KeyInput();
+		const int key = Get_KeyInput(state);
 		switch (key) {
 			case '1':
 				chosen_item = ItmSlug_SMALLFOOD;
