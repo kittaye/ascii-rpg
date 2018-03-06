@@ -48,16 +48,24 @@ void Init_GameState(game_state_t *state) {
 	state->player_turn_over = false;
 	state->floor_complete = false;
 	state->debug_rcs = 0;
-	state->latest_user_input = ERR;
-
+	state->debug_injected_input_pos = 0;
+	memset(state->debug_injected_inputs, '\0', sizeof(state->debug_injected_inputs));
 	state->enemy_list = (enemy_node_t*)NULL;
 	state->rooms = (room_t*)NULL;
 
+	// Initialise empty world space.
 	state->world_tiles = malloc(sizeof(*state->world_tiles) * world_screen_w);
 	assert(state->world_tiles != NULL);
 	for (int i = 0; i < world_screen_w; i++) {
 		state->world_tiles[i] = malloc(sizeof(*state->world_tiles[i]) * world_screen_h);
 		assert(state->world_tiles[i] != NULL);
+	}
+
+	// Create empty world space.
+	for (int x = 0; x < world_screen_w; x++) {
+		for (int y = 0; y < world_screen_h; y++) {
+			Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, TileType_EMPTY, Clr_WHITE, NULL, NULL);
+		}
 	}
 
 	snprintf(state->game_log.line1, LOG_BUFFER_SIZE, LOGMSG_EMPTY_SPACE);
@@ -96,14 +104,15 @@ void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specifi
 	const int HUB_MAP_FREQUENCY = 4;
 
 	// Reset dungeon floor values from the previous floor.
-	state->fog_of_war = true;
-	state->num_rooms_created = 0;
-	state->debug_rcs = 0;
+	if (state->current_floor > 1) {
+		state->fog_of_war = true;
+		state->num_rooms_created = 0;
+		state->debug_rcs = 0;
 
-	// Create empty space.
-	for (int x = 0; x < world_screen_w; x++) {
-		for (int y = 0; y < world_screen_h; y++) {
-			Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, TileType_EMPTY, Clr_WHITE, NULL, NULL);
+		for (int x = 0; x < world_screen_w; x++) {
+			for (int y = 0; y < world_screen_h; y++) {
+				Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, TileType_EMPTY, Clr_WHITE, NULL, NULL);
+			}
 		}
 	}
 
@@ -1043,10 +1052,12 @@ void Draw_HelpScreen(game_state_t *state) {
 }
 
 static int Get_KeyInput(game_state_t *state) {
-	if (state->latest_user_input != ERR) {
-		return state->latest_user_input;		// USED TO INJECT INPUT FOR TESTING/DEBUGGING.
+	// USED TO INJECT INPUT FOR TESTING/DEBUGGING.
+	if (state->debug_injected_inputs[state->debug_injected_input_pos] != '\0') {
+		return state->debug_injected_inputs[state->debug_injected_input_pos++];
 	}
 
+	// Wait for the user's next key press.
 	while (true) {
 		const int key = GEO_get_char();
 		switch (key) {
