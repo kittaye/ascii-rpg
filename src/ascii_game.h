@@ -59,6 +59,12 @@ typedef enum direction_en {
 	Dir_Right
 } direction_en;
 
+typedef enum item_select_control_en {
+	ItmCtrl_USE = 'e',
+	ItmCtrl_DROP = 'd',
+	ItmCtrl_EXAMINE = 'x'
+} item_select_control_en;
+
 typedef struct player_stats {
 	int level;
 	int max_health;
