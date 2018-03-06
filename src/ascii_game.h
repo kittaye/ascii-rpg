@@ -185,9 +185,19 @@ void Draw_DeathScreen(game_state_t *state);
 void Draw_MerchantScreen(game_state_t *state);
 
 /*
-	Updates a world tile at position 'pos' with a new sprite, type, colour, and enemy OR item occupier.
+	Updates a world tile at position 'pos' with a new sprite, type and colour.
 */
-void Update_WorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, colour_en color, enemy_t *enemy_occupier, const item_t *item_occupier);
+void Update_WorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, colour_en color);
+
+/*
+	Updates a world tile at position 'pos' with a new sprite, type and colour.
+*/
+void Update_WorldTileItemOccupier(tile_t **world_tiles, coord_t pos, const item_t *item);
+
+/*
+	Updates a world tile at position 'pos' with a new sprite, type and colour.
+*/
+void Update_WorldTileEnemyOccupier(tile_t **world_tiles, coord_t pos, enemy_t *enemy);
 
 /*
 	Updates the game log consisting of 3 lines with a new formatted line of text, pushing the previous two lines of text upwards. The last line of text is removed.
@@ -200,9 +210,24 @@ void Update_GameLog(log_list_t *game_log, const char *format, ...);
 void Update_AllEnemyCombat(game_state_t *state, enemy_node_t *enemy_list);
 
 /*
+	Gets the sprite that should be shown to the player when multiple things are at the same position. Foreground sprite is based on ordering rules.
+*/
+char Get_TileForegroundSprite(const tile_t *tile);
+
+/*
+	Gets the colour that should be shown to the player when multiple things are at the same position. Foreground colour is based on ordering rules.
+*/
+colour_en Get_TileForegroundColour(const tile_t *tile);
+
+/*
+	Gets the tile type that should be relevant to the player when multiple things are at the same position. Foreground type is based on ordering rules.
+*/
+tile_type_en Get_TileForegroundType(const tile_t *tile);
+
+/*
 	Performs world logic for the current game turn. This involves world objects responding to user's input that ended the player's turn.
 */
-void Perform_WorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord_t player_old_pos);
+void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos);
 
 /*
 	Performs player logic for the current game turn. Waits for the user's next input, then performs logic.
