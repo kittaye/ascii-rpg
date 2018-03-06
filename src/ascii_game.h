@@ -220,7 +220,7 @@ void Interact_SelectedItem(game_state_t *state, int key_pressed);
 void Examine_Item(game_state_t *state, const item_t *item);
 
 /*
-	Adds to the player's current health. Negative values are used to deal damage to the player.
+	Adds to the player's current health. Negative values are used to deal damage to the player. Returns the difference in current health.
 */
 int AddTo_Health(player_t *player, int amount);
 
