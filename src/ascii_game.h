@@ -34,7 +34,7 @@
 #define MIN_ROOMS 2
 #define MAX_ROOMS 1000
 #define MIN_ROOM_SIZE 5
-#define INVENTORY_SIZE 10
+#define INVENTORY_SIZE 9
 
 // NOTE: These min values should be the largest txt dimension size of a dungeon layout from a file, + the panel offsets!
 #define MIN_SCREEN_WIDTH 85 + 36	
