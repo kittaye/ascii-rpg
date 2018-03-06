@@ -218,7 +218,7 @@ player_t Create_Player(void) {
 	player.sprite = SPR_PLAYER;
 	player.pos = NewCoord(-1, -1);
 	player.color = Clr_Cyan;
-	player.current_target = ' ';
+	player.current_npc_target = ' ';
 
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
 		player.inventory[i] = GetItem(I_None);
@@ -350,7 +350,7 @@ void Perform_WorldLogic(game_state_t *state, const tile_t *curr_world_tile, coor
 	assert(state != NULL);
 	assert(curr_world_tile != NULL);
 
-	state->player.current_target = ' ';
+	state->player.current_npc_target = ' ';
 
 	switch (curr_world_tile->type) {
 		case TileType_Item:
@@ -420,7 +420,7 @@ void Perform_WorldLogic(game_state_t *state, const tile_t *curr_world_tile, coor
 		case TileType_Npc:
 			if (curr_world_tile->sprite == SPR_MERCHANT) {
 				Update_GameLog(&state->game_log, LOGMSG_PLR_INTERACT_MERCHANT);
-				state->player.current_target = SPR_MERCHANT;
+				state->player.current_npc_target = SPR_MERCHANT;
 			}
 			// Moving into an NPC results in no movement from the player.
 			state->player.pos = player_old_pos;
@@ -827,7 +827,7 @@ static void Generate_Room(tile_t **world_tiles, const room_t *room) {
 	}
 }
 
-void Update_WorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, enemy_t *enemy_occupier, const item_t *item_occupier) {
+void Update_WorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, colour_en color, enemy_t *enemy_occupier, const item_t *item_occupier) {
 	assert(world_tiles != NULL);
 
 	world_tiles[pos.x][pos.y].sprite = sprite;
@@ -926,8 +926,8 @@ void Get_NextPlayerInput(game_state_t *state) {
 				valid_key_pressed = true;
 			case '\n':
 			case KEY_ENTER:
-				if (state->player.current_target != ' ') {
-					Interact_NPC(state, state->player.current_target);
+				if (state->player.current_npc_target != ' ') {
+					Interact_NPC(state, state->player.current_npc_target);
 					valid_key_pressed = true;
 				}
 				break;
