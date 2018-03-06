@@ -162,7 +162,7 @@ player_t Create_Player(void);
 enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos);
 
 /*
-	The main loop of the game: Draws all elements to the screen, waits for user input, then performs world logic in response.
+	Draws all elements to the screen, waits for user input, then performs world logic in response. Returning from this essentially finishes one game turn.
 */
 void Process(game_state_t *state);
 
@@ -202,9 +202,10 @@ void Update_AllEnemyCombat(game_state_t *state, enemy_node_t *enemy_list);
 void Perform_WorldLogic(game_state_t *state, const tile_t *curr_world_tile, coord_t player_old_pos);
 
 /*
-	Waits for the user's next input. Some inputs count towards ending the player's turn, while others do not (for e.g. opening the help screen).
+	Performs player logic for the current game turn. Waits for the user's next input, then performs logic.
+	Returns true if the input counts towards ending the player's turn, otherwise false (e.g. opening help screen, selecting items, etc.)
 */
-void Get_NextPlayerInput(game_state_t *state);
+bool Perform_PlayerLogic(game_state_t *state);
 
 /*
 	Loops through all world tiles on the dungeon floor and determines which should be shown to the user. 
