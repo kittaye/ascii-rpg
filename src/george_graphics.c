@@ -12,6 +12,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <curses.h>
 #include <assert.h>
 #include "george_graphics.h"
@@ -343,10 +344,8 @@ void GEO_destroy_screen(GEO_Screen *scr) {
 			if (scr->pixels[0]) {
 				free(scr->pixels[0]);
 			}
-
 			free(scr->pixels);
 		}
-
 		free(scr);
 	}
 }
