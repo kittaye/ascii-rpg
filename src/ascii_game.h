@@ -22,7 +22,8 @@
 #define RIGHT_PANEL_OFFSET 36
 #define BOTTOM_PANEL_OFFSET 6			
 #define TOP_PANEL_OFFSET 0		
-#define DEBUG_RCS_LIMIT 100000	// Room collision limit.
+#define DEBUG_RCS_LIMIT 100000			// Room collision limit.
+#define DEBUG_INJECTED_INPUT_LIMIT 256	// Injected user input limit (used for testing).
 #define LOG_BUFFER_SIZE 250
 #define MIN_ROOMS 2
 #define MAX_ROOMS 1000
@@ -116,23 +117,25 @@ typedef struct tile_t {
 } tile_t;
 
 typedef struct game_state_t {
-	int game_turns;					// Current number of game turns since game started.
-	int num_rooms_created;			// Number of rooms created in game (may not always == num_rooms_specified in command line).
-	bool fog_of_war;				// Toggle whether all world tiles are shown or only those within range of the player.
-	bool player_turn_over;			// Determines when the player has finished their turn.
-	bool floor_complete;			// Determines when the player has completed the dungeon floor.
+	int game_turns;						// Current number of game turns since game started.
+	int num_rooms_created;				// Number of rooms created in game (may not always == num_rooms_specified in command line).
+	bool fog_of_war;					// Toggle whether all world tiles are shown or only those within range of the player.
+	bool player_turn_over;				// Determines when the player has finished their turn.
+	bool floor_complete;				// Determines when the player has completed the dungeon floor.
 	int current_floor;			
 
 	player_t player;				
-	tile_t **world_tiles;			// Stores information about every (x, y) coordinate in the world map, for use in the game.
-	room_t *rooms;					// Array of all created rooms after dungeon generation.
+	tile_t **world_tiles;				// Stores information about every (x, y) coordinate in the world map, for use in the game.
+	room_t *rooms;						// Array of all created rooms after dungeon generation.
 	log_list_t game_log;			
-	enemy_node_t *enemy_list;		// Linked list of all enemies created in a dungeon.
+	enemy_node_t *enemy_list;			// Linked list of all enemies created in a dungeon.
 
-	int debug_rcs;					// Room collisions during room creation.
-	double debug_seed;				// RNG seed used to create this game.
+	int debug_rcs;						// Room collisions during room creation.
+	double debug_seed;					// RNG seed used to create this game.
 
-	int latest_user_input;			// The latest value returned from the latest getch call. This field is used for simulating input in tests.
+	// This debug field is used to simulate a sequence of player inputs and inject them into unit tests. +1 to ensure a NUL-terminating byte.
+	int debug_injected_inputs[DEBUG_INJECTED_INPUT_LIMIT + 1];
+	int debug_injected_input_pos;
 } game_state_t;
 
 
