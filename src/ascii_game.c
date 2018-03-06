@@ -219,7 +219,7 @@ player_t Create_Player(void) {
 	player.pos = NewCoord(-1, -1);
 	player.color = Clr_Cyan;
 	player.current_npc_target = ' ';
-	player.current_item_selected = NULL;
+	player.current_item_index_selected = -1;
 
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
 		player.inventory[i] = GetItem(I_None);
@@ -323,9 +323,9 @@ void Process(game_state_t *state) {
 		GEO_draw_printf(x, y++, Clr_Yellow, "LCK - %d", state->player.stats.s_LCK);
 		y++;
 
-		if (state->player.current_item_selected != NULL) {
+		if (state->player.current_item_index_selected != -1) {
 			y++;
-			GEO_draw_printf(x, y++, Clr_Cyan, "Selected item: %s", state->player.current_item_selected->name);
+			GEO_draw_printf(x, y++, Clr_Cyan, "Selected item: %s", state->player.inventory[state->player.current_item_index_selected]->name);
 			GEO_draw_printf(x, y++, Clr_Yellow, "Press 'e' to use");
 			GEO_draw_printf(x, y++, Clr_Yellow, "Press 'd' to drop");
 			GEO_draw_printf(x, y++, Clr_Yellow, "Press 'x' to examine");
@@ -933,8 +933,9 @@ void Get_NextPlayerInput(game_state_t *state) {
 			case 'e':
 			case 'd':
 			case 'x':
-				if (player->current_item_selected != NULL) {
-					player->current_item_selected = NULL;
+				if (player->current_item_index_selected != -1) {
+					Interact_SelectedItem(state, key);
+					player->current_item_index_selected = -1;
 				}
 				valid_key_pressed = true;
 				break;
@@ -948,7 +949,7 @@ void Get_NextPlayerInput(game_state_t *state) {
 			case '8':
 			case '9':
 				if (player->inventory[(key - '1')] != GetItem(I_None)) {
-					player->current_item_selected = player->inventory[(key - '1')];
+					player->current_item_index_selected = (key - '1');
 				}
 				valid_key_pressed = true;
 				break;
@@ -957,7 +958,7 @@ void Get_NextPlayerInput(game_state_t *state) {
 			case '\n':
 			case KEY_ENTER:
 				if (state->player.current_npc_target != ' ') {
-					Interact_NPC(state, state->player.current_npc_target);
+					Interact_TargetedNPC(state);
 					valid_key_pressed = true;
 				}
 				break;
@@ -973,10 +974,60 @@ void Get_NextPlayerInput(game_state_t *state) {
 	}
 }
 
-void Interact_NPC(game_state_t *state, char npc_target) {
+void Interact_SelectedItem(game_state_t *state, int key_pressed) {
 	assert(state != NULL);
 
-	switch (npc_target) {
+	const item_t *item_selected = state->player.inventory[state->player.current_item_index_selected];
+
+	if (key_pressed == 'e') {
+		switch (item_selected->item_slug) {
+			case I_SmallFood:
+			case I_BigFood:;
+				int health_to_add = (item_selected->item_slug == I_SmallFood) ? 1 : 2;
+				int health_restored = AddTo_Health(&state->player, health_to_add);
+
+				if (health_restored > 0) {
+					Update_GameLog(&state->game_log, LOGMSG_PLR_USE_FOOD, health_restored);
+				} else {
+					Update_GameLog(&state->game_log, LOGMSG_PLR_USE_FOOD_FULL);
+				}
+
+				state->player.inventory[state->player.current_item_index_selected] = GetItem(I_None);
+				break;
+			default:
+				return;
+		}
+	} else if (key_pressed == 'x') {
+		Examine_Item(state, item_selected);
+	} else if (key_pressed == 'd') {
+		if (state->world_tiles[state->player.pos.x][state->player.pos.y].item_occupier == NULL) {
+			Update_WorldTile(state->world_tiles, state->player.pos, item_selected->sprite, TileType_Item, Clr_Green, NULL, item_selected);
+			Update_GameLog(&state->game_log, LOGMSG_PLR_DROP_ITEM, item_selected->name);
+			state->player.inventory[state->player.current_item_index_selected] = GetItem(I_None);
+		} else {
+			Update_GameLog(&state->game_log, LOGMSG_PLR_CANT_DROP_ITEM, item_selected->name);
+		}
+	}
+}
+
+void Examine_Item(game_state_t *state, const item_t *item) {
+	switch (item->item_slug) {
+		case I_SmallFood:
+			Update_GameLog(&state->game_log, LOGMSG_EXAMINE_SMALL_FOOD);
+			break;
+		case I_BigFood:
+			Update_GameLog(&state->game_log, LOGMSG_EXAMINE_BIG_FOOD);
+			break;
+		default:
+			Update_GameLog(&state->game_log, "There's nothing here...?");	// SHOULD NOT HAPPEN
+			break;
+	}
+}
+
+void Interact_TargetedNPC(game_state_t *state) {
+	assert(state != NULL);
+
+	switch (state->player.current_npc_target) {
 		case SPR_MERCHANT:
 			Draw_MerchantScreen(state);
 			return;
@@ -1099,9 +1150,11 @@ void Draw_MerchantScreen(game_state_t *state) {
 int AddTo_Health(player_t *player, int amount) {
 	assert(player != NULL);
 
+	int old_health = player->stats.curr_health;
 	player->stats.curr_health = CLAMP(player->stats.curr_health + amount, 0, player->stats.max_health);
+	int health_difference = player->stats.curr_health - old_health;
 
-	return amount;
+	return health_difference;
 }
 
 bool AddTo_Inventory(player_t *player, const item_t *item) {
