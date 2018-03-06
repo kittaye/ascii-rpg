@@ -11,15 +11,8 @@
 // Sprites.
 #define SPR_EMPTY ' '
 #define SPR_PLAYER '@'
-#define SPR_GOLD 'g'
-#define SPR_BIGGOLD 'G'
 #define SPR_WALL '#'
 #define SPR_STAIRCASE '^'
-#define SPR_SMALLFOOD 'f'
-#define SPR_BIGFOOD 'F'
-#define SPR_MAP 'm'
-#define SPR_ZOMBIE 'Z'
-#define SPR_WEREWOLF 'W'
 #define SPR_MERCHANT '1'
 
 // Other.
@@ -104,8 +97,8 @@ typedef struct player_t {
 	const item_t *inventory[INVENTORY_SIZE];
 	char sprite;
 	colour_en color;
-	char current_npc_target;					// The currently targetted sprite, used to interact with NPCs.
-	const item_t *current_item_selected;		// The currently targetted item, used to interact with the item.
+	char current_npc_target;						// The currently targeted sprite, used to interact with NPCs.
+	int current_item_index_selected;				// The currently selected item index from the player's inventory, used to interact with the item.
 } player_t;
 
 typedef struct tile_t {
@@ -214,7 +207,17 @@ void Apply_Vision(const game_state_t *state, coord_t pos);
 /*
 	Interacts with the player's currently targeted NPC.
 */
-void Interact_NPC(game_state_t *state, char npc_target);
+void Interact_TargetedNPC(game_state_t *state);
+
+/*
+	Interacts with the player's currently selected item in a way specified by the key press.
+*/
+void Interact_SelectedItem(game_state_t *state, int key_pressed);
+
+/*
+	Examines the item by displaying text to the game log.
+*/
+void Examine_Item(game_state_t *state, const item_t *item);
 
 /*
 	Adds to the player's current health. Negative values are used to deal damage to the player.
