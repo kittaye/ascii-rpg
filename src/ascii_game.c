@@ -974,39 +974,45 @@ void Get_NextPlayerInput(game_state_t *state) {
 	}
 }
 
-void Interact_SelectedItem(game_state_t *state, int key_pressed) {
+void Interact_SelectedItem(game_state_t *state, item_select_control_en key_pressed) {
 	assert(state != NULL);
 
 	const item_t *item_selected = state->player.inventory[state->player.current_item_index_selected];
 
-	if (key_pressed == 'e') {
-		switch (item_selected->item_slug) {
-			case ItmSlug_SMALLFOOD:
-			case ItmSlug_BIGFOOD:;
-				int health_to_add = (item_selected->item_slug == ItmSlug_SMALLFOOD) ? 1 : 2;
-				int health_restored = AddTo_Health(&state->player, health_to_add);
+	switch (key_pressed) {
+		case ItmCtrl_USE:
+			switch (item_selected->item_slug) {
+				case ItmSlug_SMALLFOOD:
+				case ItmSlug_BIGFOOD:;
+					int health_to_add = (item_selected->item_slug == ItmSlug_SMALLFOOD) ? 1 : 2;
+					int health_restored = AddTo_Health(&state->player, health_to_add);
 
-				if (health_restored > 0) {
-					Update_GameLog(&state->game_log, LOGMSG_PLR_USE_FOOD, health_restored);
-				} else {
-					Update_GameLog(&state->game_log, LOGMSG_PLR_USE_FOOD_FULL);
-				}
+					if (health_restored > 0) {
+						Update_GameLog(&state->game_log, LOGMSG_PLR_USE_FOOD, health_restored);
+					} else {
+						Update_GameLog(&state->game_log, LOGMSG_PLR_USE_FOOD_FULL);
+					}
 
+					state->player.inventory[state->player.current_item_index_selected] = GetItem(ItmSlug_NONE);
+					break;
+				default:
+					return;
+			}
+			break;
+		case ItmCtrl_EXAMINE:
+			Examine_Item(state, item_selected);
+			break;
+		case ItmCtrl_DROP:
+			if (state->world_tiles[state->player.pos.x][state->player.pos.y].item_occupier == NULL) {
+				Update_WorldTile(state->world_tiles, state->player.pos, item_selected->sprite, TileType_ITEM, Clr_GREEN, NULL, item_selected);
+				Update_GameLog(&state->game_log, LOGMSG_PLR_DROP_ITEM, item_selected->name);
 				state->player.inventory[state->player.current_item_index_selected] = GetItem(ItmSlug_NONE);
-				break;
-			default:
-				return;
-		}
-	} else if (key_pressed == 'x') {
-		Examine_Item(state, item_selected);
-	} else if (key_pressed == 'd') {
-		if (state->world_tiles[state->player.pos.x][state->player.pos.y].item_occupier == NULL) {
-			Update_WorldTile(state->world_tiles, state->player.pos, item_selected->sprite, TileType_ITEM, Clr_GREEN, NULL, item_selected);
-			Update_GameLog(&state->game_log, LOGMSG_PLR_DROP_ITEM, item_selected->name);
-			state->player.inventory[state->player.current_item_index_selected] = GetItem(ItmSlug_NONE);
-		} else {
-			Update_GameLog(&state->game_log, LOGMSG_PLR_CANT_DROP_ITEM, item_selected->name);
-		}
+			} else {
+				Update_GameLog(&state->game_log, LOGMSG_PLR_CANT_DROP_ITEM, item_selected->name);
+			}
+			break;
+		default:
+			break;
 	}
 }
 

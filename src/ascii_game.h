@@ -218,7 +218,7 @@ void Interact_TargetedNPC(game_state_t *state);
 /*
 	Interacts with the player's currently selected item in a way specified by the key press.
 */
-void Interact_SelectedItem(game_state_t *state, int key_pressed);
+void Interact_SelectedItem(game_state_t *state, item_select_control_en key_pressed);
 
 /*
 	Examines the item by displaying text to the game log.
