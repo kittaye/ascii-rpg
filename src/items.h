@@ -1,6 +1,12 @@
 #ifndef ITEMS_H_
 #define ITEMS_H_
 
+#define SPR_GOLD 'g'
+#define SPR_BIGGOLD 'G'
+#define SPR_SMALLFOOD 'f'
+#define SPR_BIGFOOD 'F'
+#define SPR_MAP 'm'
+
 typedef enum item_slug_en {
 	I_None,
 	I_Map,
@@ -10,6 +16,7 @@ typedef enum item_slug_en {
 
 typedef struct item_t {
 	const char *const name;
+	const char sprite;
 	const item_slug_en item_slug;
 	const int value;
 } item_t;
