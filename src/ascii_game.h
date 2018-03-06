@@ -34,29 +34,29 @@
 #define MIN_SCREEN_HEIGHT 50 + 6
 
 typedef enum colour_en {
-	Clr_White = 0,
-	Clr_Yellow = 1,
-	Clr_Red = 2,
-	Clr_Blue = 3,
-	Clr_Magenta = 4,
-	Clr_Cyan = 5,
-	Clr_Green = 6
+	Clr_WHITE = 0,
+	Clr_YELLOW = 1,
+	Clr_RED = 2,
+	Clr_BLUE = 3,
+	Clr_MAGENTA = 4,
+	Clr_CYAN = 5,
+	Clr_GREEN = 6
 } colour_en;
 
 typedef enum tile_type_en {
-	TileType_Npc,
-	TileType_Enemy,
-	TileType_Solid,
-	TileType_Special,
-	TileType_Item,
-	TileType_Empty
+	TileType_NPC,
+	TileType_ENEMY,
+	TileType_SOLID,
+	TileType_SPECIAL,
+	TileType_ITEM,
+	TileType_EMPTY
 } tile_type_en;
 
 typedef enum direction_en {
-	Dir_Up,
-	Dir_Down,
-	Dir_Left,
-	Dir_Right
+	Dir_UP,
+	Dir_DOWN,
+	Dir_LEFT,
+	Dir_RIGHT
 } direction_en;
 
 typedef enum item_select_control_en {
@@ -74,11 +74,11 @@ typedef struct player_stats {
 
 	int max_vision;
 
-	int s_STR;	
-	int s_DEF;
-	int s_VIT;
-	int s_INT;
-	int s_LCK;
+	int s_str;	
+	int s_def;
+	int s_vit;
+	int s_int;
+	int s_lck;
 
 	int enemies_slain;
 	int num_gold;

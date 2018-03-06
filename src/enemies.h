@@ -9,8 +9,8 @@
 #define SPR_WEREWOLF 'W'
 
 typedef enum enemy_slug_en {
-	E_Zombie,
-	E_Werewolf,
+	EnmySlug_ZOMBIE,
+	EnmySlug_WEREWOLF,
 } enemy_slug_en;
 
 typedef struct enemy_data_t {

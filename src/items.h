@@ -8,10 +8,10 @@
 #define SPR_MAP 'm'
 
 typedef enum item_slug_en {
-	I_None,
-	I_Map,
-	I_SmallFood,
-	I_BigFood
+	ItmSlug_NONE,
+	ItmSlug_MAP,
+	ItmSlug_SMALLFOOD,
+	ItmSlug_BIGFOOD
 } item_slug_en;
 
 typedef struct item_t {
