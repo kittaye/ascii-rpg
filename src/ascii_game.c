@@ -150,24 +150,34 @@ static void Populate_Rooms(game_state_t *state) {
 			for (int y = state->rooms[i].TL_corner.y + 1; y < state->rooms[i].BL_corner.y; y++) {
 				int val = (rand() % 100) + 1;
 
-				if (val >= 99) {
-					enemy_t *enemy = NULL;
-					if (val == 99) {
-						enemy = InitCreate_Enemy(GetEnemyData(E_Zombie), NewCoord(x, y));
-					} else if (val == 100) {
-						enemy = InitCreate_Enemy(GetEnemyData(E_Werewolf), NewCoord(x, y));
-					}
-					Update_WorldTile(state->world_tiles, enemy->pos, enemy->data->sprite, TileType_Enemy, Clr_Red, enemy, NULL);
-					AddToEnemyList(&state->enemy_list, enemy);
-
-				} else if (val <= 2) {
-					Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGGOLD, TileType_Item, Clr_Green, NULL, NULL);
-				} else if (val <= 4) {
-					Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_GOLD, TileType_Item, Clr_Green, NULL, NULL);
-				} else if (val <= 5) {
-					Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, TileType_Item, Clr_Green, NULL, GetItem(I_SmallFood));
-				} else if (val <= 6) {
-					Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, TileType_Item, Clr_Green, NULL, GetItem(I_BigFood));
+				switch (val) {
+					case 1:
+					case 2:;
+						enemy_t *enemy = NULL;
+						if (val == 1) {
+							enemy = InitCreate_Enemy(GetEnemyData(E_Zombie), NewCoord(x, y));
+						} else /*if (val == 2)*/ {
+							enemy = InitCreate_Enemy(GetEnemyData(E_Werewolf), NewCoord(x, y));
+						}
+						Update_WorldTile(state->world_tiles, enemy->pos, enemy->data->sprite, TileType_Enemy, Clr_Red, enemy, NULL);
+						AddToEnemyList(&state->enemy_list, enemy);
+						break;
+					case 3:
+					case 4:
+						Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGGOLD, TileType_Item, Clr_Green, NULL, NULL);
+						break;
+					case 5: 
+					case 6:
+						Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_GOLD, TileType_Item, Clr_Green, NULL, NULL);
+						break;
+					case 7:
+						Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_SMALLFOOD, TileType_Item, Clr_Green, NULL, GetItem(I_SmallFood));
+						break;
+					case 8:
+						Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_BIGFOOD, TileType_Item, Clr_Green, NULL, GetItem(I_BigFood));
+						break;
+					default:
+						break;
 				}
 			}
 		}
