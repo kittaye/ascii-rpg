@@ -339,10 +339,10 @@ void Process(game_state_t *state) {
 	// Remember player's current position before a move is made.
 	coord_t oldPos = state->player.pos;
 
-	// Wait for next player input.
-	Get_NextPlayerInput(state);
+	// Wait for next player input, and determine whether it is considered to be ending their turn.
+	state->player_turn_over = Perform_PlayerLogic(state);
 
-	// If the player made a move, do world logic for this turn.
+	// If the player made a move that ends their turn, do world logic in response and finish this game turn.
 	if (state->player_turn_over) {
 		Perform_WorldLogic(state, &(state->world_tiles[state->player.pos.x][state->player.pos.y]), oldPos);
 		if (state->player.stats.curr_health <= 0) {
@@ -891,54 +891,42 @@ void Update_AllEnemyCombat(game_state_t *state, enemy_node_t *enemy_list) {
 	}
 }
 
-void Get_NextPlayerInput(game_state_t *state) {
+bool Perform_PlayerLogic(game_state_t *state) {
 	assert(state != NULL);
 
 	player_t *player = &state->player;
-	coord_t oldPos = player->pos;
 
-	// Get a character code from standard input without waiting (but looped until a valid key is pressed).
-	// This method of input processing allows for interrupt handling (dealing with resizes).
-	bool valid_key_pressed = false;
-	while (!valid_key_pressed) {
+	while (true) {
+		// Get a character code from standard input without waiting (but looped until any key is pressed).
+		// This method of input processing allows for interrupt handling (dealing with terminal resizes).
 		const int key = Get_KeyInput(state);
+
 		switch (key) {
 			case KEY_UP:
-				Try_SetPlayerPos(state, NewCoord(player->pos.x, player->pos.y - 1));
-				valid_key_pressed = true;
-				break;
+				return Try_SetPlayerPos(state, NewCoord(player->pos.x, player->pos.y - 1));
 			case KEY_DOWN:
-				Try_SetPlayerPos(state, NewCoord(player->pos.x, player->pos.y + 1));
-				valid_key_pressed = true;
-				break;
+				return Try_SetPlayerPos(state, NewCoord(player->pos.x, player->pos.y + 1));
 			case KEY_LEFT:
-				Try_SetPlayerPos(state, NewCoord(player->pos.x - 1, player->pos.y));
-				valid_key_pressed = true;
-				break;
+				return Try_SetPlayerPos(state, NewCoord(player->pos.x - 1, player->pos.y));
 			case KEY_RIGHT:
-				Try_SetPlayerPos(state, NewCoord(player->pos.x + 1, player->pos.y));
-				valid_key_pressed = true;
-				break;
+				return Try_SetPlayerPos(state, NewCoord(player->pos.x + 1, player->pos.y));
 			case 'h':
 				Draw_HelpScreen(state);
-				valid_key_pressed = true;
-				break;
+				return false;
 			case 'f':
 				state->fog_of_war = !state->fog_of_war;
-				valid_key_pressed = true;
-				break;
+				return false;
 			case 'q':
 				g_process_over = true;
-				valid_key_pressed = true;
-				break;
+				return false;
 			case 'e':
 			case 'd':
 			case 'x':
 				if (player->current_item_index_selected != -1) {
 					Interact_CurrentlySelectedItem(state, key);
 					player->current_item_index_selected = -1;
+					return false;
 				}
-				valid_key_pressed = true;
 				break;
 			case '1':
 			case '2':
@@ -951,27 +939,21 @@ void Get_NextPlayerInput(game_state_t *state) {
 			case '9':
 				if (player->inventory[(key - '1')] != GetItem(ItmSlug_NONE)) {
 					player->current_item_index_selected = (key - '1');
+					return false;
 				}
-				valid_key_pressed = true;
 				break;
 			case KEY_RESIZE:
-				valid_key_pressed = true;
+				return false;
 			case '\n':
-			case KEY_ENTER:
+			case KEY_ENTER: // TODO: Interacting with NPCs should be considered as world logic, thus a game turn ending action.
 				if (state->player.current_npc_target != ' ') {
 					Interact_CurrentlyTargetedNPC(state);
-					valid_key_pressed = true;
+					return false;
 				}
 				break;
 			default:
 				break;
 		}
-	}
-
-	// The player's turn is over if they moved on this turn.
-	state->player_turn_over = false;
-	if (!CoordsEqual(player->pos, oldPos)) {
-		state->player_turn_over = true;
 	}
 }
 
@@ -1061,16 +1043,20 @@ void Draw_HelpScreen(game_state_t *state) {
 }
 
 static int Get_KeyInput(game_state_t *state) {
+	if (state->latest_user_input != ERR) {
+		return state->latest_user_input;		// USED TO INJECT INPUT FOR TESTING/DEBUGGING.
+	}
+
 	while (true) {
-		state->latest_user_input = GEO_get_char();
-		switch (state->latest_user_input) {
+		const int key = GEO_get_char();
+		switch (key) {
 			case ERR:
 				break;
 			case KEY_RESIZE:
 				g_resize_error = true;
 				g_process_over = true;
 			default:
-				return state->latest_user_input;
+				return key;
 		}
 	}
 }
