@@ -103,14 +103,15 @@ typedef struct player_t {
 	coord_t pos;
 	const item_t *inventory[INVENTORY_SIZE];
 	char sprite;
-	int color;
-	char current_target;			// The player-targetted sprite, used to interact with NPCs.
+	colour_en color;
+	char current_npc_target;					// The currently targetted sprite, used to interact with NPCs.
+	const item_t *current_item_selected;		// The currently targetted item, used to interact with the item.
 } player_t;
 
 typedef struct tile_t {
 	char sprite;
 	tile_type_en type;
-	int color;
+	colour_en color;
 	enemy_t *enemy_occupier;
 	const item_t *item_occupier;
 } tile_t;
@@ -182,7 +183,7 @@ void Draw_MerchantScreen(game_state_t *state);
 /*
 	Updates a world tile at position 'pos' with a new sprite, type, colour, and enemy OR item occupier.
 */
-void Update_WorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, int color, enemy_t *enemy_occupier, const item_t *item_occupier);
+void Update_WorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, colour_en color, enemy_t *enemy_occupier, const item_t *item_occupier);
 
 /*
 	Updates the game log consisting of 3 lines with a new formatted line of text, pushing the previous two lines of text upwards. The last line of text is removed.
