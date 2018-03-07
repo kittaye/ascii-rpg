@@ -35,10 +35,9 @@ static int Get_NextRoomRadius(void);
 static void Reset_WorldTiles(game_state_t *state);
 
 /*
-Resets all world tiles to default empty tiles.
+	Draws elements related to UI to the screen.
 */
-static void Draw_UI(game_state_t *state);
-
+static void Draw_UI(const game_state_t *state);
 
 /*
 	Defines a room of size 'radius' at position 'pos' (initialises the locations for each of the room's corners).
@@ -350,8 +349,10 @@ int Get_WorldScreenHeight() {
 }
 
 static void Draw_UI(const game_state_t *state) {
+	const int terminal_h = GEO_screen_height();
+
 	// Draw bottom panel line.
-	GEO_draw_line(0, terminal_h - 2, world_screen_w, terminal_h - 2, Clr_MAGENTA, '_');
+	GEO_draw_line(0, terminal_h - 2, Get_WorldScreenWidth(), terminal_h - 2, Clr_MAGENTA, '_');
 
 	// Draw last 3 game log lines.
 	GEO_draw_printf(0, terminal_h - 6, Clr_WHITE, "* %s", state->game_log.line3);
@@ -368,13 +369,13 @@ static void Draw_UI(const game_state_t *state) {
 
 	// Draw right-hand panel info.
 	{
-		GEO_draw_line(world_screen_w, 0, world_screen_w, terminal_h - 2, Clr_MAGENTA, '|');
+		GEO_draw_line(Get_WorldScreenWidth(), 0, Get_WorldScreenWidth(), terminal_h - 2, Clr_MAGENTA, '|');
 
-		int x = world_screen_w + 2;
+		int x = Get_WorldScreenWidth() + 2;
 		int y = 2;
 
-		GEO_draw_printf_align_center(world_screen_w, y++, Clr_CYAN, "Hero,  Lvl. %d", state->player.stats.level);
-		GEO_draw_printf_align_center(world_screen_w, y++, Clr_WHITE, "Current floor: %d", state->current_floor);
+		GEO_draw_printf_align_center(Get_WorldScreenWidth(), y++, Clr_CYAN, "Hero,  Lvl. %d", state->player.stats.level);
+		GEO_draw_printf_align_center(Get_WorldScreenWidth(), y++, Clr_WHITE, "Current floor: %d", state->current_floor);
 		y++;
 		GEO_draw_printf(x, y++, Clr_CYAN, "Inventory");
 		for (int i = 0; i < INVENTORY_SIZE; i++) {
@@ -425,7 +426,7 @@ void Process(game_state_t *state) {
 	// Remember player's current position before a move is made.
 	coord_t oldPos = state->player.pos;
 
-	// Wait for next player input, and determine whether it is considered to be ending their turn.
+	// Wait for player input, then do player logic with it, and then determine whether the action ends their turn or not.
 	state->player_turn_over = Perform_PlayerLogic(state);
 
 	// If the player made a move that ends their turn, do world logic in response and finish this game turn.
@@ -507,7 +508,6 @@ static bool Perform_PlayerLogic(game_state_t *state) {
 	}
 }
 
-
 static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 	assert(state != NULL);
 
@@ -535,7 +535,7 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 					Update_GameLog(&state->game_log, LOGMSG_PLR_GET_GOLD_PLURAL, amt);
 				}
 				Update_WorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
-				return;
+				break;
 			}
 
 			// All other items are "picked up" (removed from world) if the player has room in their inventory.
