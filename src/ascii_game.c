@@ -30,6 +30,17 @@ static int Get_KeyInput(game_state_t *state);
 static int Get_NextRoomRadius(void);
 
 /*
+	Resets all world tiles to default empty tiles.
+*/
+static void Reset_WorldTiles(game_state_t *state);
+
+/*
+Resets all world tiles to default empty tiles.
+*/
+static void Draw_UI(game_state_t *state);
+
+
+/*
 	Defines a room of size 'radius' at position 'pos' (initialises the locations for each of the room's corners).
 */
 static void Define_Room(room_t *room, coord_t pos, int radius);
@@ -122,14 +133,7 @@ void Init_GameState(game_state_t *state) {
 	}
 
 	// Create empty world space.
-	for (int x = 0; x < world_screen_w; x++) {
-		for (int y = 0; y < world_screen_h; y++) {
-			coord_t coord = NewCoord(x, y);
-			Update_WorldTile(state->world_tiles, coord, SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
-			Update_WorldTileItemOccupier(state->world_tiles, coord, NULL);
-			Update_WorldTileEnemyOccupier(state->world_tiles, coord, NULL);
-		}
-	}
+	Reset_WorldTiles(state);
 
 	snprintf(state->game_log.line1, LOG_BUFFER_SIZE, LOGMSG_EMPTY_SPACE);
 	snprintf(state->game_log.line2, LOG_BUFFER_SIZE, LOGMSG_EMPTY_SPACE);
@@ -157,13 +161,25 @@ void Cleanup_DungeonFloor(game_state_t *state) {
 	state->rooms = (room_t*)NULL;
 }
 
+static void Reset_WorldTiles(game_state_t *state) {
+	const int world_screen_w = Get_WorldScreenWidth();
+	const int world_screen_h = Get_WorldScreenHeight();
+
+	for (int x = 0; x < world_screen_w; x++) {
+		for (int y = 0; y < world_screen_h; y++) {
+			coord_t coord = NewCoord(x, y);
+			Update_WorldTile(state->world_tiles, coord, SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
+			Update_WorldTileItemOccupier(state->world_tiles, coord, NULL);
+			Update_WorldTileEnemyOccupier(state->world_tiles, coord, NULL);
+		}
+	}
+}
+
 void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specified, const char *filename_specified) {
 	assert(state != NULL);
 	assert(num_rooms_specified >= MIN_ROOMS);
 	assert(num_rooms_specified <= MAX_ROOMS);
 
-	const int world_screen_w = Get_WorldScreenWidth();
-	const int world_screen_h = Get_WorldScreenHeight();
 	const int HUB_MAP_FREQUENCY = 4;
 
 	// Reset dungeon floor values from the previous floor.
@@ -172,11 +188,7 @@ void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specifi
 		state->num_rooms_created = 0;
 		state->debug_rcs = 0;
 
-		for (int x = 0; x < world_screen_w; x++) {
-			for (int y = 0; y < world_screen_h; y++) {
-				Update_WorldTile(state->world_tiles, NewCoord(x, y), SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
-			}
-		}
+		Reset_WorldTiles(state);
 	}
 
 	// Every few floors, the hub layout is created instead of a random dungeon layout.
@@ -337,26 +349,7 @@ int Get_WorldScreenHeight() {
 	return GEO_screen_height() - BOTTOM_PANEL_OFFSET;
 }
 
-void Process(game_state_t *state) {
-	//const int terminal_w = GEO_screen_width();
-	const int terminal_h = GEO_screen_height();
-
-	const int world_screen_w = Get_WorldScreenWidth();
-	const int world_screen_h = Get_WorldScreenHeight();
-
-	// Clear drawn elements from screen.
-	GEO_clear_screen();
-
-	// Draw all world tiles.
-	for (int x = 0; x < world_screen_w; x++) {
-		for (int y = 0; y < world_screen_h; y++) {
-			Apply_Vision(state, NewCoord(x, y));
-		}
-	}
-
-	// Draw player.
-	GEO_draw_char(state->player.pos.x, state->player.pos.y, state->player.color, state->player.sprite);
-
+static void Draw_UI(const game_state_t *state) {
 	// Draw bottom panel line.
 	GEO_draw_line(0, terminal_h - 2, world_screen_w, terminal_h - 2, Clr_MAGENTA, '_');
 
@@ -404,6 +397,27 @@ void Process(game_state_t *state) {
 			GEO_draw_printf(x, y++, Clr_YELLOW, "Press 'x' to examine");
 		}
 	}
+}
+
+void Process(game_state_t *state) {
+	const int world_screen_w = Get_WorldScreenWidth();
+	const int world_screen_h = Get_WorldScreenHeight();
+
+	// Clear drawn elements from screen.
+	GEO_clear_screen();
+
+	// Draw all world tiles.
+	for (int x = 0; x < world_screen_w; x++) {
+		for (int y = 0; y < world_screen_h; y++) {
+			Apply_Vision(state, NewCoord(x, y));
+		}
+	}
+
+	// Draw player.
+	GEO_draw_char(state->player.pos.x, state->player.pos.y, state->player.color, state->player.sprite);
+
+	// Draw UI.
+	Draw_UI(state);
 
 	// Display drawn elements to screen.
 	GEO_show_screen();
