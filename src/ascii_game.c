@@ -274,7 +274,7 @@ static void Populate_Rooms(game_state_t *state) {
 		state->rooms[last_room].TL_corner.x + ((state->rooms[last_room].TR_corner.x - state->rooms[last_room].TL_corner.x) / 2),
 		state->rooms[last_room].TR_corner.y + ((state->rooms[last_room].BR_corner.y - state->rooms[last_room].TR_corner.y) / 2)
 	);
-	// TODO: staircase may spawn ontop of enemy, causing strange behaviour. Find fix.
+	// TODO: staircase may spawn ontop of enemy, causing the enemy to appear ontop of a staircase. Find fix.
 	Update_WorldTile(state->world_tiles, pos, SPR_STAIRCASE, TileType_SPECIAL, Clr_YELLOW);
 }
 
@@ -303,7 +303,7 @@ player_t Create_Player(void) {
 	player.sprite = SPR_PLAYER;
 	player.pos = NewCoord(0, 0);
 	player.color = Clr_CYAN;
-	player.current_npc_target = ' ';
+	player.current_npc_target = SPR_EMPTY;
 	player.current_item_index_selected = -1;
 
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
@@ -441,7 +441,7 @@ void Process(game_state_t *state) {
 	}
 }
 
-bool Perform_PlayerLogic(game_state_t *state) {
+static bool Perform_PlayerLogic(game_state_t *state) {
 	assert(state != NULL);
 
 	player_t *player = &state->player;
@@ -498,7 +498,7 @@ bool Perform_PlayerLogic(game_state_t *state) {
 			case KEY_ENTER:
 				if (state->player.current_npc_target != SPR_EMPTY) {
 					Interact_CurrentlyTargetedNPC(state);
-					return true;
+					return false;
 				}
 				break;
 			default:
@@ -508,11 +508,13 @@ bool Perform_PlayerLogic(game_state_t *state) {
 }
 
 
-void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
+static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 	assert(state != NULL);
 
-	state->player.current_npc_target = ' ';
+	// Reset player's NPC target.
+	state->player.current_npc_target = SPR_EMPTY;
 
+	// Perform world logic based on the tile the player moved to.
 	tile_t *curr_world_tile = &state->world_tiles[state->player.pos.x][state->player.pos.y];
 	switch (Get_TileForegroundType(curr_world_tile)) {
 		case TileType_ITEM:
@@ -581,7 +583,7 @@ void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 			break;
 		case TileType_NPC:
 			if (curr_world_tile->sprite == SPR_MERCHANT) {
-				Update_GameLog(&state->game_log, LOGMSG_PLR_INTERACT_MERCHANT);
+				Update_GameLog(&state->game_log, LOGMSG_PLR_TALK_MERCHANT);
 				state->player.current_npc_target = SPR_MERCHANT;
 			}
 			// Moving into an NPC results in no movement from the player.
