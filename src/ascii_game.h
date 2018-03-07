@@ -225,17 +225,6 @@ colour_en Get_TileForegroundColour(const tile_t *tile);
 tile_type_en Get_TileForegroundType(const tile_t *tile);
 
 /*
-	Performs world logic for the current game turn. This involves world objects responding to user's input that ended the player's turn.
-*/
-void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos);
-
-/*
-	Performs player logic for the current game turn. Waits for the user's next input, then performs logic.
-	Returns true if the input counts towards ending the player's turn, otherwise false (e.g. opening help screen, selecting items, etc.)
-*/
-bool Perform_PlayerLogic(game_state_t *state);
-
-/*
 	Loops through all world tiles on the dungeon floor and determines which should be shown to the user. 
 	Game state variable 'fog_of_war' and player variable 'max_vision' are the determining factors.
 */

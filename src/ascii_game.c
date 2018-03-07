@@ -16,21 +16,81 @@
 #include "ascii_game.h"
 
 bool g_resize_error = false;	// Global flag which is set when a terminal resize interrupt occurs.
-bool g_process_over = false;	// Global flag which controls the main while loop of the application.
+bool g_process_over = false;	// Global flag which controls the main while loop of the game.
 
-// Private functions.
+#ifndef Private_Function_Declarations
+/*
+	Gets the next input from stdin without waiting (loops on ERR).
+*/
 static int Get_KeyInput(game_state_t *state);
+
+/*
+	Gets the radius of the next room to be created.
+*/
 static int Get_NextRoomRadius(void);
+
+/*
+	Defines a room of size 'radius' at position 'pos' (initialises the locations for each of the room's corners).
+*/
 static void Define_Room(room_t *room, coord_t pos, int radius);
+
+/*
+	Updates world tiles to generate a room.
+*/
 static void Generate_Room(tile_t **world_tiles, const room_t *room);
+
+/*
+	Updates world tiles to generate a corridor of length 'corridor_size' from 'starting_room' in the specified 'direction'.
+*/
 static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
+
+/*
+	Creates a dungeon floor's rooms.
+*/
 static void Create_Rooms(game_state_t *state, int num_rooms_specified);
+
+/*
+	Creates a single dungeon floor room of size 'radius' at position 'pos' and tries 'iterations' times to set up corridors to further rooms recursively.
+*/
 static void Create_RoomRecursive(game_state_t *state, coord_t pos, int radius, int iterations, int max_rooms);
+
+/*
+	Creates a dungeon floor's rooms from a txt file named 'filename'. 
+*/
 static void Create_RoomsFromFile(game_state_t *state, const char *filename);
+
+/*
+	Populates a dungeon floor's rooms with entities (items, enemies, gold, npcs, specials, etc.)
+*/
 static void Populate_Rooms(game_state_t *state);
+
+/*
+	Returns true if a corridor of length 'corridor_size' from 'starting_room' in the specified 'direction' collides with anything solid.
+*/
 static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
+
+/*
+	Returns true if the specified 'room' (including its walls) collides with anything solid.
+*/
 static bool Check_RoomCollision(const tile_t **world_tiles, const room_t *room);
+
+/*
+	Returns true if the specified 'room''s corners extend outside the boundaries of the world.
+*/
 static bool Check_RoomOutOfWorldBounds(const room_t *room);
+
+/*
+	Performs world logic for the current game turn. This involves world objects responding to user's input that ended the player's turn.
+*/
+static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos);
+
+/*
+	Performs player logic for the current game turn. Waits for the user's next input, then performs logic.
+	Returns true if the input counts towards ending the player's turn, otherwise false (e.g. opening help screen, selecting items, etc.)
+*/
+static bool Perform_PlayerLogic(game_state_t *state);
+
+#endif /* Private_Function_Declarations */
 
 void Init_GameState(game_state_t *state) {
 	assert(state != NULL);
@@ -48,10 +108,10 @@ void Init_GameState(game_state_t *state) {
 	state->player_turn_over = false;
 	state->floor_complete = false;
 	state->debug_rcs = 0;
-	state->debug_injected_input_pos = 0;
-	memset(state->debug_injected_inputs, '\0', sizeof(state->debug_injected_inputs));
 	state->enemy_list = (enemy_node_t*)NULL;
 	state->rooms = (room_t*)NULL;
+	state->debug_injected_input_pos = 0;
+	memset(state->debug_injected_inputs, '\0', sizeof(state->debug_injected_inputs));
 
 	// Initialise empty world space.
 	state->world_tiles = malloc(sizeof(*state->world_tiles) * world_screen_w);
