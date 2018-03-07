@@ -69,6 +69,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	Cleanup_DungeonFloor(&game_state);
 	Cleanup_GameState(&game_state);
 
 	// Terminate curses.
