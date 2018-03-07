@@ -190,12 +190,12 @@ void Draw_MerchantScreen(game_state_t *state);
 void Update_WorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, colour_en color);
 
 /*
-	Updates a world tile at position 'pos' with a new sprite, type and colour.
+	Updates a world tile at position 'pos' with a new item occupier.
 */
 void Update_WorldTileItemOccupier(tile_t **world_tiles, coord_t pos, const item_t *item);
 
 /*
-	Updates a world tile at position 'pos' with a new sprite, type and colour.
+	Updates a world tile at position 'pos' with a new enemy occupier.
 */
 void Update_WorldTileEnemyOccupier(tile_t **world_tiles, coord_t pos, enemy_t *enemy);
 
