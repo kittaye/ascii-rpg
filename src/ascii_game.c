@@ -367,6 +367,73 @@ void Process(game_state_t *state) {
 	}
 }
 
+bool Perform_PlayerLogic(game_state_t *state) {
+	assert(state != NULL);
+
+	player_t *player = &state->player;
+
+	while (true) {
+		// Get a character code from standard input without waiting (but looped until any key is pressed).
+		// This method of input processing allows for interrupt handling (dealing with terminal resizes).
+		const int key = Get_KeyInput(state);
+
+		switch (key) {
+			case KEY_UP:
+				return Try_SetPlayerPos(state, NewCoord(player->pos.x, player->pos.y - 1));
+			case KEY_DOWN:
+				return Try_SetPlayerPos(state, NewCoord(player->pos.x, player->pos.y + 1));
+			case KEY_LEFT:
+				return Try_SetPlayerPos(state, NewCoord(player->pos.x - 1, player->pos.y));
+			case KEY_RIGHT:
+				return Try_SetPlayerPos(state, NewCoord(player->pos.x + 1, player->pos.y));
+			case 'h':
+				Draw_HelpScreen(state);
+				return false;
+			case 'f':
+				state->fog_of_war = !state->fog_of_war;
+				return false;
+			case 'q':
+				g_process_over = true;
+				return false;
+			case 'e':
+			case 'd':
+			case 'x':
+				if (player->current_item_index_selected != -1) {
+					Interact_CurrentlySelectedItem(state, key);
+					player->current_item_index_selected = -1;
+					return false;
+				}
+				break;
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
+				if (player->inventory[(key - '1')] != GetItem(ItmSlug_NONE)) {
+					player->current_item_index_selected = (key - '1');
+					return false;
+				}
+				break;
+			case KEY_RESIZE:
+				return false;
+			case '\n':
+			case KEY_ENTER:
+				if (state->player.current_npc_target != SPR_EMPTY) {
+					Interact_CurrentlyTargetedNPC(state);
+					return true;
+				}
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+
 void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 	assert(state != NULL);
 
@@ -947,73 +1014,6 @@ void Update_AllEnemyCombat(game_state_t *state, enemy_node_t *enemy_list) {
 		}
 	}
 }
-
-bool Perform_PlayerLogic(game_state_t *state) {
-	assert(state != NULL);
-
-	player_t *player = &state->player;
-
-	while (true) {
-		// Get a character code from standard input without waiting (but looped until any key is pressed).
-		// This method of input processing allows for interrupt handling (dealing with terminal resizes).
-		const int key = Get_KeyInput(state);
-
-		switch (key) {
-			case KEY_UP:
-				return Try_SetPlayerPos(state, NewCoord(player->pos.x, player->pos.y - 1));
-			case KEY_DOWN:
-				return Try_SetPlayerPos(state, NewCoord(player->pos.x, player->pos.y + 1));
-			case KEY_LEFT:
-				return Try_SetPlayerPos(state, NewCoord(player->pos.x - 1, player->pos.y));
-			case KEY_RIGHT:
-				return Try_SetPlayerPos(state, NewCoord(player->pos.x + 1, player->pos.y));
-			case 'h':
-				Draw_HelpScreen(state);
-				return false;
-			case 'f':
-				state->fog_of_war = !state->fog_of_war;
-				return false;
-			case 'q':
-				g_process_over = true;
-				return false;
-			case 'e':
-			case 'd':
-			case 'x':
-				if (player->current_item_index_selected != -1) {
-					Interact_CurrentlySelectedItem(state, key);
-					player->current_item_index_selected = -1;
-					return false;
-				}
-				break;
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				if (player->inventory[(key - '1')] != GetItem(ItmSlug_NONE)) {
-					player->current_item_index_selected = (key - '1');
-					return false;
-				}
-				break;
-			case KEY_RESIZE:
-				return false;
-			case '\n':
-			case KEY_ENTER: // TODO: Interacting with NPCs should be considered as world logic, thus a game turn ending action.
-				if (state->player.current_npc_target != ' ') {
-					Interact_CurrentlyTargetedNPC(state);
-					return false;
-				}
-				break;
-			default:
-				break;
-		}
-	}
-}
-
 void Interact_CurrentlySelectedItem(game_state_t *state, item_select_control_en key_pressed) {
 	assert(state != NULL);
 
