@@ -432,11 +432,7 @@ void Process(game_state_t *state) {
 	// If the player made a move that ends their turn, do world logic in response and finish this game turn.
 	if (state->player_turn_over) {
 		Perform_WorldLogic(state, oldPos);
-		if (state->player.stats.curr_health <= 0) {
-			// GAME OVER.
-			Draw_DeathScreen(state);
-			g_process_over = true;
-		}
+
 		state->player_turn_over = false;
 		state->game_turns++;
 	}
@@ -594,6 +590,12 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 				Update_GameLog(&state->game_log, LOGMSG_EMPTY_SPACE);
 			}
 			break;
+	}
+
+	if (state->player.stats.curr_health <= 0) {
+		// GAME OVER.
+		Draw_DeathScreen(state);
+		g_process_over = true;
 	}
 }
 
