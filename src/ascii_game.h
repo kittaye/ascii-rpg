@@ -31,10 +31,6 @@
 #define MIN_ROOM_SIZE 5
 #define INVENTORY_SIZE 9
 
-// NOTE: These min values should be the largest txt dimension size of a dungeon layout from a file, + the panel offsets!
-#define MIN_SCREEN_WIDTH 85 + 36	
-#define MIN_SCREEN_HEIGHT 50 + 6
-
 typedef enum colour_en {
 	Clr_WHITE = 0,
 	Clr_YELLOW = 1,
