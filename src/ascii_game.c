@@ -162,7 +162,7 @@ static void Reset_WorldTiles(game_state_t *state) {
 	for (int x = 0; x < world_screen_w; x++) {
 		for (int y = 0; y < world_screen_h; y++) {
 			coord_t coord = NewCoord(x, y);
-			Update_WorldTile(state->world_tiles, coord, SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
+			Update_WorldTile(state->world_tiles, coord, SPR_VOID, TileType_EMPTY, Clr_WHITE);
 			Update_WorldTileItemOccupier(state->world_tiles, coord, NULL);
 			Update_WorldTileEnemyOccupier(state->world_tiles, coord, NULL);
 		}
