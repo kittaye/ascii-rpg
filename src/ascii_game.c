@@ -798,44 +798,52 @@ static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int c
 	assert(world_tiles != NULL);
 
 	switch (direction) {
-
 		case Dir_UP:
-			// Create opening for THIS room; create marked opening for NEXT room.
-			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - corridor_size), SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
-			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - (corridor_size * 2)), '?', TileType_EMPTY, Clr_WHITE);
+			// Create opening for THIS room
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - corridor_size), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
 
-			// Connect rooms with the corridor.
+			// Connect rooms with the corridor sprites.
 			for (int i = 0; i < corridor_size; i++) {
 				Update_WorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, TileType_SOLID, Clr_WHITE);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - corridor_size - (i + 1)), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
 				Update_WorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y - corridor_size - (i + 1)), SPR_WALL, TileType_SOLID, Clr_WHITE);
 			}
+
+			// Create marked opening for the NEXT room.
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y - (corridor_size * 2)), '?', TileType_EMPTY, Clr_WHITE);
 			break;
 		case Dir_DOWN:
-			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + corridor_size), SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
-			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + (corridor_size * 2)), '?', TileType_EMPTY, Clr_WHITE);
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + corridor_size), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
 
 			for (int i = 0; i < corridor_size; i++) {
 				Update_WorldTile(world_tiles, NewCoord(starting_room.x - 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, TileType_SOLID, Clr_WHITE);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + corridor_size + (i + 1)), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
 				Update_WorldTile(world_tiles, NewCoord(starting_room.x + 1, starting_room.y + corridor_size + (i + 1)), SPR_WALL, TileType_SOLID, Clr_WHITE);
 			}
+
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x, starting_room.y + (corridor_size * 2)), '?', TileType_EMPTY, Clr_WHITE);
 			break;
 		case Dir_LEFT:
-			Update_WorldTile(world_tiles, NewCoord(starting_room.x - corridor_size, starting_room.y), SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
-			Update_WorldTile(world_tiles, NewCoord(starting_room.x - (corridor_size * 2), starting_room.y), '?', TileType_EMPTY, Clr_WHITE);
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x - corridor_size, starting_room.y), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
 
 			for (int i = 0; i < corridor_size; i++) {
 				Update_WorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y - 1), SPR_WALL, TileType_SOLID, Clr_WHITE);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
 				Update_WorldTile(world_tiles, NewCoord(starting_room.x - corridor_size - (i + 1), starting_room.y + 1), SPR_WALL, TileType_SOLID, Clr_WHITE);
 			}
+
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x - (corridor_size * 2), starting_room.y), '?', TileType_EMPTY, Clr_WHITE);
 			break;
 		case Dir_RIGHT:
-			Update_WorldTile(world_tiles, NewCoord(starting_room.x + corridor_size, starting_room.y), SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
-			Update_WorldTile(world_tiles, NewCoord(starting_room.x + (corridor_size * 2), starting_room.y), '?', TileType_EMPTY, Clr_WHITE);
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x + corridor_size, starting_room.y), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
 
 			for (int i = 0; i < corridor_size; i++) {
 				Update_WorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y - 1), SPR_WALL, TileType_SOLID, Clr_WHITE);
+				Update_WorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
 				Update_WorldTile(world_tiles, NewCoord(starting_room.x + corridor_size + (i + 1), starting_room.y + 1), SPR_WALL, TileType_SOLID, Clr_WHITE);
 			}
+
+			Update_WorldTile(world_tiles, NewCoord(starting_room.x + (corridor_size * 2), starting_room.y), '?', TileType_EMPTY, Clr_WHITE);
 			break;
 		default:
 			break;
@@ -916,33 +924,41 @@ static void Generate_Room(tile_t **world_tiles, const room_t *room) {
 	assert(room != NULL);
 
 	//Connect corners with walls; marked tiles (?) become openings.
+	{
+		// Bottom and top walls.
+		for (int x = room->TL_corner.x; x <= room->TR_corner.x; x++) {
+			if (world_tiles[x][room->TL_corner.y].sprite != '?') {
+				Update_WorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_WALL, TileType_SOLID, Clr_WHITE);
+			} else {
+				Update_WorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
+			}
 
-	// Bottom and top walls.
-	for (int x = room->TL_corner.x; x <= room->TR_corner.x; x++) {
-		if (world_tiles[x][room->TL_corner.y].sprite != '?') {
-			Update_WorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_WALL, TileType_SOLID, Clr_WHITE);
-		} else {
-			Update_WorldTile(world_tiles, NewCoord(x, room->TL_corner.y), SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
+			if (world_tiles[x][room->BL_corner.y].sprite != '?') {
+				Update_WorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_WALL, TileType_SOLID, Clr_WHITE);
+			} else {
+				Update_WorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
+			}
 		}
 
-		if (world_tiles[x][room->BL_corner.y].sprite != '?') {
-			Update_WorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_WALL, TileType_SOLID, Clr_WHITE);
-		} else {
-			Update_WorldTile(world_tiles, NewCoord(x, room->BL_corner.y), SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
+		// Left and right walls.
+		for (int y = room->TR_corner.y; y <= room->BR_corner.y; y++) {
+			if (world_tiles[room->TR_corner.x][y].sprite != '?') {
+				Update_WorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_WALL, TileType_SOLID, Clr_WHITE);
+			} else {
+				Update_WorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
+			}
+			if (world_tiles[room->TL_corner.x][y].sprite != '?') {
+				Update_WorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_WALL, TileType_SOLID, Clr_WHITE);
+			} else {
+				Update_WorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
+			}
 		}
 	}
 
-	// Left and right walls.
-	for (int y = room->TR_corner.y; y <= room->BR_corner.y; y++) {
-		if (world_tiles[room->TR_corner.x][y].sprite != '?') {
-			Update_WorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_WALL, TileType_SOLID, Clr_WHITE);
-		} else {
-			Update_WorldTile(world_tiles, NewCoord(room->TR_corner.x, y), SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
-		}
-		if (world_tiles[room->TL_corner.x][y].sprite != '?') {
-			Update_WorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_WALL, TileType_SOLID, Clr_WHITE);
-		} else {
-			Update_WorldTile(world_tiles, NewCoord(room->TL_corner.x, y), SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
+	// Create empty space inside the room.
+	for (int x = room->TL_corner.x + 1; x < room->TR_corner.x; x++) {
+		for (int y = room->TL_corner.y + 1; y < room->BL_corner.y; y++) {
+			Update_WorldTile(world_tiles, NewCoord(x, y), SPR_GROUND, TileType_EMPTY, Clr_WHITE);
 		}
 	}
 }
