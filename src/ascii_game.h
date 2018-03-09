@@ -10,6 +10,8 @@
 
 // Sprites.
 #define SPR_EMPTY ' '
+#define SPR_VOID ' '			// Non-walk-able tiles
+#define SPR_GROUND ' '			// Walk-able tiles
 #define SPR_PLAYER '@'
 #define SPR_WALL '#'
 #define SPR_STAIRCASE '^'
