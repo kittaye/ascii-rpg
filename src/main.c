@@ -25,6 +25,7 @@ int main(int argc, char *argv[]) {
 	// Get command line info.
 	int num_rooms_specified = 0;
 	const char *filename_specified = NULL;
+	struct vector2 filename_specified_dimensions;
 	{
 		num_rooms_specified = (int)strtol(argv[1], 0, 0);
 		num_rooms_specified = CLAMP(num_rooms_specified, MIN_ROOMS, MAX_ROOMS);
@@ -44,6 +45,9 @@ int main(int argc, char *argv[]) {
 				fclose(fp);
 				exit(1);
 			}
+
+			filename_specified_dimensions = GetFileDimensions(fp);
+
 			fclose(fp);
 		}
 	}
@@ -51,12 +55,41 @@ int main(int argc, char *argv[]) {
 	// Initialise curses.
 	GEO_setup_screen();
 
-	if (GEO_screen_width() < MIN_SCREEN_WIDTH || GEO_screen_height() < MIN_SCREEN_HEIGHT) {
-		GEO_cleanup_screen();
-		fprintf(stderr, "Terminal screen dimensions must be at least %dx%d to run this application. Exiting...\n", MIN_SCREEN_WIDTH, MIN_SCREEN_HEIGHT);
+	// Ensure the terminal size is large enough to create the hub file.
+	struct vector2 hub_file_dimensions;
+	FILE *fp;
+	fp = fopen(HUB_FILENAME, "r");
+	if (fp == NULL) {
+		fprintf(stderr, "The hub file could not be found (Ensure it's directory is: %s). Exiting...\n", HUB_FILENAME);
+		fclose(fp);
 		exit(1);
+	} else {
+		hub_file_dimensions = GetFileDimensions(fp);
+		int min_width = hub_file_dimensions.x + RIGHT_PANEL_OFFSET;
+		int min_height = hub_file_dimensions.y + BOTTOM_PANEL_OFFSET;
+
+		if (GEO_screen_width() < min_width || GEO_screen_height() < min_height) {
+			GEO_cleanup_screen();
+			fprintf(stderr, "The current terminal size must be at least (%dx%d) to run the game. Exiting...\n",
+				min_width, min_height);
+			exit(1);
+		}
 	}
 
+	// Ensure the terminal size is large enough to create the command-line specified file.
+	if (filename_specified != NULL) {
+		int min_width = filename_specified_dimensions.x + RIGHT_PANEL_OFFSET;
+		int min_height = filename_specified_dimensions.y + BOTTOM_PANEL_OFFSET;
+
+		if (GEO_screen_width() < min_width || GEO_screen_height() < min_height) {
+			GEO_cleanup_screen();
+			fprintf(stderr, "The specified file's dimensions (%dx%d) are too large for the current terminal size. Exiting...\n", 
+				min_width, min_height);
+			exit(1);
+		}
+	}
+
+	// Initialise the game.
 	game_state_t game_state;
 	Init_GameState(&game_state);
 	game_state.player = Create_Player();
@@ -87,6 +120,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+	// Cleanup dynamically allocated memory.
 	Cleanup_DungeonFloor(&game_state);
 	Cleanup_GameState(&game_state);
 
