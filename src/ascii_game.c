@@ -55,14 +55,9 @@ static void Generate_Room(tile_t **world_tiles, const room_t *room);
 static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
 
 /*
-	Creates a dungeon floor's rooms.
+	Creates a single dungeon floor room of size 'radius' at position 'pos' and tries to set up further rooms with connecting corridors recursively.
 */
-static void Create_Rooms(game_state_t *state, int num_rooms_specified);
-
-/*
-	Creates a single dungeon floor room of size 'radius' at position 'pos' and tries to set up corridors to further rooms recursively.
-*/
-static void Create_RoomRecursive(game_state_t *state, coord_t pos, int radius, int max_rooms);
+static void Create_RoomsRecursively(game_state_t *state, coord_t pos, int radius, int max_rooms);
 
 /*
 	Creates a dungeon floor's rooms from a txt file named 'filename'. 
@@ -80,12 +75,12 @@ static void Populate_Rooms(game_state_t *state);
 static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
 
 /*
-	Returns true if the specified 'room' (including its walls) collides with anything solid.
+	Returns true if the specified 'room' (including its walls) collides with anything solid or world map boundaries.
 */
 static bool Check_RoomCollision(const tile_t **world_tiles, const room_t *room);
 
 /*
-	Returns true if the specified 'room''s corners extend outside the boundaries of the world.
+	Returns true if the specified 'room''s corners collides with world map boundaries.
 */
 static bool Check_RoomOutOfWorldBounds(const room_t *room);
 
@@ -308,7 +303,6 @@ player_t Create_Player(void) {
 	player.stats.s_vit = 1;
 	player.stats.s_int = 1;
 	player.stats.s_lck = 1;
-
 
 	player.stats.enemies_slain = 0;
 	player.stats.num_gold = 0;
@@ -758,7 +752,7 @@ static void Create_RoomRecursive(game_state_t *state, coord_t room_pos, int room
 
 	const int ATTEMPTS_PER_ROOM = 5;
 
-	// Create the latest room.
+	// Create the latest defined room.
 	Generate_Room(state->world_tiles, &state->rooms[state->num_rooms_created]);
 	state->num_rooms_created++;
 
@@ -766,7 +760,7 @@ static void Create_RoomRecursive(game_state_t *state, coord_t room_pos, int room
 	int rand_direction = rand() % 4;
 	int new_room_radius = Get_NextRoomRadius();
 
-	// Try to initialise new rooms and draw corridors to them, until all retry iterations are used up OR max rooms are reached.
+	// Try to initialise a new room with a connecting corridor, until all retry iterations are used up OR max rooms are reached.
 	for (int i = 0; i < ATTEMPTS_PER_ROOM; i++) {
 		if (state->num_rooms_created >= max_rooms) {
 			return;
@@ -774,10 +768,7 @@ static void Create_RoomRecursive(game_state_t *state, coord_t room_pos, int room
 
 		// Make sure the next random direction is different from the last attempt's direction.
 		if (i > 0) {
-			int old_direction = rand_direction;
-			while (rand_direction == old_direction) {
-				rand_direction = ((rand_direction+1) % 4);
-			}
+			rand_direction = ((rand_direction + 1) % 4);
 		}
 
 		// Get the new room's position coordinates.
@@ -818,7 +809,7 @@ static void Create_RoomRecursive(game_state_t *state, coord_t room_pos, int room
 		Generate_Corridor(state->world_tiles, old_room_pos, room_radius, rand_direction);
 
 		// Instantiate the new conjoined room.
-		Create_RoomRecursive(state, new_room_pos, new_room_radius, max_rooms);
+		Create_RoomsRecursively(state, new_room_pos, new_room_radius, max_rooms);
 	}
 }
 
