@@ -186,8 +186,14 @@ void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specifi
 	if (filename_specified != NULL) {
 		Create_RoomsFromFile(state, filename_specified);
 	} else {
-		Create_Rooms(state, num_rooms_specified);
-		Populate_Rooms(state);
+		int starting_room_radius = 2;
+		coord_t starting_room_pos = NewCoord(Get_WorldScreenWidth() / 2, Get_WorldScreenHeight() / 2);
+		Define_Room(&state->rooms[0], starting_room_pos, starting_room_radius);
+
+		if (!Check_RoomCollision((const tile_t**)state->world_tiles, &state->rooms[0])) {
+			Create_RoomsRecursively(state, starting_room_pos, starting_room_radius, num_rooms_specified);
+			Populate_Rooms(state);
+		}
 	}
 
 	Update_GameLog(&state->game_log, LOGMSG_PLR_NEW_FLOOR, state->current_floor);
@@ -626,128 +632,111 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 	if (fp == NULL) {
 		return;
 	} else {
-		int lineNum = 0;
-		size_t len = 0;
-		char *line = NULL;
-		ssize_t read = 0;
-
 		// FIRST PASS: Get map length and height, use it to find the anchor point (Top-left corner) to center the map on.
-		int lineWidth = 0;
-		while ((read = getline(&line, &len, fp)) != -1) {
-			lineWidth = read;
-			lineNum++;
+		coord_t anchor_centered_map_offset;
+		{
+			int lineNum = 0;
+			size_t len = 0;
+			char *line = NULL;
+			ssize_t read = 0;
+
+			int longest_line = 0;
+			while ((read = getline(&line, &len, fp)) != -1) {
+				longest_line = read;
+				lineNum++;
+			}
+
+			anchor_centered_map_offset = NewCoord((Get_WorldScreenWidth() / 2) - ((longest_line - 1) / 2), ((Get_WorldScreenHeight() / 2) - (lineNum / 2)));
 		}
-		coord_t anchor_centered_map_offset = NewCoord((Get_WorldScreenWidth() / 2) - (lineWidth / 2), ((Get_WorldScreenHeight() / 2) - (lineNum / 2)));
-		lineNum = 0;
-		len = 0;
-		free(line);
-		line = NULL;
-		read = 0;
 
 		// Reset file read-ptr.
 		rewind(fp);
 
 		// SECOND PASS: generate the map relative to anchor point.
-		while ((read = getline(&line, &len, fp)) != -1) {
-			for (int i = 0; i < read - 1; i++) {
-				tile_type_en type = TileType_EMPTY;
-				int colour = Clr_WHITE;
-				coord_t pos = NewCoord(anchor_centered_map_offset.x + i, anchor_centered_map_offset.y + lineNum);
-				bool isEnemy = false;
-				bool isItem = false;
-				enemy_t *enemy = NULL;
-				const item_t *item = NULL;
+		{
+			int lineNum = 0;
+			size_t len = 0;
+			char *line = NULL;
+			ssize_t read = 0;
 
-				// Replace any /n, /t, etc. with a whitespace character.
-				if (!isgraph(line[i])) {
-					line[i] = SPR_EMPTY;
-				}
+			while ((read = getline(&line, &len, fp)) != -1) {
+				for (int i = 0; i < read - 1; i++) {
+					tile_type_en type = TileType_EMPTY;
+					int colour = Clr_WHITE;
+					coord_t pos = NewCoord(anchor_centered_map_offset.x + i, anchor_centered_map_offset.y + lineNum);
+					bool isEnemy = false;
+					bool isItem = false;
+					enemy_t *enemy = NULL;
+					const item_t *item = NULL;
 
-				switch (line[i]) {
-					case SPR_PLAYER:
-						Try_SetPlayerPos(state, pos);
+					// Replace any /n, /t, etc. with a whitespace character.
+					if (!isgraph(line[i])) {
 						line[i] = SPR_EMPTY;
-						break;
-					case SPR_WALL:
-						type = TileType_SOLID;
-						break;
-					case SPR_SMALLFOOD:
-						isItem = true;
-						item = GetItem(ItmSlug_SMALLFOOD);
-						break;
-					case SPR_BIGFOOD:
-						isItem = true;
-						item = GetItem(ItmSlug_BIGFOOD);
-						break;
-					case SPR_GOLD:
-					case SPR_BIGGOLD:
-						isItem = true;
-						break;
-					case SPR_ZOMBIE:
-						isEnemy = true;
-						enemy = InitCreate_Enemy(GetEnemyData(EnmySlug_ZOMBIE), pos);
-						break;
-					case SPR_WEREWOLF:
-						isEnemy = true;
-						enemy = InitCreate_Enemy(GetEnemyData(EnmySlug_WEREWOLF), pos);
-						break;
-					case SPR_STAIRCASE:
-						type = TileType_SPECIAL;
-						colour = Clr_YELLOW;
-						break;
-					case SPR_MERCHANT:
-						type = TileType_NPC;
-						colour = Clr_MAGENTA;
-						break;
-					default:
-						break;
-				}
+					}
 
-				if (isEnemy) {
-					type = TileType_ENEMY;
-					colour = Clr_RED;
-					AddToEnemyList(&state->enemy_list, enemy);
-				} else if (isItem) {
-					type = TileType_ITEM;
-					colour = Clr_GREEN;
-				}
+					switch (line[i]) {
+						case SPR_PLAYER:
+							Try_SetPlayerPos(state, pos);
+							line[i] = SPR_EMPTY;
+							break;
+						case SPR_WALL:
+							type = TileType_SOLID;
+							break;
+						case SPR_SMALLFOOD:
+							isItem = true;
+							item = GetItem(ItmSlug_SMALLFOOD);
+							break;
+						case SPR_BIGFOOD:
+							isItem = true;
+							item = GetItem(ItmSlug_BIGFOOD);
+							break;
+						case SPR_GOLD:
+						case SPR_BIGGOLD:
+							isItem = true;
+							break;
+						case SPR_ZOMBIE:
+							isEnemy = true;
+							enemy = InitCreate_Enemy(GetEnemyData(EnmySlug_ZOMBIE), pos);
+							break;
+						case SPR_WEREWOLF:
+							isEnemy = true;
+							enemy = InitCreate_Enemy(GetEnemyData(EnmySlug_WEREWOLF), pos);
+							break;
+						case SPR_STAIRCASE:
+							type = TileType_SPECIAL;
+							colour = Clr_YELLOW;
+							break;
+						case SPR_MERCHANT:
+							type = TileType_NPC;
+							colour = Clr_MAGENTA;
+							break;
+						default:
+							break;
+					}
 
-				Update_WorldTile(state->world_tiles, pos, line[i], type, colour);
-				Update_WorldTileItemOccupier(state->world_tiles, pos, item);
-				Update_WorldTileEnemyOccupier(state->world_tiles, pos, enemy);
+					if (isEnemy) {
+						type = TileType_ENEMY;
+						colour = Clr_RED;
+						AddToEnemyList(&state->enemy_list, enemy);
+					} else if (isItem) {
+						type = TileType_ITEM;
+						colour = Clr_GREEN;
+					}
+
+					Update_WorldTile(state->world_tiles, pos, line[i], type, colour);
+					Update_WorldTileItemOccupier(state->world_tiles, pos, item);
+					Update_WorldTileEnemyOccupier(state->world_tiles, pos, enemy);
+				}
+				line = NULL;
+				lineNum++;
 			}
-			line = NULL;
-			lineNum++;
+			free(line);
+			fclose(fp);
 		}
-		free(line);
-		fclose(fp);
 	}
 }
 
-static void Create_Rooms(game_state_t *state, int num_rooms_specified) {
-	assert(state != NULL);
-
-	// Arbitrary starting room size.
-	int room_radius = (5 - 1) / 2;
-
-	// Ensure there is enough space to define the first room at the center of the map. Reduce radius if room is too big.
-	coord_t room_pos = NewCoord(Get_WorldScreenWidth() / 2, Get_WorldScreenHeight() / 2);
-	bool isValid;
-	do {
-		Define_Room(&state->rooms[0], room_pos, room_radius);
-		isValid = true;
-		if (Check_RoomCollision((const tile_t**)state->world_tiles, &state->rooms[0])) {
-			isValid = false;
-			state->debug_rcs++;
-			room_radius--;
-		}
-	} while (!isValid);
-
-	// Begin creating rooms recursively.
-	Create_RoomRecursive(state, room_pos, room_radius, num_rooms_specified);
-}
-
-static void Create_RoomRecursive(game_state_t *state, coord_t room_pos, int room_radius, int max_rooms) {
+static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int room_radius, int max_rooms) {
 	assert(state != NULL);
 
 	const int ATTEMPTS_PER_ROOM = 5;
