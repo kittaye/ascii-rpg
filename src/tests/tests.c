@@ -9,6 +9,13 @@
 #include "../log_messages.h"
 #include "minunit.h"
 
+typedef struct floor_statistics_t {
+	int floors_created;
+	float average_rooms;
+	int least_rooms;
+	int most_rooms;
+} floor_statistics_t;
+
 int tests_run = 0;
 
 int last_seed_used = -1;
@@ -23,10 +30,14 @@ static game_state_t Setup_Test_GameStatePlayerAndDungeon();
 static void Cleanup_Test_GameStatePlayerAndDungeon(game_state_t *state);
 
 /*
-	Setup before any tests.
+Setup before any tests.
 */
 static void Setup_Test_Env() {
 	GEO_setup_screen();
+
+	// NOTE: Make sure these values satisfy the current minimal size needed to play the game.
+	const int MIN_SCREEN_WIDTH = 130;
+	const int MIN_SCREEN_HEIGHT = 60;
 
 	if (GEO_screen_width() < MIN_SCREEN_WIDTH || GEO_screen_height() < MIN_SCREEN_HEIGHT) {
 		GEO_cleanup_screen();
@@ -36,14 +47,14 @@ static void Setup_Test_Env() {
 }
 
 /*
-	Cleanup after all tests are finished or a test fails.
+Cleanup after all tests are finished or a test fails.
 */
 static void Cleanup_Test_Env() {
 	GEO_cleanup_screen();
 }
 
 /*
-	Streamline tests that need game state and the player to be initialised and created.
+Streamline tests that need game state and the player to be initialised and created.
 */
 static game_state_t Setup_Test_GameStateAndPlayer() {
 	game_state_t state;
@@ -55,14 +66,14 @@ static game_state_t Setup_Test_GameStateAndPlayer() {
 }
 
 /*
-	Frees all allocated memory from calling 'Setup_Test_GameStateAndPlayer'.
+Frees all allocated memory from calling 'Setup_Test_GameStateAndPlayer'.
 */
 static void Cleanup_Test_GameStateAndPlayer(game_state_t *state) {
 	Cleanup_GameState(state);
 }
 
 /*
-	Streamline tests that need game state, player, and the dungeon floor to be initialised and created.
+Streamline tests that need game state, player, and the dungeon floor to be initialised and created.
 */
 static game_state_t Setup_Test_GameStatePlayerAndDungeon() {
 	game_state_t state;
@@ -74,15 +85,15 @@ static game_state_t Setup_Test_GameStatePlayerAndDungeon() {
 }
 
 /*
-	Frees all allocated memory from calling 'Setup_Test_GameStatePlayerAndDungeon'.
+Frees all allocated memory from calling 'Setup_Test_GameStatePlayerAndDungeon'.
 */
 static void Cleanup_Test_GameStatePlayerAndDungeon(game_state_t *state) {
 	Cleanup_DungeonFloor(state);
 	Cleanup_GameState(state);
 }
 
-/* 
-	Compare all values of a world tile at position 'pos_to_assert'.
+/*
+Compare all values of a world tile at position 'pos_to_assert'.
 */
 static bool WorldTile_IsEqualTo(game_state_t *state, coord_t pos_to_assert, char sprite, tile_type_en type, colour_en colour) {
 	if (state->world_tiles[pos_to_assert.x][pos_to_assert.y].sprite != sprite) return false;
@@ -92,7 +103,7 @@ static bool WorldTile_IsEqualTo(game_state_t *state, coord_t pos_to_assert, char
 }
 
 /*
-	Compare the world tile item occupier at position 'pos_to_assert'.
+Compare the world tile item occupier at position 'pos_to_assert'.
 */
 static bool WorldTile_Item_IsEqualTo(game_state_t *state, coord_t pos_to_assert, const item_t *item_occupier) {
 	if (state->world_tiles[pos_to_assert.x][pos_to_assert.y].item_occupier != item_occupier) return false;
@@ -100,7 +111,7 @@ static bool WorldTile_Item_IsEqualTo(game_state_t *state, coord_t pos_to_assert,
 }
 
 /*
-	Compare the world tile enemy occupier at position 'pos_to_assert'.
+Compare the world tile enemy occupier at position 'pos_to_assert'.
 */
 static bool WorldTile_Enemy_IsEqualTo(game_state_t *state, coord_t pos_to_assert, enemy_t *enemy_occupier) {
 	if (state->world_tiles[pos_to_assert.x][pos_to_assert.y].enemy_occupier != enemy_occupier) return false;
@@ -385,7 +396,7 @@ int test_update_game_log_buffer_overflow_clamped() {
 
 int test_drop_an_item_successfully() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
-	
+
 	const item_t *item = GetItem(ItmSlug_SMALLFOOD);
 	state.player.inventory[0] = item;
 	state.player.current_item_index_selected = 0;
@@ -516,10 +527,42 @@ int run_all_tests() {
 	return 0;
 }
 
+floor_statistics_t get_statistics_on_dungeon_floor_creation(int iterations) {
+	game_state_t state = Setup_Test_GameStateAndPlayer();
+
+	int total_rooms = 0;
+	int least_rooms = MAX_ROOMS;
+	int most_rooms = MIN_ROOMS;
+
+	for (int i = 0; i < iterations; i++) {
+		InitCreate_DungeonFloor(&state, MAX_ROOMS, NULL);
+		total_rooms += state.num_rooms_created;
+		state.current_floor++;
+
+		if (state.num_rooms_created < least_rooms) least_rooms = state.num_rooms_created;
+		if (state.num_rooms_created > most_rooms) most_rooms = state.num_rooms_created;
+
+		Cleanup_DungeonFloor(&state);
+	}
+
+	float average_rooms = (float)total_rooms / iterations;
+
+	Cleanup_Test_GameStateAndPlayer(&state);
+
+	floor_statistics_t stats;
+	stats.floors_created = iterations;
+	stats.average_rooms = average_rooms;
+	stats.least_rooms = least_rooms;
+	stats.most_rooms = most_rooms;
+	return stats;
+}
+
+
 int main(int argc, char **argv) {
 	Setup_Test_Env();
 
 	int result = run_all_tests();
+	floor_statistics_t floor_statistics = get_statistics_on_dungeon_floor_creation(1000);
 
 	Cleanup_Test_Env();
 
@@ -530,6 +573,10 @@ int main(int argc, char **argv) {
 		printf("ALL TESTS PASSED\n");
 	}
 	printf("\nTotal tests: %d\n", tests_run);
+
+	printf("\nStatistics:\n");
+	printf(" - Average number of rooms over %d dungeon floors: %.1f, least number of rooms in a floor was: %d, most was: %d\n"
+		, floor_statistics.floors_created, floor_statistics.average_rooms, floor_statistics.least_rooms, floor_statistics.most_rooms);
 
 	return result != 0;
 }
