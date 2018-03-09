@@ -6,8 +6,15 @@
 #include "log_messages.h"
 #include "ascii_game.h"
 
-// Private function.
+// Private struct.
+struct vector2 {
+	int x;
+	int y;
+};
+
+// Private functions.
 static bool FContainsChar(FILE *fp, char char_to_find);
+static struct vector2 GetFileDimensions(FILE *fp);
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
@@ -104,4 +111,23 @@ static bool FContainsChar(FILE *fp, char char_to_find) {
 		}
 	}
 	return false;
+}
+
+static struct vector2 GetFileDimensions(FILE *fp) {
+	int lineNum = 0;
+	size_t len = 0;
+	char *line = NULL;
+	ssize_t read = 0;
+
+	int longest_line = 0;
+	while ((read = getline(&line, &len, fp)) != -1) {
+		if (read > longest_line) {
+			longest_line = read;
+		}
+		lineNum++;
+	}
+	
+	// TODO: find out why -1 is needed...
+	struct vector2 result = {.x = longest_line - 1, .y = lineNum};
+	return result;
 }
