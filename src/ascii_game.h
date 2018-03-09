@@ -19,15 +19,14 @@
 #define HUB_FILENAME "maps/hub.txt"
 #define HUB_MAP_FREQUENCY 4
 #define PLAYER_MAX_VISION 100
-#define MAX_ENEMIES 1000
 #define RIGHT_PANEL_OFFSET 36
 #define BOTTOM_PANEL_OFFSET 6			
 #define TOP_PANEL_OFFSET 0		
 #define DEBUG_RCS_LIMIT 100000			// Room collision limit.
 #define DEBUG_INJECTED_INPUT_LIMIT 256	// Injected user input limit (used for testing).
-#define LOG_BUFFER_SIZE 250
+#define LOG_BUFFER_SIZE 175
 #define MIN_ROOMS 2
-#define MAX_ROOMS 1000
+#define MAX_ROOMS 100
 #define MIN_ROOM_SIZE 5
 #define INVENTORY_SIZE 9
 
