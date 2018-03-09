@@ -274,11 +274,7 @@ enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos) {
 	enemy->curr_health = enemy->data->max_health;
 	enemy->pos = pos;
 	enemy->is_alive = true;
-	if (rand() % 10 == 0) {
-		enemy->loot = GetItem(ItmSlug_MAP);
-	} else {
-		enemy->loot = GetItem(ItmSlug_NONE);
-	}
+	enemy->loot = GetItem(ItmSlug_NONE);
 
 	return enemy;
 }
@@ -538,10 +534,6 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 				attackedEnemy->is_alive = false;
 				state->player.stats.enemies_slain++;
 				Update_WorldTileEnemyOccupier(state->world_tiles, attackedEnemy->pos, NULL);
-
-				if (attackedEnemy->loot == GetItem(ItmSlug_MAP)) {
-					Update_WorldTile(state->world_tiles, attackedEnemy->pos, SPR_MAP, TileType_SPECIAL, Clr_YELLOW);
-				}
 			} else {
 				state->player.stats.curr_health--;
 				Update_GameLog(&state->game_log, LOGMSG_ENEMY_DMG_PLR, attackedEnemy->data->name, 1);
@@ -554,10 +546,6 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 			if (curr_world_tile->sprite == SPR_STAIRCASE) {
 				Update_GameLog(&state->game_log, LOGMSG_PLR_INTERACT_STAIRCASE);
 				state->floor_complete = true;
-			} else if (curr_world_tile->sprite == SPR_MAP) {
-				Update_GameLog(&state->game_log, LOGMSG_PLR_USE_MAP);
-				state->fog_of_war = false;
-				Update_WorldTile(state->world_tiles, state->player.pos, SPR_EMPTY, TileType_EMPTY, Clr_WHITE);
 			}
 
 			// Moving into a special object results in no movement from the player.

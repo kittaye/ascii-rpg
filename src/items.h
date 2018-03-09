@@ -5,11 +5,9 @@
 #define SPR_BIGGOLD 'G'
 #define SPR_SMALLFOOD 'f'
 #define SPR_BIGFOOD 'F'
-#define SPR_MAP 'm'
 
 typedef enum item_slug_en {
 	ItmSlug_NONE,
-	ItmSlug_MAP,
 	ItmSlug_SMALLFOOD,
 	ItmSlug_BIGFOOD
 } item_slug_en;

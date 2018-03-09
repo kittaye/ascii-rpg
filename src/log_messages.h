@@ -5,7 +5,6 @@
 #define LOGMSG_PLR_GET_GOLD_PLURAL "You picked up %d gold pieces."
 #define LOGMSG_PLR_USE_FOOD "You restored %d health from eating food."
 #define LOGMSG_PLR_USE_FOOD_FULL "You're full, but you ate the food anyway."
-#define LOGMSG_PLR_USE_MAP "The map disintegrates as it reveals the floor's layout to you."
 #define LOGMSG_PLR_GET_ITEM "You picked up %s."
 #define LOGMSG_PLR_DROP_ITEM "You dropped %s."
 #define LOGMSG_PLR_CANT_DROP_ITEM "There is not enough space to drop this item here."
