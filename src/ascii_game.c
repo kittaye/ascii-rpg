@@ -179,29 +179,15 @@ void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specifi
 	assert(num_rooms_specified >= MIN_ROOMS);
 	assert(num_rooms_specified <= MAX_ROOMS);
 
-	const int HUB_MAP_FREQUENCY = 4;
-
-	// Reset dungeon floor values from the previous floor.
-	if (state->current_floor > 1) {
-		state->fog_of_war = true;
-		state->num_rooms_created = 0;
-		state->debug_rcs = 0;
-
-		Reset_WorldTiles(state);
-	}
-
-	// Every few floors, the hub layout is created instead of a random dungeon layout.
-	if (state->current_floor % HUB_MAP_FREQUENCY == 0) {
-		filename_specified = HUB_FILENAME;
-		state->player.stats.max_vision = PLAYER_MAX_VISION + 100;
-	} else {
-		state->player.stats.max_vision = PLAYER_MAX_VISION;
-	}
-
+	// Make sure dungeon floor values are reset from any previous floors.
+	Reset_WorldTiles(state);
+	state->fog_of_war = true;
+	state->num_rooms_created = 0;
+	state->debug_rcs = 0;
 	state->rooms = malloc(sizeof(*state->rooms) * num_rooms_specified);
 	assert(state->rooms != NULL);
 
-	// Create the floor.
+	// Create the new dungeon floor.
 	if (filename_specified != NULL) {
 		Create_RoomsFromFile(state, filename_specified);
 	} else {
@@ -790,7 +776,7 @@ static void Create_RoomRecursive(game_state_t *state, coord_t room_pos, int room
 		if (i > 0) {
 			int old_direction = rand_direction;
 			while (rand_direction == old_direction) {
-				rand_direction = rand() % 4;
+				rand_direction = ((rand_direction+1) % 4);
 			}
 		}
 

@@ -61,11 +61,22 @@ int main(int argc, char *argv[]) {
 	// Main game loop.
 	while (!g_process_over) {
 		Process(&game_state);
+
 		if (game_state.floor_complete) {
 			game_state.current_floor++;
-			Cleanup_DungeonFloor(&game_state);
-			InitCreate_DungeonFloor(&game_state, num_rooms_specified, NULL);
 			game_state.floor_complete = false;
+
+			// Every few floors, the hub layout is created instead of a random dungeon layout.
+			if (game_state.current_floor % HUB_MAP_FREQUENCY == 0) {
+				filename_specified = HUB_FILENAME;
+				game_state.player.stats.max_vision = PLAYER_MAX_VISION + 100;
+			} else {
+				filename_specified = NULL;
+				game_state.player.stats.max_vision = PLAYER_MAX_VISION;
+			}
+
+			Cleanup_DungeonFloor(&game_state);
+			InitCreate_DungeonFloor(&game_state, num_rooms_specified, filename_specified);
 		}
 	}
 

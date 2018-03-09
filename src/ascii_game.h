@@ -17,6 +17,7 @@
 
 // Other.
 #define HUB_FILENAME "maps/hub.txt"
+#define HUB_MAP_FREQUENCY 4
 #define PLAYER_MAX_VISION 100
 #define MAX_ENEMIES 1000
 #define RIGHT_PANEL_OFFSET 36
