@@ -204,7 +204,7 @@ void GEO_draw_string_align_right(const int x_offset, const int y, const int colo
 	GEO_draw_string(x, y, color, text);
 }
 
-void GEO_draw_printf(const int x, const int y, const int color, const char *format, ...) {
+void GEO_drawf(const int x, const int y, const int color, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
 	char buffer[1000];
@@ -213,7 +213,7 @@ void GEO_draw_printf(const int x, const int y, const int color, const char *form
 	va_end(args);
 }
 
-void GEO_draw_printf_align_center(const int x_offset, const int y, const int color, const char *format, ...) {
+void GEO_drawf_align_center(const int x_offset, const int y, const int color, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
 	char buffer[1000];
@@ -222,7 +222,7 @@ void GEO_draw_printf_align_center(const int x_offset, const int y, const int col
 	va_end(args);
 }
 
-void GEO_draw_printf_align_right(const int x_offset, const int y, const int color, const char *format, ...) {
+void GEO_drawf_align_right(const int x_offset, const int y, const int color, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
 	char buffer[1000];

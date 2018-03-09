@@ -341,16 +341,16 @@ static void Draw_UI(const game_state_t *state) {
 	GEO_draw_line(0, terminal_h - 2, Get_WorldScreenWidth(), terminal_h - 2, Clr_MAGENTA, '_');
 
 	// Draw last 3 game log lines.
-	GEO_draw_printf(0, terminal_h - 6, Clr_WHITE, "* %s", state->game_log.line3);
-	GEO_draw_printf(0, terminal_h - 5, Clr_WHITE, "* %s", state->game_log.line2);
-	GEO_draw_printf(0, terminal_h - 4, Clr_WHITE, "* %s", state->game_log.line1);
+	GEO_drawf(0, terminal_h - 6, Clr_WHITE, "* %s", state->game_log.line3);
+	GEO_drawf(0, terminal_h - 5, Clr_WHITE, "* %s", state->game_log.line2);
+	GEO_drawf(0, terminal_h - 4, Clr_WHITE, "* %s", state->game_log.line1);
 
 	// Draw basic player info.
-	GEO_draw_printf_align_center(-RIGHT_PANEL_OFFSET, terminal_h - 3, Clr_CYAN, "Health - %d/%d   Mana - %d/%d   Gold - %d",
+	GEO_drawf_align_center(-RIGHT_PANEL_OFFSET, terminal_h - 3, Clr_CYAN, "Health - %d/%d   Mana - %d/%d   Gold - %d",
 		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
 
 	// Draw DEBUG label.
-	GEO_draw_printf(0, terminal_h - 1, Clr_MAGENTA, "   xy: (%d, %d)   rc(s): %d   seed: %d   rooms: %d   turns: %d",
+	GEO_drawf(0, terminal_h - 1, Clr_MAGENTA, "   xy: (%d, %d)   rc(s): %d   seed: %d   rooms: %d   turns: %d",
 		state->player.pos.x, state->player.pos.y, state->debug_rcs, (int)state->debug_seed, state->num_rooms_created, state->game_turns);
 
 	// Draw right-hand panel info.
@@ -360,28 +360,28 @@ static void Draw_UI(const game_state_t *state) {
 		int x = Get_WorldScreenWidth() + 2;
 		int y = 2;
 
-		GEO_draw_printf_align_center(Get_WorldScreenWidth(), y++, Clr_CYAN, "Hero,  Lvl. %d", state->player.stats.level);
-		GEO_draw_printf_align_center(Get_WorldScreenWidth(), y++, Clr_WHITE, "Current floor: %d", state->current_floor);
+		GEO_drawf_align_center(Get_WorldScreenWidth(), y++, Clr_CYAN, "Hero,  Lvl. %d", state->player.stats.level);
+		GEO_drawf_align_center(Get_WorldScreenWidth(), y++, Clr_WHITE, "Current floor: %d", state->current_floor);
 		y++;
-		GEO_draw_printf(x, y++, Clr_CYAN, "Inventory");
+		GEO_drawf(x, y++, Clr_CYAN, "Inventory");
 		for (int i = 0; i < INVENTORY_SIZE; i++) {
-			GEO_draw_printf(x, y++, Clr_YELLOW, "(%d) %s", i + 1, state->player.inventory[i]->name);
+			GEO_drawf(x, y++, Clr_YELLOW, "(%d) %s", i + 1, state->player.inventory[i]->name);
 		}
 		y++;
-		GEO_draw_printf(x, y++, Clr_CYAN, "Stats");
-		GEO_draw_printf(x, y++, Clr_YELLOW, "STR - %d", state->player.stats.s_str);
-		GEO_draw_printf(x, y++, Clr_YELLOW, "DEF - %d", state->player.stats.s_def);
-		GEO_draw_printf(x, y++, Clr_YELLOW, "VIT - %d", state->player.stats.s_vit);
-		GEO_draw_printf(x, y++, Clr_YELLOW, "INT - %d", state->player.stats.s_int);
-		GEO_draw_printf(x, y++, Clr_YELLOW, "LCK - %d", state->player.stats.s_lck);
+		GEO_drawf(x, y++, Clr_CYAN, "Stats");
+		GEO_drawf(x, y++, Clr_YELLOW, "STR - %d", state->player.stats.s_str);
+		GEO_drawf(x, y++, Clr_YELLOW, "DEF - %d", state->player.stats.s_def);
+		GEO_drawf(x, y++, Clr_YELLOW, "VIT - %d", state->player.stats.s_vit);
+		GEO_drawf(x, y++, Clr_YELLOW, "INT - %d", state->player.stats.s_int);
+		GEO_drawf(x, y++, Clr_YELLOW, "LCK - %d", state->player.stats.s_lck);
 		y++;
 
 		if (state->player.current_item_index_selected != -1) {
 			y++;
-			GEO_draw_printf(x, y++, Clr_CYAN, "Selected item: %s", state->player.inventory[state->player.current_item_index_selected]->name);
-			GEO_draw_printf(x, y++, Clr_YELLOW, "Press 'e' to use");
-			GEO_draw_printf(x, y++, Clr_YELLOW, "Press 'd' to drop");
-			GEO_draw_printf(x, y++, Clr_YELLOW, "Press 'x' to examine");
+			GEO_drawf(x, y++, Clr_CYAN, "Selected item: %s", state->player.inventory[state->player.current_item_index_selected]->name);
+			GEO_drawf(x, y++, Clr_YELLOW, "Press 'e' to use");
+			GEO_drawf(x, y++, Clr_YELLOW, "Press 'd' to drop");
+			GEO_drawf(x, y++, Clr_YELLOW, "Press 'x' to examine");
 		}
 	}
 }
@@ -1130,12 +1130,12 @@ void Draw_HelpScreen(game_state_t *state) {
 
 	GEO_clear_screen();
 
-	GEO_draw_printf_align_center(0, terminal_h / 2 - 4, Clr_WHITE, "Asciiscape by George Delosa");
-	GEO_draw_printf_align_center(0, terminal_h / 2 - 2, Clr_WHITE, "up/down/left/right: movement keys");
-	GEO_draw_printf(terminal_w / 2 - 11, terminal_h / 2 - 1, Clr_WHITE, "h: show this help screen");
-	GEO_draw_printf(terminal_w / 2 - 11, terminal_h / 2 + 0, Clr_WHITE, "f: toggle fog of war");
-	GEO_draw_printf(terminal_w / 2 - 11, terminal_h / 2 + 1, Clr_WHITE, "q: quit game");
-	GEO_draw_printf_align_center(0, terminal_h / 2 + 3, Clr_WHITE, "Press any key to continue...");
+	GEO_drawf_align_center(0, terminal_h / 2 - 4, Clr_WHITE, "Asciiscape by George Delosa");
+	GEO_drawf_align_center(0, terminal_h / 2 - 2, Clr_WHITE, "up/down/left/right: movement keys");
+	GEO_drawf(terminal_w / 2 - 11, terminal_h / 2 - 1, Clr_WHITE, "h: show this help screen");
+	GEO_drawf(terminal_w / 2 - 11, terminal_h / 2 + 0, Clr_WHITE, "f: toggle fog of war");
+	GEO_drawf(terminal_w / 2 - 11, terminal_h / 2 + 1, Clr_WHITE, "q: quit game");
+	GEO_drawf_align_center(0, terminal_h / 2 + 3, Clr_WHITE, "Press any key to continue...");
 
 	GEO_show_screen();
 	Get_KeyInput(state);
@@ -1165,7 +1165,7 @@ static int Get_KeyInput(game_state_t *state) {
 void Draw_DeathScreen(game_state_t *state) {
 	GEO_clear_screen();
 
-	GEO_draw_printf_align_center(0, GEO_screen_height() / 2, Clr_RED, "YOU DIED");
+	GEO_drawf_align_center(0, GEO_screen_height() / 2, Clr_RED, "YOU DIED");
 
 	GEO_show_screen();
 	Get_KeyInput(state);
@@ -1188,15 +1188,15 @@ void Draw_MerchantScreen(game_state_t *state) {
 	// Draw the merchant shop interface.
 	int x = 3;
 	int y = 2;
-	GEO_draw_printf_align_center(0, y++, Clr_YELLOW, "Trading with Merchant");
+	GEO_drawf_align_center(0, y++, Clr_YELLOW, "Trading with Merchant");
 	y++;
-	GEO_draw_printf(x, y++, Clr_YELLOW, "Option     Item                    Price (gold)");
-	GEO_draw_printf(x, y++, Clr_WHITE, "(1)        %-23s %d", GetItem(ItmSlug_SMALLFOOD)->name, GetItem(ItmSlug_SMALLFOOD)->value);
-	GEO_draw_printf(x, y++, Clr_WHITE, "(2)        %-23s %d", GetItem(ItmSlug_BIGFOOD)->name, GetItem(ItmSlug_BIGFOOD)->value);
+	GEO_drawf(x, y++, Clr_YELLOW, "Option     Item                    Price (gold)");
+	GEO_drawf(x, y++, Clr_WHITE, "(1)        %-23s %d", GetItem(ItmSlug_SMALLFOOD)->name, GetItem(ItmSlug_SMALLFOOD)->value);
+	GEO_drawf(x, y++, Clr_WHITE, "(2)        %-23s %d", GetItem(ItmSlug_BIGFOOD)->name, GetItem(ItmSlug_BIGFOOD)->value);
 	y++;
-	GEO_draw_printf(x, y++, Clr_WHITE, "Your gold: %d", state->player.stats.num_gold);
+	GEO_drawf(x, y++, Clr_WHITE, "Your gold: %d", state->player.stats.num_gold);
 	y++;
-	GEO_draw_printf(x, y++, Clr_WHITE, "Select an option to buy an item, or press ENTER to leave.");
+	GEO_drawf(x, y++, Clr_WHITE, "Select an option to buy an item, or press ENTER to leave.");
 
 	GEO_show_screen();
 
