@@ -1,8 +1,6 @@
 #ifndef ITEMS_H_
 #define ITEMS_H_
 
-#define SPR_GOLD 'g'
-#define SPR_BIGGOLD 'G'
 #define SPR_SMALLFOOD 'f'
 #define SPR_BIGFOOD 'F'
 
