@@ -165,6 +165,7 @@ static void Reset_WorldTiles(game_state_t *state) {
 	for (int x = 0; x < world_screen_w; x++) {
 		for (int y = 0; y < world_screen_h; y++) {
 			coord_t coord = NewCoord(x, y);
+			state->world_tiles[coord.x][coord.y].visited = false;
 			Update_WorldTile(state->world_tiles, coord, GetTileData(TileSlug_VOID));
 			Update_WorldTileItemOccupier(state->world_tiles, coord, NULL);
 			Update_WorldTileEnemyOccupier(state->world_tiles, coord, NULL);
@@ -1041,9 +1042,14 @@ void Apply_Vision(const game_state_t *state, coord_t pos) {
 
 	const tile_t *tile = &state->world_tiles[pos.x][pos.y];
 
+	if (tile->visited) {
+		//GEO_draw_char(pos.x, pos.y, Clr_BLUE, Get_TileForegroundSprite(tile));
+	}
+	
 	if (state->fog_of_war) {
 		const int vision_to_tile = abs((pos.x - state->player.pos.x) * (pos.x - state->player.pos.x)) + abs((pos.y - state->player.pos.y) * (pos.y - state->player.pos.y));
 		if (vision_to_tile < state->player.stats.max_vision) {
+			state->world_tiles[pos.x][pos.y].visited = true;
 			GEO_draw_char(pos.x, pos.y, Get_TileForegroundColour(tile), Get_TileForegroundSprite(tile));
 		}
 	} else {
