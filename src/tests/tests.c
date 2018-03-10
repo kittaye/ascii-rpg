@@ -156,6 +156,8 @@ int test_init_game_state_correct_values() {
 	mu_assert(__func__, strcmp(state.game_log.line1, " ") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line2, " ") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line3, " ") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line4, " ") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line5, " ") == 0);
 
 	Cleanup_GameState(&state);
 	return 0;
@@ -336,25 +338,42 @@ int test_update_game_log_normal_behaviour() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
 	Update_GameLog(&state.game_log, "Hello");
+	mu_assert(__func__, strcmp(state.game_log.line5, " ") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line4, " ") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line3, " ") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line2, " ") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line1, "Hello") == 0);
 
 	Update_GameLog(&state.game_log, "World");
+	mu_assert(__func__, strcmp(state.game_log.line5, " ") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line4, " ") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line3, " ") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line2, "Hello") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line1, "World") == 0);
 
 	Update_GameLog(&state.game_log, " ");
+	mu_assert(__func__, strcmp(state.game_log.line5, " ") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line4, " ") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line3, "Hello") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line2, "World") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line1, " ") == 0);
 
 	Update_GameLog(&state.game_log, "Test");
 	Update_GameLog(&state.game_log, " ");
+	mu_assert(__func__, strcmp(state.game_log.line5, "Hello") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line4, "World") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line3, " ") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line2, "Test") == 0);
 	mu_assert(__func__, strcmp(state.game_log.line1, " ") == 0);
+
+	Update_GameLog(&state.game_log, "abc");
+	Update_GameLog(&state.game_log, "def");
+
+	mu_assert(__func__, strcmp(state.game_log.line5, " ") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line4, "Test") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line3, " ") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line2, "abc") == 0);
+	mu_assert(__func__, strcmp(state.game_log.line1, "def") == 0);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
