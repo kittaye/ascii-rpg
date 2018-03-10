@@ -692,6 +692,8 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 						case SPR_MERCHANT:
 							tile_data = GetTileData(TileSlug_MERCHANT);
 							break;
+						case _UNITY_VOID_SPRITE:
+							tile_data = GetTileData(TileSlug_VOID);
 						default:
 							break;
 					}

@@ -29,6 +29,7 @@
 #define MAX_ROOMS 100
 #define MIN_ROOM_SIZE 5
 #define INVENTORY_SIZE 9
+#define _UNITY_VOID_SPRITE ';'		// Used by the Unity img-to-ascii converter for representing the void. NOTE: This value must be unique - no other sprite may use it.
 
 typedef enum direction_en {
 	Dir_UP,
