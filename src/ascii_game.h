@@ -5,17 +5,15 @@
 #include "items.h"
 #include "enemies.h"
 #include "coord.h"
+#include "tiles.h"
+#include "colours.h"
+
 
 #define CLAMP(x, min_val, max_val) (((x) < (min_val)) ? (min_val) : (((x) > (max_val)) ? (max_val) : (x)))
 
 // Sprites.
 #define SPR_EMPTY ' '
-#define SPR_VOID ' '			// Non-walk-able tiles
-#define SPR_GROUND ' '			// Walk-able tiles
 #define SPR_PLAYER '@'
-#define SPR_WALL '#'
-#define SPR_STAIRCASE '^'
-#define SPR_MERCHANT '1'
 
 // Other.
 #define HUB_FILENAME "maps/hub.txt"
@@ -31,25 +29,6 @@
 #define MAX_ROOMS 100
 #define MIN_ROOM_SIZE 5
 #define INVENTORY_SIZE 9
-
-typedef enum colour_en {
-	Clr_WHITE = 0,
-	Clr_YELLOW = 1,
-	Clr_RED = 2,
-	Clr_BLUE = 3,
-	Clr_MAGENTA = 4,
-	Clr_CYAN = 5,
-	Clr_GREEN = 6
-} colour_en;
-
-typedef enum tile_type_en {
-	TileType_NPC,
-	TileType_ENEMY,
-	TileType_SOLID,
-	TileType_SPECIAL,
-	TileType_ITEM,
-	TileType_EMPTY
-} tile_type_en;
 
 typedef enum direction_en {
 	Dir_UP,
@@ -105,14 +84,6 @@ typedef struct player_t {
 	char current_npc_target;						// The currently targeted sprite, used to interact with NPCs.
 	int current_item_index_selected;				// The currently selected item index from the player's inventory, used to interact with the item.
 } player_t;
-
-typedef struct tile_t {
-	char sprite;
-	tile_type_en type;
-	colour_en color;
-	enemy_t *enemy_occupier;
-	const item_t *item_occupier;
-} tile_t;
 
 typedef struct game_state_t {
 	int game_turns;						// Current number of game turns since game started.
@@ -183,9 +154,9 @@ void Draw_DeathScreen(game_state_t *state);
 void Draw_MerchantScreen(game_state_t *state);
 
 /*
-	Updates a world tile at position 'pos' with a new sprite, type and colour.
+	Updates a world tile at position 'pos' with a new set of tile data.
 */
-void Update_WorldTile(tile_t **world_tiles, coord_t pos, char sprite, tile_type_en type, colour_en color);
+void Update_WorldTile(tile_t **world_tiles, coord_t pos, const tile_data_t *tile_data);
 
 /*
 	Updates a world tile at position 'pos' with a new item occupier.
