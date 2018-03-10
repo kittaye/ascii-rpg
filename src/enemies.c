@@ -8,11 +8,11 @@ static const enemy_data_t g_enemy_data_database[] = {
 	[EnmySlug_WEREWOLF] = {.name = "Werewolf", .enemy_slug = EnmySlug_WEREWOLF, .max_health = 3, .sprite = SPR_WEREWOLF}
 };
 
-const enemy_data_t* GetEnemyData(const enemy_slug_en enemy_slug) {
+const enemy_data_t* Get_EnemyData(const enemy_slug_en enemy_slug) {
 	return &g_enemy_data_database[enemy_slug];
 }
 
-void AddToEnemyList(enemy_node_t **list, enemy_t *enemy) {
+void AddTo_EnemyList(enemy_node_t **list, enemy_t *enemy) {
 	assert(list != NULL);
 	assert(enemy != NULL);
 
@@ -33,7 +33,7 @@ void AddToEnemyList(enemy_node_t **list, enemy_t *enemy) {
 	}
 }
 
-void FreeEnemyList(enemy_node_t **list) {
+void Cleanup_EnemyList(enemy_node_t **list) {
 	assert(list != NULL);
 
 	enemy_node_t *tmp;

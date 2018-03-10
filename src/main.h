@@ -8,7 +8,14 @@ typedef struct dimensions_t {
 	int y;
 } dimensions_t;
 
-bool FContainsChar(FILE *fp, char char_to_find);
-dimensions_t GetFileDimensions(FILE *fp);
+/*
+	Returns true if the specified char was found in the file.
+*/
+bool Check_FContainsChar(FILE *fp, char char_to_find);
+
+/*
+	Returns the length of the longest line and the number of lines as (x, y) dimensions of the file respectively.
+*/
+dimensions_t Get_FileDimensions(FILE *fp);
 
 #endif // !MAIN_H_

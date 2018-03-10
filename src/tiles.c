@@ -11,6 +11,6 @@ static const tile_data_t g_tile_data_database[] = {
 	[TileSlug_MERCHANT] = {.sprite = SPR_MERCHANT, .type = TileType_NPC, .color = Clr_CYAN}
 };
 
-const tile_data_t* GetTileData(const tile_slug_en tile_slug) {
+const tile_data_t* Get_TileData(const tile_slug_en tile_slug) {
 	return &g_tile_data_database[tile_slug];
 }

@@ -197,10 +197,9 @@ colour_en Get_TileForegroundColour(const tile_t *tile);
 tile_type_en Get_TileForegroundType(const tile_t *tile);
 
 /*
-	Loops through all world tiles on the dungeon floor and determines which should be shown to the user. 
-	Game state variable 'fog_of_war' and player variable 'max_vision' are the determining factors.
+	Determines whether the tile at position 'pos' should be shown to the user. Game state variable 'fog_of_war' and player variable 'max_vision' are the determining factors.
 */
-void Apply_Vision(const game_state_t *state, coord_t pos);
+void Apply_VisionToTile(const game_state_t *state, coord_t pos);
 
 /*
 	Interacts with the player's currently targeted NPC.

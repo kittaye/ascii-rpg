@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
 		fclose(fp);
 		exit(1);
 	} else {
-		dimensions_t hub_file_dimensions = GetFileDimensions(fp);
+		dimensions_t hub_file_dimensions = Get_FileDimensions(fp);
 		int min_width = hub_file_dimensions.x + RIGHT_PANEL_OFFSET;
 		int min_height = hub_file_dimensions.y + BOTTOM_PANEL_OFFSET;
 
@@ -89,7 +89,7 @@ int main(int argc, char *argv[]) {
 	return 0;
 }
 
-bool FContainsChar(FILE *fp, char char_to_find) {
+bool Check_FContainsChar(FILE *fp, char char_to_find) {
 	assert(fp != NULL);
 
 	int c;
@@ -101,7 +101,7 @@ bool FContainsChar(FILE *fp, char char_to_find) {
 	return false;
 }
 
-dimensions_t GetFileDimensions(FILE *fp) {
+dimensions_t Get_FileDimensions(FILE *fp) {
 	int lineNum = 0;
 	size_t len = 0;
 	char *line = NULL;

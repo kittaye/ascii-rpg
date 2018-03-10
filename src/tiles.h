@@ -51,6 +51,6 @@ typedef struct tile_t {
 /*
 	Returns a pointer to the tile data from the global tile data database (defined in tiles.c) that matches the 'tile_slug' arg.
 */
-const tile_data_t* GetTileData(tile_slug_en tile_slug);
+const tile_data_t* Get_TileData(tile_slug_en tile_slug);
 
 #endif /* TILES_H_ */

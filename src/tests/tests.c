@@ -59,7 +59,7 @@ static game_state_t Setup_Test_GameStateAndPlayer() {
 	game_state_t state;
 	Init_GameState(&state);
 	state.player = Create_Player();
-	state.player.pos = NewCoord(0, 0);
+	state.player.pos = New_Coord(0, 0);
 	last_seed_used = state.debug_seed;
 	return state;
 }
@@ -146,8 +146,8 @@ int test_init_game_state_correct_values() {
 	// Assert empty world space exists.
 	for (int x = 0; x < world_screen_w; x++) {
 		for (int y = 0; y < world_screen_h; y++) {
-			coord_t coord = NewCoord(x, y);
-			mu_assert(__func__, WorldTile_IsEqualTo(&state, coord, GetTileData(TileSlug_VOID)) == true);
+			coord_t coord = New_Coord(x, y);
+			mu_assert(__func__, WorldTile_IsEqualTo(&state, coord, Get_TileData(TileSlug_VOID)) == true);
 			mu_assert(__func__, WorldTile_Item_IsEqualTo(&state, coord, NULL) == true);
 			mu_assert(__func__, WorldTile_Enemy_IsEqualTo(&state, coord, NULL) == true);
 		}
@@ -167,12 +167,12 @@ int test_create_player_correct_values() {
 	player_t player = Create_Player();
 
 	mu_assert(__func__, player.sprite == SPR_PLAYER);
-	mu_assert(__func__, CoordsEqual(player.pos, NewCoord(0, 0)));
+	mu_assert(__func__, Check_CoordsEqual(player.pos, New_Coord(0, 0)));
 	mu_assert(__func__, player.color == Clr_CYAN);
 	mu_assert(__func__, player.current_npc_target == ' ');
 	mu_assert(__func__, player.current_item_index_selected == -1);
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
-		mu_assert(__func__, player.inventory[i] == GetItem(ItmSlug_NONE));
+		mu_assert(__func__, player.inventory[i] == Get_Item(ItmSlug_NONE));
 	}
 	mu_assert(__func__, player.stats.level == 1);
 	mu_assert(__func__, player.stats.max_health > 0);
@@ -192,13 +192,13 @@ int test_create_player_correct_values() {
 }
 
 int test_init_create_enemy_correct_values() {
-	coord_t pos = NewCoord(10, 10);
-	enemy_t* test_enemy = InitCreate_Enemy(GetEnemyData(EnmySlug_ZOMBIE), pos);
+	coord_t pos = New_Coord(10, 10);
+	enemy_t* test_enemy = InitCreate_Enemy(Get_EnemyData(EnmySlug_ZOMBIE), pos);
 
 	mu_assert(__func__, test_enemy != NULL);
-	mu_assert(__func__, test_enemy->data == GetEnemyData(EnmySlug_ZOMBIE));
-	mu_assert(__func__, test_enemy->curr_health == GetEnemyData(EnmySlug_ZOMBIE)->max_health);
-	mu_assert(__func__, CoordsEqual(test_enemy->pos, pos));
+	mu_assert(__func__, test_enemy->data == Get_EnemyData(EnmySlug_ZOMBIE));
+	mu_assert(__func__, test_enemy->curr_health == Get_EnemyData(EnmySlug_ZOMBIE)->max_health);
+	mu_assert(__func__, Check_CoordsEqual(test_enemy->pos, pos));
 	mu_assert(__func__, test_enemy->is_alive == true);
 	mu_assert(__func__, test_enemy->loot != NULL);
 
@@ -247,7 +247,7 @@ int test_created_dungeon_floor_contains_staircase() {
 int test_created_dungeon_floor_contains_player() {
 	game_state_t state = Setup_Test_GameStatePlayerAndDungeon();
 
-	mu_assert(__func__, CoordsEqual(state.player.pos, NewCoord(0, 0)) == false);
+	mu_assert(__func__, Check_CoordsEqual(state.player.pos, New_Coord(0, 0)) == false);
 
 	Cleanup_Test_GameStatePlayerAndDungeon(&state);
 	return 0;
@@ -296,11 +296,11 @@ int test_set_player_pos_bounds_valid() {
 	const int world_screen_w = Get_WorldScreenWidth();
 	const int world_screen_h = Get_WorldScreenHeight();
 
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(rand() % world_screen_w, rand() % world_screen_h)) == true);
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(0, 0)) == true);
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(0, world_screen_h - 1)) == true);
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(world_screen_w - 1, 0)) == true);
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(world_screen_w - 1, world_screen_h - 1)) == true);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(rand() % world_screen_w, rand() % world_screen_h)) == true);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(0, 0)) == true);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(0, world_screen_h - 1)) == true);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(world_screen_w - 1, 0)) == true);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(world_screen_w - 1, world_screen_h - 1)) == true);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
@@ -312,12 +312,12 @@ int test_set_player_pos_out_of_bounds() {
 	const int world_screen_w = Get_WorldScreenWidth();
 	const int world_screen_h = Get_WorldScreenHeight();
 
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(-1, 0)) == false);
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(0, -1)) == false);
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(-1, -1)) == false);
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(0, world_screen_h)) == false);
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(world_screen_w, 0)) == false);
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(world_screen_w, world_screen_h)) == false);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(-1, 0)) == false);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(0, -1)) == false);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(-1, -1)) == false);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(0, world_screen_h)) == false);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(world_screen_w, 0)) == false);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(world_screen_w, world_screen_h)) == false);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
@@ -326,9 +326,9 @@ int test_set_player_pos_out_of_bounds() {
 int test_set_player_pos_into_solid_fails() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	Update_WorldTile(state.world_tiles, NewCoord(0, 0), GetTileData(TileSlug_WALL));
+	Update_WorldTile(state.world_tiles, New_Coord(0, 0), Get_TileData(TileSlug_WALL));
 	mu_assert(__func__, state.world_tiles[0][0].data->type == TileType_SOLID);
-	mu_assert(__func__, Try_SetPlayerPos(&state, NewCoord(0, 0)) == false);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(0, 0)) == false);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
@@ -396,7 +396,7 @@ int test_update_game_log_buffer_overflow_clamped() {
 int test_drop_an_item_successfully() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	const item_t *item = GetItem(ItmSlug_SMALLFOOD);
+	const item_t *item = Get_Item(ItmSlug_SMALLFOOD);
 	state.player.inventory[0] = item;
 	state.player.current_item_index_selected = 0;
 	Interact_CurrentlySelectedItem(&state, ItmCtrl_DROP);
@@ -405,7 +405,7 @@ int test_drop_an_item_successfully() {
 	snprintf(expected_result, LOG_BUFFER_SIZE, LOGMSG_PLR_DROP_ITEM, item->name);
 
 	mu_assert(__func__, strcmp(state.game_log.line1, expected_result) == 0);
-	mu_assert(__func__, WorldTile_Item_IsEqualTo(&state, NewCoord(0, 0), item) == true);
+	mu_assert(__func__, WorldTile_Item_IsEqualTo(&state, New_Coord(0, 0), item) == true);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
@@ -414,8 +414,8 @@ int test_drop_an_item_successfully() {
 int test_cant_drop_item_onto_another() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	state.player.inventory[0] = GetItem(ItmSlug_BIGFOOD);
-	state.player.inventory[1] = GetItem(ItmSlug_SMALLFOOD);
+	state.player.inventory[0] = Get_Item(ItmSlug_BIGFOOD);
+	state.player.inventory[1] = Get_Item(ItmSlug_SMALLFOOD);
 
 	state.player.current_item_index_selected = 0;
 	Interact_CurrentlySelectedItem(&state, ItmCtrl_DROP);
@@ -423,8 +423,8 @@ int test_cant_drop_item_onto_another() {
 	Interact_CurrentlySelectedItem(&state, ItmCtrl_DROP);
 
 	mu_assert(__func__, strcmp(state.game_log.line1, LOGMSG_PLR_CANT_DROP_ITEM) == 0);
-	mu_assert(__func__, state.player.inventory[0] == GetItem(ItmSlug_NONE));
-	mu_assert(__func__, state.player.inventory[1] == GetItem(ItmSlug_SMALLFOOD));
+	mu_assert(__func__, state.player.inventory[0] == Get_Item(ItmSlug_NONE));
+	mu_assert(__func__, state.player.inventory[1] == Get_Item(ItmSlug_SMALLFOOD));
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
@@ -433,11 +433,11 @@ int test_cant_drop_item_onto_another() {
 int test_pickup_an_item_successfully() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	const item_t *item = GetItem(ItmSlug_BIGFOOD);
+	const item_t *item = Get_Item(ItmSlug_BIGFOOD);
 
 	// Spawn item next to player.
-	state.player.pos = NewCoord(0, 0);
-	Update_WorldTileItemOccupier(state.world_tiles, NewCoord(0, 1), item);
+	state.player.pos = New_Coord(0, 0);
+	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 1), item);
 
 	// Set player input to move into the item, then process one game turn.
 	state.debug_injected_inputs[0] = KEY_DOWN;
@@ -448,7 +448,7 @@ int test_pickup_an_item_successfully() {
 
 	// Assert item has been picked up and removed from world.
 	mu_assert(__func__, state.player.inventory[0] == item);
-	mu_assert(__func__, WorldTile_Item_IsEqualTo(&state, NewCoord(0, 1), NULL) == true);
+	mu_assert(__func__, WorldTile_Item_IsEqualTo(&state, New_Coord(0, 1), NULL) == true);
 	mu_assert(__func__, strcmp(state.game_log.line1, expected_logmsg_result) == 0);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
@@ -458,8 +458,8 @@ int test_pickup_an_item_successfully() {
 int test_item_examine_correct_value() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	state.player.inventory[0] = GetItem(ItmSlug_SMALLFOOD);
-	state.player.inventory[1] = GetItem(ItmSlug_BIGFOOD);
+	state.player.inventory[0] = Get_Item(ItmSlug_SMALLFOOD);
+	state.player.inventory[1] = Get_Item(ItmSlug_BIGFOOD);
 
 	state.player.current_item_index_selected = 0;
 	Interact_CurrentlySelectedItem(&state, ItmCtrl_EXAMINE);
@@ -476,7 +476,7 @@ int test_item_examine_correct_value() {
 int test_cant_pickup_another_item_because_inventory_full() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	const item_t  *item = GetItem(ItmSlug_SMALLFOOD);
+	const item_t  *item = Get_Item(ItmSlug_SMALLFOOD);
 
 	// Fill inventory.
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
@@ -484,8 +484,8 @@ int test_cant_pickup_another_item_because_inventory_full() {
 	}
 
 	// Spawn item next to player.
-	state.player.pos = NewCoord(0, 0);
-	Update_WorldTileItemOccupier(state.world_tiles, NewCoord(0, 1), item);
+	state.player.pos = New_Coord(0, 0);
+	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 1), item);
 
 	// Set player input to move into the item, then process one game turn.
 	state.debug_injected_inputs[0] = KEY_DOWN;
@@ -493,7 +493,7 @@ int test_cant_pickup_another_item_because_inventory_full() {
 
 	// Assert the player has tried but failed to pick up the item.
 	mu_assert(__func__, strcmp(state.game_log.line1, LOGMSG_PLR_INVENTORY_FULL) == 0);
-	mu_assert(__func__, WorldTile_Item_IsEqualTo(&state, NewCoord(0, 1), item) == true);
+	mu_assert(__func__, WorldTile_Item_IsEqualTo(&state, New_Coord(0, 1), item) == true);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
@@ -505,13 +505,13 @@ int test_get_tile_foreground_attributes_no_occupiers() {
 	const tile_data_t random_tile1 = {.sprite = 'X', .type = TileType_SOLID, .color = Clr_CYAN};
 	const tile_data_t random_tile2 = {.sprite = 'Q', .type = TileType_NPC, .color = Clr_MAGENTA};
 
-	Update_WorldTile(state.world_tiles, NewCoord(0, 0), &random_tile1);
+	Update_WorldTile(state.world_tiles, New_Coord(0, 0), &random_tile1);
 
 	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == 'X');
 	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_SOLID);
 	mu_assert(__func__, Get_TileForegroundColour(&state.world_tiles[0][0]) == Clr_CYAN);
 
-	Update_WorldTile(state.world_tiles, NewCoord(0, 0), &random_tile2);
+	Update_WorldTile(state.world_tiles, New_Coord(0, 0), &random_tile2);
 
 	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == 'Q');
 	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_NPC);
@@ -524,19 +524,19 @@ int test_get_tile_foreground_attributes_no_occupiers() {
 int test_get_tile_foreground_attributes_single_occupier() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	enemy_t *enemy = InitCreate_Enemy(GetEnemyData(EnmySlug_WEREWOLF), NewCoord(1, 1));
-	const item_t *item = GetItem(ItmSlug_BIGFOOD);
+	enemy_t *enemy = InitCreate_Enemy(Get_EnemyData(EnmySlug_WEREWOLF), New_Coord(1, 1));
+	const item_t *item = Get_Item(ItmSlug_BIGFOOD);
 	const tile_data_t random_tile1 = {.sprite = 'X', .type = TileType_SOLID, .color = Clr_CYAN};
 
-	Update_WorldTile(state.world_tiles, NewCoord(0, 0), &random_tile1);
-	Update_WorldTileItemOccupier(state.world_tiles, NewCoord(0, 0), item);
+	Update_WorldTile(state.world_tiles, New_Coord(0, 0), &random_tile1);
+	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), item);
 
 	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == item->sprite);
 	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_ITEM);
 	mu_assert(__func__, Get_TileForegroundColour(&state.world_tiles[0][0]) == Clr_GREEN);
 
-	Update_WorldTileItemOccupier(state.world_tiles, NewCoord(0, 0), NULL);
-	Update_WorldTileEnemyOccupier(state.world_tiles, NewCoord(0, 0), enemy);
+	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), NULL);
+	Update_WorldTileEnemyOccupier(state.world_tiles, New_Coord(0, 0), enemy);
 
 	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == enemy->data->sprite);
 	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_ENEMY);
@@ -549,27 +549,27 @@ int test_get_tile_foreground_attributes_single_occupier() {
 int test_get_tile_foreground_attributes_full_occupiers() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	enemy_t *enemy = InitCreate_Enemy(GetEnemyData(EnmySlug_WEREWOLF), NewCoord(0, 0));
-	const item_t *item = GetItem(ItmSlug_BIGFOOD);
+	enemy_t *enemy = InitCreate_Enemy(Get_EnemyData(EnmySlug_WEREWOLF), New_Coord(0, 0));
+	const item_t *item = Get_Item(ItmSlug_BIGFOOD);
 	const tile_data_t random_tile1 = {.sprite = 'X', .type = TileType_SOLID, .color = Clr_CYAN};
 
 	// Priority ordering: Enemy > Item > Tile.
 
-	Update_WorldTile(state.world_tiles, NewCoord(0, 0), &random_tile1);
-	Update_WorldTileEnemyOccupier(state.world_tiles, NewCoord(0, 0), enemy);
-	Update_WorldTileItemOccupier(state.world_tiles, NewCoord(0, 0), item);
+	Update_WorldTile(state.world_tiles, New_Coord(0, 0), &random_tile1);
+	Update_WorldTileEnemyOccupier(state.world_tiles, New_Coord(0, 0), enemy);
+	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), item);
 
 	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == enemy->data->sprite);
 	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_ENEMY);
 	mu_assert(__func__, Get_TileForegroundColour(&state.world_tiles[0][0]) == Clr_RED);
 
-	Update_WorldTileEnemyOccupier(state.world_tiles, NewCoord(0, 0), NULL);
+	Update_WorldTileEnemyOccupier(state.world_tiles, New_Coord(0, 0), NULL);
 
 	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == item->sprite);
 	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_ITEM);
 	mu_assert(__func__, Get_TileForegroundColour(&state.world_tiles[0][0]) == Clr_GREEN);
 
-	Update_WorldTileItemOccupier(state.world_tiles, NewCoord(0, 0), NULL);
+	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), NULL);
 
 	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == 'X');
 	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_SOLID);
