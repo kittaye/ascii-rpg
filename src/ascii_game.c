@@ -133,6 +133,8 @@ void Init_GameState(game_state_t *state) {
 	snprintf(state->game_log.line1, LOG_BUFFER_SIZE, LOGMSG_EMPTY_SPACE);
 	snprintf(state->game_log.line2, LOG_BUFFER_SIZE, LOGMSG_EMPTY_SPACE);
 	snprintf(state->game_log.line3, LOG_BUFFER_SIZE, LOGMSG_EMPTY_SPACE);
+	snprintf(state->game_log.line4, LOG_BUFFER_SIZE, LOGMSG_EMPTY_SPACE);
+	snprintf(state->game_log.line5, LOG_BUFFER_SIZE, LOGMSG_EMPTY_SPACE);
 }
 
 void Cleanup_GameState(game_state_t *state) {
@@ -338,10 +340,12 @@ static void Draw_UI(const game_state_t *state) {
 	// Draw bottom panel line.
 	GEO_draw_line(0, terminal_h - 6, terminal_w - 1, terminal_h - 6, Clr_MAGENTA, '_');
 
-	// Draw last 3 game log lines.
-	GEO_drawf(0, terminal_h - 5, Clr_WHITE, "* %s", state->game_log.line3);
-	GEO_drawf(0, terminal_h - 4, Clr_WHITE, "* %s", state->game_log.line2);
-	GEO_drawf(0, terminal_h - 3, Clr_WHITE, "* %s", state->game_log.line1);
+	// Draw last 5 game log lines.
+	GEO_drawf(0, terminal_h - 5, Clr_WHITE, "* %s", state->game_log.line5);
+	GEO_drawf(0, terminal_h - 4, Clr_WHITE, "* %s", state->game_log.line4);
+	GEO_drawf(0, terminal_h - 3, Clr_WHITE, "* %s", state->game_log.line3);
+	GEO_drawf(0, terminal_h - 2, Clr_WHITE, "* %s", state->game_log.line2);
+	GEO_drawf(0, terminal_h - 1, Clr_WHITE, "* %s", state->game_log.line1);
 
 	// Draw right-hand panel info.
 	{
@@ -576,7 +580,11 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 			state->player.pos = player_old_pos;
 			break;
 		default:
-			if (state->game_log.line1[0] != ' ' || state->game_log.line2[0] != ' ' || state->game_log.line3[0] != ' ') {
+			if (state->game_log.line1[0] != ' ' 
+				|| state->game_log.line2[0] != ' ' 
+				|| state->game_log.line3[0] != ' ' 
+				|| state->game_log.line4[0] != ' ' 
+				|| state->game_log.line5[0] != ' ') {
 				Update_GameLog(&state->game_log, LOGMSG_EMPTY_SPACE);
 			}
 			break;
@@ -1042,6 +1050,8 @@ void Update_GameLog(log_list_t *game_log, const char *format, ...) {
 	assert(game_log != NULL);
 
 	// Cycle old log messages upwards.
+	snprintf(game_log->line5, LOG_BUFFER_SIZE, game_log->line4);
+	snprintf(game_log->line4, LOG_BUFFER_SIZE, game_log->line3);
 	snprintf(game_log->line3, LOG_BUFFER_SIZE, game_log->line2);
 	snprintf(game_log->line2, LOG_BUFFER_SIZE, game_log->line1);
 

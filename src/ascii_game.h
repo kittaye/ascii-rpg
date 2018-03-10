@@ -67,6 +67,8 @@ typedef struct log_list_t {
 	char line1[LOG_BUFFER_SIZE];	// First message that is shown in the game log.
 	char line2[LOG_BUFFER_SIZE];	// Second message that is shown in the game log.
 	char line3[LOG_BUFFER_SIZE];	// Third message that is shown in the game log.
+	char line4[LOG_BUFFER_SIZE];	// Fourth message that is shown in the game log.
+	char line5[LOG_BUFFER_SIZE];	// Final message that is shown in the game log.
 } log_list_t;
 
 typedef struct room_t {
