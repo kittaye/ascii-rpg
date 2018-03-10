@@ -14,6 +14,7 @@
 #define SPR_MERCHANT '1'
 #define SPR_GOLD 'g'
 #define SPR_BIGGOLD 'G'
+#define SPR_DOOR '+'
 
 typedef enum tile_slug_en {
 	TileSlug_VOID,
@@ -23,7 +24,8 @@ typedef enum tile_slug_en {
 	TileSlug_BIGGOLD,
 	TileSlug_STAIRCASE,
 	TileSlug_OPENING,
-	TileSlug_MERCHANT
+	TileSlug_MERCHANT,
+	TileSlug_DOOR
 } tile_slug_en;
 
 typedef enum tile_type_en {

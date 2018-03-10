@@ -9,6 +9,7 @@ static const tile_data_t g_tile_data_database[] = {
 	[TileSlug_STAIRCASE] = {.sprite = SPR_STAIRCASE, .type = TileType_SPECIAL, .color = Clr_YELLOW},
 	[TileSlug_OPENING] = {.sprite = SPR_OPENING, .type = TileType_EMPTY, .color = Clr_WHITE},
 	[TileSlug_MERCHANT] = {.sprite = SPR_MERCHANT, .type = TileType_NPC, .color = Clr_CYAN}
+	[TileSlug_DOOR] =		{.sprite = SPR_DOOR,		.type = TileType_EMPTY,		.color = Clr_WHITE}
 };
 
 const tile_data_t* Get_TileData(const tile_slug_en tile_slug) {
