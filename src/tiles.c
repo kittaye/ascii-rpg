@@ -1,7 +1,7 @@
 #include "tiles.h"
 
 static const tile_data_t g_tile_data_database[] = {
-	[TileSlug_VOID] = {.sprite = SPR_VOID,.type = TileType_EMPTY, .color = Clr_WHITE},
+	[TileSlug_VOID] = {.sprite = SPR_VOID, .type = TileType_EMPTY, .color = Clr_MAGENTA},
 	[TileSlug_GROUND] = {.sprite = SPR_GROUND, .type = TileType_EMPTY, .color = Clr_WHITE},
 	[TileSlug_WALL] = {.sprite = SPR_WALL, .type = TileType_SOLID, .color = Clr_WHITE},
 	[TileSlug_GOLD] = {.sprite = SPR_GOLD, .type = TileType_ITEM, .color = Clr_GREEN},
