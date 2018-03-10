@@ -553,6 +553,11 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 				Update_GameLog(&state->game_log, LOGMSG_PLR_KILL_ENEMY, attackedEnemy->data->name);
 				attackedEnemy->is_alive = false;
 				state->player.stats.enemies_slain++;
+
+				if (attackedEnemy->loot != GetItem(ItmSlug_NONE)) {
+					Update_WorldTileItemOccupier(state->world_tiles, attackedEnemy->pos, attackedEnemy->loot);
+				}
+
 				Update_WorldTileEnemyOccupier(state->world_tiles, attackedEnemy->pos, NULL);
 			} else {
 				state->player.stats.curr_health--;
