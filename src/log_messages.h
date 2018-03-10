@@ -20,7 +20,7 @@
 #define LOGMSG_PLR_TALK_MERCHANT "Merchant: \"Greetings traveller! If you wish to trade, press ENTER.\""
 #define LOGMSG_PLR_BUY_MERCHANT "Merchant: \"Thank you for purchasing my %s!\""
 #define LOGMSG_PLR_BUY_FULL_MERCHANT "Merchant: \"Seems like you don't have any room for this...\""
-#define LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT "Merchant: \"I will not offer any lower for my goods!\""
+#define LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT "Merchant: \"I won't offer any lower for this item!\""
 
 #define LOGMSG_ENEMY_DMG_PLR "%s hit you for %d dmg."
 
