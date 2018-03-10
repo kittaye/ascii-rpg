@@ -115,7 +115,6 @@ dimensions_t GetFileDimensions(FILE *fp) {
 		lineNum++;
 	}
 	
-	// TODO: find out why -1 is needed...
-	dimensions_t result = {.x = longest_line - 1, .y = lineNum};
+	dimensions_t result = {.x = longest_line - 1, .y = lineNum};	//Longest line - 1 to remove the newline character.
 	return result;
 }
