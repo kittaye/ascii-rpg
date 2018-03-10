@@ -332,38 +332,45 @@ int Get_WorldScreenHeight() {
 }
 
 static void Draw_UI(const game_state_t *state) {
+	const int terminal_w = GEO_screen_width();
 	const int terminal_h = GEO_screen_height();
 
 	// Draw bottom panel line.
-	GEO_draw_line(0, terminal_h - 2, Get_WorldScreenWidth(), terminal_h - 2, Clr_MAGENTA, '_');
+	GEO_draw_line(0, terminal_h - 6, terminal_w - 1, terminal_h - 6, Clr_MAGENTA, '_');
 
 	// Draw last 3 game log lines.
-	GEO_drawf(0, terminal_h - 6, Clr_WHITE, "* %s", state->game_log.line3);
-	GEO_drawf(0, terminal_h - 5, Clr_WHITE, "* %s", state->game_log.line2);
-	GEO_drawf(0, terminal_h - 4, Clr_WHITE, "* %s", state->game_log.line1);
-
-	// Draw basic player info.
-	GEO_drawf_align_center(-RIGHT_PANEL_OFFSET, terminal_h - 3, Clr_CYAN, "Health - %d/%d   Mana - %d/%d   Gold - %d",
-		state->player.stats.curr_health, state->player.stats.max_health, state->player.stats.curr_mana, state->player.stats.max_mana, state->player.stats.num_gold);
-
-	// Draw DEBUG label.
-	GEO_drawf(0, terminal_h - 1, Clr_MAGENTA, "   xy: (%d, %d)   rc(s): %d   seed: %d   rooms: %d   turns: %d",
-		state->player.pos.x, state->player.pos.y, state->debug_rcs, (int)state->debug_seed, state->num_rooms_created, state->game_turns);
+	GEO_drawf(0, terminal_h - 5, Clr_WHITE, "* %s", state->game_log.line3);
+	GEO_drawf(0, terminal_h - 4, Clr_WHITE, "* %s", state->game_log.line2);
+	GEO_drawf(0, terminal_h - 3, Clr_WHITE, "* %s", state->game_log.line1);
 
 	// Draw right-hand panel info.
 	{
-		GEO_draw_line(Get_WorldScreenWidth(), 0, Get_WorldScreenWidth(), terminal_h - 2, Clr_MAGENTA, '|');
+		GEO_draw_line(Get_WorldScreenWidth(), 0, Get_WorldScreenWidth(), terminal_h - 1, Clr_MAGENTA, '|');
 
 		int x = Get_WorldScreenWidth() + 2;
 		int y = 2;
 
+		// Draw basic player info.
 		GEO_drawf_align_center(Get_WorldScreenWidth(), y++, Clr_CYAN, "Hero,  Lvl. %d", state->player.stats.level);
 		GEO_drawf_align_center(Get_WorldScreenWidth(), y++, Clr_WHITE, "Current floor: %d", state->current_floor);
+		y++;
+		GEO_drawf(x, y++, Clr_CYAN, "Health");
+		GEO_drawf(x, y++, Clr_YELLOW, " %d/%d", state->player.stats.curr_health, state->player.stats.max_health);
+		y++;
+		GEO_drawf(x, y++, Clr_CYAN, "Mana");
+		GEO_drawf(x, y++, Clr_YELLOW, " %d/%d", state->player.stats.curr_mana, state->player.stats.max_mana);
+		y++;
+		GEO_drawf(x, y++, Clr_CYAN, "Gold");
+		GEO_drawf(x, y++, Clr_YELLOW, " %d", state->player.stats.num_gold);
+
+		// Inventory.
 		y++;
 		GEO_drawf(x, y++, Clr_CYAN, "Inventory");
 		for (int i = 0; i < INVENTORY_SIZE; i++) {
 			GEO_drawf(x, y++, Clr_YELLOW, "(%d) %s", i + 1, state->player.inventory[i]->name);
 		}
+
+		// Stats.
 		y++;
 		GEO_drawf(x, y++, Clr_CYAN, "Stats");
 		GEO_drawf(x, y++, Clr_YELLOW, "STR - %d", state->player.stats.s_str);
@@ -373,6 +380,7 @@ static void Draw_UI(const game_state_t *state) {
 		GEO_drawf(x, y++, Clr_YELLOW, "LCK - %d", state->player.stats.s_lck);
 		y++;
 
+		// Item selection.
 		if (state->player.current_item_index_selected != -1) {
 			y++;
 			GEO_drawf(x, y++, Clr_CYAN, "Selected item: %s", state->player.inventory[state->player.current_item_index_selected]->name);
@@ -380,6 +388,13 @@ static void Draw_UI(const game_state_t *state) {
 			GEO_drawf(x, y++, Clr_YELLOW, "Press 'd' to drop");
 			GEO_drawf(x, y++, Clr_YELLOW, "Press 'x' to examine");
 		}
+
+		// Debug info.
+		GEO_drawf(x, terminal_h - 5, Clr_MAGENTA, " - player xy: (%d, %d)", state->player.pos.x, state->player.pos.y);
+		GEO_drawf(x, terminal_h - 4, Clr_MAGENTA, " - rc(s): %d", state->debug_rcs);
+		GEO_drawf(x, terminal_h - 3, Clr_MAGENTA, " - seed: %d", (int)state->debug_seed);
+		GEO_drawf(x, terminal_h - 2, Clr_MAGENTA, " - rooms: %d", state->num_rooms_created);
+		GEO_drawf(x, terminal_h - 1, Clr_MAGENTA, " - turns: %d", state->game_turns);
 	}
 }
 
