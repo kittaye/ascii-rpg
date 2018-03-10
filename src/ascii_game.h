@@ -18,7 +18,7 @@
 // Other.
 #define HUB_FILENAME "maps/hub.txt"
 #define HUB_MAP_FREQUENCY 4
-#define PLAYER_MAX_VISION 100
+#define PLAYER_MAX_VISION 75
 #define RIGHT_PANEL_OFFSET 36
 #define BOTTOM_PANEL_OFFSET 6			
 #define TOP_PANEL_OFFSET 0		
