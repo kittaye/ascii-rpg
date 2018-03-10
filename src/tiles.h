@@ -8,7 +8,9 @@
 
 #define SPR_VOID ' '		
 #define SPR_GROUND '.'		
-#define SPR_WALL '#'
+#define SPR_GENERIC_WALL '#'
+#define SPR_HORI_WALL '-'
+#define SPR_VERT_WALL '|'
 #define SPR_OPENING '?'		// Used to mark openings in rooms.
 #define SPR_STAIRCASE '^'
 #define SPR_MERCHANT '1'
@@ -19,7 +21,9 @@
 typedef enum tile_slug_en {
 	TileSlug_VOID,
 	TileSlug_GROUND,
-	TileSlug_WALL,
+	TileSlug_GENERIC_WALL,
+	TileSlug_VERT_WALL,
+	TileSlug_HORI_WALL,
 	TileSlug_GOLD,
 	TileSlug_BIGGOLD,
 	TileSlug_STAIRCASE,

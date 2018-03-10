@@ -694,8 +694,8 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 							Try_SetPlayerPos(state, pos);
 							line[i] = SPR_EMPTY;
 							break;
-						case SPR_WALL:
-							tile_data = Get_TileData(TileSlug_WALL);
+						case SPR_GENERIC_WALL:
+							tile_data = Get_TileData(TileSlug_GENERIC_WALL);
 							break;
 						case SPR_SMALLFOOD:
 							item = Get_Item(ItmSlug_SMALLFOOD);
@@ -824,9 +824,9 @@ static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int c
 
 			// Connect rooms with the corridor sprites.
 			for (int i = 0; i < corridor_size; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x - 1, starting_room.y - corridor_size - (i + 1)), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_room.x - 1, starting_room.y - corridor_size - (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
 				Update_WorldTile(world_tiles, New_Coord(starting_room.x, starting_room.y - corridor_size - (i + 1)), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x + 1, starting_room.y - corridor_size - (i + 1)), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_room.x + 1, starting_room.y - corridor_size - (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
 			// Create door for the NEXT room.
@@ -836,9 +836,9 @@ static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int c
 			Update_WorldTile(world_tiles, New_Coord(starting_room.x, starting_room.y + corridor_size), Get_TileData(TileSlug_DOOR));
 
 			for (int i = 0; i < corridor_size; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x - 1, starting_room.y + corridor_size + (i + 1)), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_room.x - 1, starting_room.y + corridor_size + (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
 				Update_WorldTile(world_tiles, New_Coord(starting_room.x, starting_room.y + corridor_size + (i + 1)), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x + 1, starting_room.y + corridor_size + (i + 1)), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_room.x + 1, starting_room.y + corridor_size + (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
 			Update_WorldTile(world_tiles, New_Coord(starting_room.x, starting_room.y + (corridor_size * 2)), Get_TileData(TileSlug_DOOR));
@@ -847,9 +847,9 @@ static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int c
 			Update_WorldTile(world_tiles, New_Coord(starting_room.x - corridor_size, starting_room.y), Get_TileData(TileSlug_DOOR));
 
 			for (int i = 0; i < corridor_size; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x - corridor_size - (i + 1), starting_room.y - 1), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_room.x - corridor_size - (i + 1), starting_room.y - 1), Get_TileData(TileSlug_GENERIC_WALL));
 				Update_WorldTile(world_tiles, New_Coord(starting_room.x - corridor_size - (i + 1), starting_room.y), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x - corridor_size - (i + 1), starting_room.y + 1), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_room.x - corridor_size - (i + 1), starting_room.y + 1), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
 			Update_WorldTile(world_tiles, New_Coord(starting_room.x - (corridor_size * 2), starting_room.y), Get_TileData(TileSlug_DOOR));
@@ -858,9 +858,9 @@ static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int c
 			Update_WorldTile(world_tiles, New_Coord(starting_room.x + corridor_size, starting_room.y), Get_TileData(TileSlug_DOOR));
 
 			for (int i = 0; i < corridor_size; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x + corridor_size + (i + 1), starting_room.y - 1), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_room.x + corridor_size + (i + 1), starting_room.y - 1), Get_TileData(TileSlug_GENERIC_WALL));
 				Update_WorldTile(world_tiles, New_Coord(starting_room.x + corridor_size + (i + 1), starting_room.y), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x + corridor_size + (i + 1), starting_room.y + 1), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_room.x + corridor_size + (i + 1), starting_room.y + 1), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
 			Update_WorldTile(world_tiles, New_Coord(starting_room.x + (corridor_size * 2), starting_room.y), Get_TileData(TileSlug_DOOR));
@@ -943,26 +943,26 @@ static void Generate_Room(tile_t **world_tiles, const room_t *room) {
 	assert(world_tiles != NULL);
 	assert(room != NULL);
 
-	//Connect corners with walls; marked tiles (?) become openings.
+	// Connect corners with walls.
 	{
 		// Bottom and top walls.
 		for (int x = room->TL_corner.x; x <= room->TR_corner.x; x++) {
 			if (world_tiles[x][room->TL_corner.y].data != Get_TileData(TileSlug_DOOR)) {
-				Update_WorldTile(world_tiles, New_Coord(x, room->TL_corner.y), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(x, room->TL_corner.y), Get_TileData(TileSlug_HORI_WALL));
 			}
 
 			if (world_tiles[x][room->BL_corner.y].data != Get_TileData(TileSlug_DOOR)) {
-				Update_WorldTile(world_tiles, New_Coord(x, room->BL_corner.y), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(x, room->BL_corner.y), Get_TileData(TileSlug_HORI_WALL));
 			}
 		}
 
 		// Left and right walls.
-		for (int y = room->TR_corner.y; y <= room->BR_corner.y; y++) {
+		for (int y = room->TR_corner.y + 1; y < room->BR_corner.y; y++) {
 			if (world_tiles[room->TR_corner.x][y].data != Get_TileData(TileSlug_DOOR)) {
-				Update_WorldTile(world_tiles, New_Coord(room->TR_corner.x, y), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(room->TR_corner.x, y), Get_TileData(TileSlug_VERT_WALL));
 			}
 			if (world_tiles[room->TL_corner.x][y].data != Get_TileData(TileSlug_DOOR)) {
-				Update_WorldTile(world_tiles, New_Coord(room->TL_corner.x, y), Get_TileData(TileSlug_WALL));
+				Update_WorldTile(world_tiles, New_Coord(room->TL_corner.x, y), Get_TileData(TileSlug_VERT_WALL));
 			}
 		}
 	}
