@@ -12,6 +12,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <curses.h>
 #include <assert.h>
 #include "george_graphics.h"
@@ -21,6 +22,9 @@
 #define MAX(x,y) (((x) > (y)) ? (x) : (y))
 
 // Private functions.
+static void GEO_draw_string(int x, int y, int color, const char *text);
+static void GEO_draw_string_align_center(int x_offset, int y, int color, const char *text);
+static void GEO_draw_string_align_right(int x_offset, int y, int color, const char *text);
 static void GEO_destroy_screen(GEO_Screen *scr);
 static void GEO_update_buffer(GEO_Screen **buffer, const int width, const int height);
 static void GEO_copy_screen(GEO_Screen *old_scr, GEO_Screen *new_scr);
@@ -190,17 +194,17 @@ void GEO_draw_string(const int x, const int y, const int color, const char *text
 	}
 }
 
-void GEO_draw_align_center(const int x_offset, const int y, const int color, const char *text) {
+void GEO_draw_string_align_center(const int x_offset, const int y, const int color, const char *text) {
 	int x = ((GEO_screen_width() + x_offset) / 2) - (strlen(text) / 2);
 	GEO_draw_string(x, y, color, text);
 }
 
-void GEO_draw_align_right(const int y, const int color, const char *text) {
-	int x = GEO_screen_width() - strlen(text);
+void GEO_draw_string_align_right(const int x_offset, const int y, const int color, const char *text) {
+	int x = (GEO_screen_width() + x_offset) - strlen(text);
 	GEO_draw_string(x, y, color, text);
 }
 
-void GEO_draw_formatted(const int x, const int y, const int color, const char *format, ...) {
+void GEO_drawf(const int x, const int y, const int color, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
 	char buffer[1000];
@@ -209,21 +213,21 @@ void GEO_draw_formatted(const int x, const int y, const int color, const char *f
 	va_end(args);
 }
 
-void GEO_draw_formatted_align_center(const int x_offset, const int y, const int color, const char *format, ...) {
+void GEO_drawf_align_center(const int x_offset, const int y, const int color, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
 	char buffer[1000];
 	vsprintf(buffer, format, args);
-	GEO_draw_align_center(x_offset, y, color, buffer);
+	GEO_draw_string_align_center(x_offset, y, color, buffer);
 	va_end(args);
 }
 
-void GEO_draw_formatted_align_right(const int y, const int color, const char *format, ...) {
+void GEO_drawf_align_right(const int x_offset, const int y, const int color, const char *format, ...) {
 	va_list args;
 	va_start(args, format);
 	char buffer[1000];
 	vsprintf(buffer, format, args);
-	GEO_draw_align_right(y, color, buffer);
+	GEO_draw_string_align_right(x_offset, y, color, buffer);
 	va_end(args);
 }
 
@@ -343,10 +347,8 @@ void GEO_destroy_screen(GEO_Screen *scr) {
 			if (scr->pixels[0]) {
 				free(scr->pixels[0]);
 			}
-
 			free(scr->pixels);
 		}
-
 		free(scr);
 	}
 }

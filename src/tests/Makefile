@@ -1,6 +1,6 @@
 CFLAGS=-std=gnu99 -Wall -g
 LIBS=-lncurses -lm
-SRC=tests.c ../ascii_game.c ../george_graphics.c ../coord.c ../items.c ../enemies.c
+SRC=tests.c ../ascii_game.c ../george_graphics.c ../coord.c ../items.c ../enemies.c ../tiles.c
 DST=tests
 
 all: tests
