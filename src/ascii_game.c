@@ -1034,13 +1034,13 @@ void Update_WorldTileEnemyOccupier(tile_t **world_tiles, coord_t pos, enemy_t *e
 }
 
 void Apply_RecursiveVision(const game_state_t *state, coord_t pos) {
-	if (Check_OutOfWorldBounds(pos)) {
-		return;
-	}
-
 	// Draw tiles in a 3x3 radius of 'pos'. If the tile's type is considered as EMPTY, repeat the process from that tile.
 	for (int x = pos.x - 1; x <= pos.x + 1; x++) {
 		for (int y = pos.y - 1; y <= pos.y + 1; y++) {
+			if (Check_OutOfWorldBounds(New_Coord(x, y))) {
+				continue;
+			}
+
 			tile_t *tile = &state->world_tiles[x][y];
 
 			// Doors block vision but are empty tiles, so add it as an exception to the condition.
