@@ -63,11 +63,11 @@ int main(int argc, char *argv[]) {
 
 			// Every few floors, the hub layout is created instead of a random dungeon layout.
 			if (game_state.current_floor % HUB_MAP_FREQUENCY == 0) {
+				game_state.fog_of_war = false;
 				filename = HUB_FILENAME;
-				game_state.player.stats.max_vision = PLAYER_MAX_VISION + 100;
 			} else {
+				game_state.fog_of_war = true;
 				filename = NULL;
-				game_state.player.stats.max_vision = PLAYER_MAX_VISION;
 			}
 
 			InitCreate_DungeonFloor(&game_state, num_rooms_specified, filename);
