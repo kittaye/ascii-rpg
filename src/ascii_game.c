@@ -180,7 +180,6 @@ void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specifi
 
 	// Make sure dungeon floor values are reset from any previous floors.
 	Reset_WorldTiles(state);
-	state->fog_of_war = true;
 	state->num_rooms_created = 0;
 	state->debug_rcs = 0;
 	state->rooms = malloc(sizeof(*state->rooms) * num_rooms_specified);
@@ -302,8 +301,6 @@ player_t Create_Player(void) {
 	player.stats.max_mana = 10;
 	player.stats.curr_mana = 10;
 
-	player.stats.max_vision = PLAYER_MAX_VISION;
-
 	player.stats.s_str = 1;
 	player.stats.s_def = 1;
 	player.stats.s_vit = 1;
@@ -404,18 +401,11 @@ static void Draw_UI(const game_state_t *state) {
 }
 
 void Process(game_state_t *state) {
-	const int world_screen_w = Get_WorldScreenWidth();
-	const int world_screen_h = Get_WorldScreenHeight();
-
 	// Clear drawn elements from screen.
 	GEO_clear_screen();
 
 	// Draw all world tiles.
-	for (int x = 0; x < world_screen_w; x++) {
-		for (int y = 0; y < world_screen_h; y++) {
-			Apply_VisionToTile(state, New_Coord(x, y));
-		}
-	}
+	Apply_VisionToWorldTiles(state);
 
 	// Draw player.
 	GEO_draw_char(state->player.pos.x, state->player.pos.y, state->player.color, state->player.sprite);
@@ -1043,25 +1033,63 @@ void Update_WorldTileEnemyOccupier(tile_t **world_tiles, coord_t pos, enemy_t *e
 	world_tiles[pos.x][pos.y].enemy_occupier = enemy;
 }
 
-void Apply_VisionToTile(const game_state_t *state, coord_t pos) {
-	assert(state != NULL);
-	assert(pos.x >= 0 && pos.x < Get_WorldScreenWidth());
-	assert(pos.y >= 0 && pos.y < Get_WorldScreenHeight());
-
-	const tile_t *tile = &state->world_tiles[pos.x][pos.y];
-
-	if (tile->visited) {
-		//GEO_draw_char(pos.x, pos.y, Clr_BLUE, Get_TileForegroundSprite(tile));
+void Apply_RecursiveVision(const game_state_t *state, coord_t pos) {
+	if (Check_OutOfWorldBounds(pos)) {
+		return;
 	}
-	
+
+	// Draw tiles in a 3x3 radius of 'pos'. If the tile's type is considered as EMPTY, repeat the process from that tile.
+	for (int x = pos.x - 1; x <= pos.x + 1; x++) {
+		for (int y = pos.y - 1; y <= pos.y + 1; y++) {
+			tile_t *tile = &state->world_tiles[x][y];
+
+			// Doors block vision but are empty tiles, so add it as an exception to the condition.
+			if (tile->data->type != TileType_SOLID && tile->data->sprite != SPR_DOOR) {
+				if (tile->visited == false) {
+					tile->visited = true;
+					GEO_draw_char(x, y, Get_TileForegroundColour(tile), Get_TileForegroundSprite(tile));
+					Apply_RecursiveVision(state, New_Coord(x, y));
+				}
+			} else {
+				tile->visited = true;
+				GEO_draw_char(x, y, Get_TileForegroundColour(tile), Get_TileForegroundSprite(tile));
+			}
+		}
+	}
+}
+
+void Apply_VisionToWorldTiles(const game_state_t *state) {
+	assert(state != NULL);
+
+	const int world_screen_w = Get_WorldScreenWidth();
+	const int world_screen_h = Get_WorldScreenHeight();
+
 	if (state->fog_of_war) {
-		const int vision_to_tile = abs((pos.x - state->player.pos.x) * (pos.x - state->player.pos.x)) + abs((pos.y - state->player.pos.y) * (pos.y - state->player.pos.y));
-		if (vision_to_tile < state->player.stats.max_vision) {
-			state->world_tiles[pos.x][pos.y].visited = true;
-			GEO_draw_char(pos.x, pos.y, Get_TileForegroundColour(tile), Get_TileForegroundSprite(tile));
+		// Only draw tiles the player can 'see'.
+		Apply_RecursiveVision(state, state->player.pos);
+
+		// Always remember seen solid tiles, and forget any other tiles the player can't see on this turn.
+		for (int x = 0; x < world_screen_w; x++) {
+			for (int y = 0; y < world_screen_h; y++) {
+				tile_t *tile = &state->world_tiles[x][y];
+
+				if (tile->visited == true) {
+					if (tile->data->type != TileType_SOLID && tile->data->sprite != SPR_DOOR) {
+						tile->visited = false;
+					} else {
+						GEO_draw_char(x, y, Get_TileForegroundColour(tile), Get_TileForegroundSprite(tile));
+					}
+				}
+			}
 		}
 	} else {
-		GEO_draw_char(pos.x, pos.y, Get_TileForegroundColour(tile), Get_TileForegroundSprite(tile));
+		// If fog of war is disabled, draw all tiles.
+		for (int x = 0; x < world_screen_w; x++) {
+			for (int y = 0; y < world_screen_h; y++) {
+				const tile_t *tile = &state->world_tiles[x][y];
+				GEO_draw_char(x, y, Get_TileForegroundColour(tile), Get_TileForegroundSprite(tile));
+			}
+		}
 	}
 }
 

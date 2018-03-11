@@ -18,7 +18,6 @@
 // Other.
 #define HUB_FILENAME "maps/hub.txt"
 #define HUB_MAP_FREQUENCY 4
-#define PLAYER_MAX_VISION 75
 #define RIGHT_PANEL_OFFSET 36
 #define BOTTOM_PANEL_OFFSET 6			
 #define TOP_PANEL_OFFSET 0		
@@ -197,9 +196,14 @@ colour_en Get_TileForegroundColour(const tile_t *tile);
 tile_type_en Get_TileForegroundType(const tile_t *tile);
 
 /*
-	Determines whether the tile at position 'pos' should be shown to the user. Game state variable 'fog_of_war' and player variable 'max_vision' are the determining factors.
+	Draws world tiles to be shown to the user. Game state variable 'fog_of_war' is the determining factor.
 */
-void Apply_VisionToTile(const game_state_t *state, coord_t pos);
+void Apply_VisionToWorldTiles(const game_state_t *state);
+
+/*
+	Determines whether the tiles around position 'pos' should be shown to the user. If so, it is recursively called at that new tile position.
+*/
+void Apply_RecursiveVision(const game_state_t *state, coord_t pos);
 
 /*
 	Interacts with the player's currently targeted NPC.
