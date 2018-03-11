@@ -747,13 +747,14 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int room_radius, int max_rooms) {
 	assert(state != NULL);
 
-	const int ATTEMPTS_PER_ROOM = 5;
+	const int ATTEMPTS_PER_ROOM = 25;
 
 	// Create the latest defined room.
+	const room_t last_defined_room = state->rooms[state->num_rooms_created];
 	Generate_Room(state->world_tiles, &state->rooms[state->num_rooms_created]);
 	state->num_rooms_created++;
 
-	coord_t old_room_pos = room_pos;
+	coord_t last_defined_room_pos = room_pos;
 	int rand_direction = rand() % 4;
 	int new_room_radius = Get_NextRoomRadius();
 
@@ -768,20 +769,35 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 			rand_direction = ((rand_direction + 1) % 4);
 		}
 
-		// Get the new room's position coordinates.
-		coord_t new_room_pos = old_room_pos;
+		// Get the new room's position and corridor connector coordinates.
+		coord_t new_room_pos = last_defined_room_pos;
+		coord_t this_room_new_corridor_pos = last_defined_room_pos;
+		int random_x = 0;
+		int random_y = 0;
 		switch (rand_direction) {
 			case Dir_UP:
-				new_room_pos.y = old_room_pos.y - (room_radius * 2) - new_room_radius;
+				new_room_pos.y = last_defined_room_pos.y - (room_radius * 2) - new_room_radius;
+				random_x = (rand() % (last_defined_room.TR_corner.x - last_defined_room.TL_corner.x - 1)) + last_defined_room.TL_corner.x + 1;
+				new_room_pos.x = random_x;
+				this_room_new_corridor_pos.x = random_x;
 				break;
 			case Dir_DOWN:
-				new_room_pos.y = old_room_pos.y + (room_radius * 2) + new_room_radius;
+				new_room_pos.y = last_defined_room_pos.y + (room_radius * 2) + new_room_radius;
+				random_x = (rand() % (last_defined_room.TR_corner.x - last_defined_room.TL_corner.x - 1)) + last_defined_room.TL_corner.x + 1;
+				new_room_pos.x = random_x;
+				this_room_new_corridor_pos.x = random_x;
 				break;
 			case Dir_LEFT:
-				new_room_pos.x = old_room_pos.x - (room_radius * 2) - new_room_radius;
+				new_room_pos.x = last_defined_room_pos.x - (room_radius * 2) - new_room_radius;
+				random_y = (rand() % (last_defined_room.BL_corner.y - last_defined_room.TL_corner.y - 1)) + last_defined_room.TL_corner.y + 1;
+				new_room_pos.y = random_y;
+				this_room_new_corridor_pos.y = random_y;
 				break;
 			case Dir_RIGHT:
-				new_room_pos.x = old_room_pos.x + (room_radius * 2) + new_room_radius;
+				new_room_pos.x = last_defined_room_pos.x + (room_radius * 2) + new_room_radius;
+				random_y = (rand() % (last_defined_room.BL_corner.y - last_defined_room.TL_corner.y - 1)) + last_defined_room.TL_corner.y + 1;
+				new_room_pos.y = random_y;
+				this_room_new_corridor_pos.y = random_y;
 				break;
 			default:
 				break;
@@ -797,13 +813,13 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 		}
 
 		// Check that the corridor that will connect the last created room with this new room doesnt collide with anything solid.
-		if (Check_CorridorCollision((const tile_t**)state->world_tiles, old_room_pos, room_radius, rand_direction)) {
+		if (Check_CorridorCollision((const tile_t**)state->world_tiles, this_room_new_corridor_pos, room_radius, rand_direction)) {
 			state->debug_rcs++;
 			continue;
 		}
 
-		// Generate the corridor, connecting the last created room to the new one (new room's opening is marked with '?').
-		Generate_Corridor(state->world_tiles, old_room_pos, room_radius, rand_direction);
+		// Generate the corridor, connecting the last created room to the new one.
+		Generate_Corridor(state->world_tiles, this_room_new_corridor_pos, room_radius, rand_direction);
 
 		// Instantiate the new conjoined room.
 		Create_RoomsRecursively(state, new_room_pos, new_room_radius, max_rooms);
@@ -811,7 +827,7 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 }
 
 static int Get_NextRoomRadius(void) {
-	return (rand() % 6) + 3;
+	return (rand() % 4) + 3;
 }
 
 static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction) {
