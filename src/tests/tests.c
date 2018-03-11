@@ -326,7 +326,7 @@ int test_set_player_pos_out_of_bounds() {
 int test_set_player_pos_into_solid_fails() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	Update_WorldTile(state.world_tiles, New_Coord(0, 0), Get_TileData(TileSlug_WALL));
+	Update_WorldTile(state.world_tiles, New_Coord(0, 0), Get_TileData(TileSlug_GENERIC_WALL));
 	mu_assert(__func__, state.world_tiles[0][0].data->type == TileType_SOLID);
 	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(0, 0)) == false);
 
