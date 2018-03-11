@@ -179,7 +179,6 @@ int test_create_player_correct_values() {
 	mu_assert(__func__, player.stats.curr_health == player.stats.max_health);
 	mu_assert(__func__, player.stats.max_mana > 0);
 	mu_assert(__func__, player.stats.curr_mana == player.stats.max_mana);
-	mu_assert(__func__, player.stats.max_vision == PLAYER_MAX_VISION);
 	mu_assert(__func__, player.stats.s_str == 1);
 	mu_assert(__func__, player.stats.s_def == 1);
 	mu_assert(__func__, player.stats.s_vit == 1);
