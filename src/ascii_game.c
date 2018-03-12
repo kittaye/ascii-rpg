@@ -51,9 +51,14 @@ static void Define_Room(room_t *room, coord_t pos, int radius);
 static void Generate_Room(tile_t **world_tiles, const room_t *room);
 
 /*
-	Updates world tiles to generate a corridor of length 'corridor_size' from 'starting_room' in the specified 'direction'.
+	Updates world tiles to generate a corridor of length 'corridor_size' from 'starting_pos' in the specified 'direction'.
 */
-static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction);
+static void Generate_Corridor(tile_t **world_tiles, coord_t starting_pos, int corridor_size, direction_en direction);
+
+/*
+	Returns true if a corridor can and was successfully generated from 'starting_pos' to any wall in the specified 'direction'.
+*/
+static bool Try_GenerateCorridorConnection(tile_t **world_tiles, coord_t starting_pos, direction_en direction);
 
 /*
 	Creates a single dungeon floor room of size 'radius' at position 'pos' and tries to set up further rooms with connecting corridors recursively.
@@ -753,9 +758,10 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 	int new_room_radius = Get_NextRoomRadius();
 
 	// Try to initialise a new room with a connecting corridor, until all retry iterations are used up OR max rooms are reached.
+	bool new_room_created = false;
 	for (int i = 0; i < ATTEMPTS_PER_ROOM; i++) {
 		if (state->num_rooms_created >= max_rooms) {
-			return;
+			break;
 		}
 
 		// Make sure the next random direction is different from the last attempt's direction.
@@ -812,7 +818,94 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 
 		// Generate the new conjoined room and repeat.
 		Create_RoomsRecursively(state, new_room_pos, new_room_radius, max_rooms);
+
+		new_room_created = true;
 	}
+
+	// If no new room could be created from this room, attempt to build two corridors towards the center of the world to an existing room.
+	if (new_room_created == false) {
+		if (this_room_pos.x < (Get_WorldScreenWidth() / 2)) {
+			if (Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x + this_room_radius, this_room_pos.y), Dir_RIGHT)) state->game_turns++;
+		} else {
+			if (Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x - this_room_radius, this_room_pos.y), Dir_LEFT)) state->game_turns++;
+		}
+
+		if (this_room_pos.y < (Get_WorldScreenHeight() / 2)) {
+			if (Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x, this_room_pos.y + this_room_radius), Dir_DOWN)) state->game_turns++;
+		} else {
+			if (Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x, this_room_pos.y - this_room_radius), Dir_UP)) state->game_turns++;
+		}
+	}
+}
+
+static bool Try_GenerateCorridorConnection(tile_t **world_tiles, coord_t starting_pos, direction_en direction) {
+	coord_t pos = starting_pos;
+	int length = 0;
+
+	// Keep searching empty tiles until something else is hit.
+	do {
+		switch (direction) {
+			case Dir_UP:
+				pos.y--;
+				break;
+			case Dir_DOWN:
+				pos.y++;
+				break;
+			case Dir_LEFT:
+				pos.x--;
+				break;
+			case Dir_RIGHT:
+				pos.x++;
+				break;
+			default:
+				return false;
+		}
+
+		// If the search has extended outside of the world, the corridor fails.
+		if (Check_OutOfWorldBounds(pos)) {
+			return false;
+		}
+
+		length++;
+	} while (world_tiles[pos.x][pos.y].data->type == TileType_EMPTY);
+
+	// Corridor search finishing at length 1 means only the doors will be created -- no actual corridor.
+	if (length == 1) {
+		return false;
+	}
+
+	// Corridor search has hit something, ensure that the wall hit isn't a corner by checking the next tile in front of it.
+	switch (direction) {
+		case Dir_UP:
+			if (world_tiles[pos.x][pos.y - 1].data->type == TileType_SOLID) {
+				return false;
+			}
+			break;
+		case Dir_DOWN:
+			if (world_tiles[pos.x][pos.y + 1].data->type == TileType_SOLID) {
+				return false;
+			}
+			break;
+		case Dir_LEFT:
+			if (world_tiles[pos.x - 1][pos.y].data->type == TileType_SOLID) {
+				return false;
+			}
+			break;
+		case Dir_RIGHT:
+			if (world_tiles[pos.x + 1][pos.y].data->type == TileType_SOLID) {
+				return false;
+			}
+			break;
+		default:
+			break;
+	}
+
+	// The corridor search was successful, so finally try to generate the corridor itself by checking any other collisions with it.
+	if (Check_CorridorCollision((const tile_t**)world_tiles, starting_pos, length - 1, direction) == false) {
+		Generate_Corridor(world_tiles, starting_pos, length, direction);
+		return true;
+	}
+	return false;
 }
 
 static int Get_NextRoomRadius(void) {
