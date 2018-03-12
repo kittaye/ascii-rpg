@@ -739,12 +739,16 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 
 	const int ATTEMPTS_PER_ROOM = 25;
 
-	// Create the latest defined room.
-	const room_t last_defined_room = state->rooms[state->num_rooms_created];
+	// Get this room's informaton.
+	const room_t this_room = state->rooms[state->num_rooms_created];
+	const coord_t this_room_pos = room_pos;
+	const int this_room_radius = room_radius;
+
+	// Generate this room.
 	Generate_Room(state->world_tiles, &state->rooms[state->num_rooms_created]);
 	state->num_rooms_created++;
 
-	coord_t last_defined_room_pos = room_pos;
+	// Begin setup for the next new room.
 	int rand_direction = rand() % 4;
 	int new_room_radius = Get_NextRoomRadius();
 
@@ -760,34 +764,29 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 		}
 
 		// Get the new room's position and corridor connector coordinates.
-		coord_t new_room_pos = last_defined_room_pos;
-		coord_t this_room_new_corridor_pos = last_defined_room_pos;
-		int random_x = 0;
-		int random_y = 0;
+		coord_t new_room_pos = this_room_pos;
+		coord_t new_corridor_pos = this_room_pos;
+		int corridor_length = this_room_radius;
 		switch (rand_direction) {
 			case Dir_UP:
-				new_room_pos.y = last_defined_room_pos.y - (room_radius * 2) - new_room_radius;
-				random_x = (rand() % (last_defined_room.TR_corner.x - last_defined_room.TL_corner.x - 1)) + last_defined_room.TL_corner.x + 1;
-				new_room_pos.x = random_x;
-				this_room_new_corridor_pos.x = random_x;
+				new_room_pos.y = this_room_pos.y - this_room_radius - corridor_length - new_room_radius;
+				new_room_pos.x = (rand() % (this_room.TR_corner.x - this_room.TL_corner.x - 1)) + this_room.TL_corner.x + 1;
+				new_corridor_pos = New_Coord(new_room_pos.x, this_room_pos.y - this_room_radius);
 				break;
 			case Dir_DOWN:
-				new_room_pos.y = last_defined_room_pos.y + (room_radius * 2) + new_room_radius;
-				random_x = (rand() % (last_defined_room.TR_corner.x - last_defined_room.TL_corner.x - 1)) + last_defined_room.TL_corner.x + 1;
-				new_room_pos.x = random_x;
-				this_room_new_corridor_pos.x = random_x;
+				new_room_pos.y = this_room_pos.y + this_room_radius + corridor_length + new_room_radius;
+				new_room_pos.x = (rand() % (this_room.TR_corner.x - this_room.TL_corner.x - 1)) + this_room.TL_corner.x + 1;
+				new_corridor_pos = New_Coord(new_room_pos.x, this_room_pos.y + this_room_radius);
 				break;
 			case Dir_LEFT:
-				new_room_pos.x = last_defined_room_pos.x - (room_radius * 2) - new_room_radius;
-				random_y = (rand() % (last_defined_room.BL_corner.y - last_defined_room.TL_corner.y - 1)) + last_defined_room.TL_corner.y + 1;
-				new_room_pos.y = random_y;
-				this_room_new_corridor_pos.y = random_y;
+				new_room_pos.x = this_room_pos.x - this_room_radius - corridor_length - new_room_radius;
+				new_room_pos.y = (rand() % (this_room.BL_corner.y - this_room.TL_corner.y - 1)) + this_room.TL_corner.y + 1;
+				new_corridor_pos = New_Coord(this_room_pos.x - this_room_radius, new_room_pos.y);
 				break;
 			case Dir_RIGHT:
-				new_room_pos.x = last_defined_room_pos.x + (room_radius * 2) + new_room_radius;
-				random_y = (rand() % (last_defined_room.BL_corner.y - last_defined_room.TL_corner.y - 1)) + last_defined_room.TL_corner.y + 1;
-				new_room_pos.y = random_y;
-				this_room_new_corridor_pos.y = random_y;
+				new_room_pos.x = this_room_pos.x + this_room_radius + corridor_length + new_room_radius;
+				new_room_pos.y = (rand() % (this_room.BL_corner.y - this_room.TL_corner.y - 1)) + this_room.TL_corner.y + 1;
+				new_corridor_pos = New_Coord(this_room_pos.x + this_room_radius, new_room_pos.y);
 				break;
 			default:
 				break;
@@ -796,22 +795,22 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 		// Define the new room.
 		Define_Room(&state->rooms[state->num_rooms_created], new_room_pos, new_room_radius);
 
-		// Check that this new room doesnt collide with map boundaries or anything solid.
+		// Check that the new room doesnt collide with map boundaries or anything solid.
 		if (Check_RoomCollision((const tile_t **)state->world_tiles, &state->rooms[state->num_rooms_created])) {
 			state->debug_rcs++;
 			continue;
 		}
 
-		// Check that the corridor that will connect the last created room with this new room doesnt collide with anything solid.
-		if (Check_CorridorCollision((const tile_t**)state->world_tiles, this_room_new_corridor_pos, room_radius, rand_direction)) {
+		// Check that the corridor that will connect this room with the new room doesnt collide with anything solid.
+		if (Check_CorridorCollision((const tile_t**)state->world_tiles, new_corridor_pos, corridor_length, rand_direction)) {
 			state->debug_rcs++;
 			continue;
 		}
 
-		// Generate the corridor, connecting the last created room to the new one.
-		Generate_Corridor(state->world_tiles, this_room_new_corridor_pos, room_radius, rand_direction);
+		// Generate the corridor, connecting this room to the new one.
+		Generate_Corridor(state->world_tiles, new_corridor_pos, corridor_length, rand_direction);
 
-		// Instantiate the new conjoined room.
+		// Generate the new conjoined room and repeat.
 		Create_RoomsRecursively(state, new_room_pos, new_room_radius, max_rooms);
 	}
 }
@@ -820,106 +819,100 @@ static int Get_NextRoomRadius(void) {
 	return (rand() % 4) + 3;
 }
 
-static void Generate_Corridor(tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction) {
+static void Generate_Corridor(tile_t **world_tiles, coord_t starting_pos, int corridor_size, direction_en direction) {
 	assert(world_tiles != NULL);
+
+	// Create door at the beginning of the corridor.
+	Update_WorldTile(world_tiles, starting_pos, Get_TileData(TileSlug_DOOR));
 
 	switch (direction) {
 		case Dir_UP:
-			// Create door for THIS room
-			Update_WorldTile(world_tiles, New_Coord(starting_room.x, starting_room.y - corridor_size), Get_TileData(TileSlug_DOOR));
-
-			// Connect rooms with the corridor sprites.
+			// Create corridor.
 			for (int i = 0; i < corridor_size; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x - 1, starting_room.y - corridor_size - (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x, starting_room.y - corridor_size - (i + 1)), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x + 1, starting_room.y - corridor_size - (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - 1, starting_pos.y - (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x, starting_pos.y - (i + 1)), Get_TileData(TileSlug_GROUND));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + 1, starting_pos.y - (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
-			// Create door for the NEXT room.
-			Update_WorldTile(world_tiles, New_Coord(starting_room.x, starting_room.y - (corridor_size * 2)), Get_TileData(TileSlug_DOOR));
+			// Create door at the end of the corridor.
+			Update_WorldTile(world_tiles, New_Coord(starting_pos.x, starting_pos.y - corridor_size), Get_TileData(TileSlug_DOOR));
 			break;
 		case Dir_DOWN:
-			Update_WorldTile(world_tiles, New_Coord(starting_room.x, starting_room.y + corridor_size), Get_TileData(TileSlug_DOOR));
-
 			for (int i = 0; i < corridor_size; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x - 1, starting_room.y + corridor_size + (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x, starting_room.y + corridor_size + (i + 1)), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x + 1, starting_room.y + corridor_size + (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - 1, starting_pos.y + (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x, starting_pos.y + (i + 1)), Get_TileData(TileSlug_GROUND));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + 1, starting_pos.y + (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
-			Update_WorldTile(world_tiles, New_Coord(starting_room.x, starting_room.y + (corridor_size * 2)), Get_TileData(TileSlug_DOOR));
+			Update_WorldTile(world_tiles, New_Coord(starting_pos.x, starting_pos.y + corridor_size), Get_TileData(TileSlug_DOOR));
 			break;
 		case Dir_LEFT:
-			Update_WorldTile(world_tiles, New_Coord(starting_room.x - corridor_size, starting_room.y), Get_TileData(TileSlug_DOOR));
-
 			for (int i = 0; i < corridor_size; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x - corridor_size - (i + 1), starting_room.y - 1), Get_TileData(TileSlug_GENERIC_WALL));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x - corridor_size - (i + 1), starting_room.y), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x - corridor_size - (i + 1), starting_room.y + 1), Get_TileData(TileSlug_GENERIC_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - (i + 1), starting_pos.y - 1), Get_TileData(TileSlug_GENERIC_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - (i + 1), starting_pos.y), Get_TileData(TileSlug_GROUND));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - (i + 1), starting_pos.y + 1), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
-			Update_WorldTile(world_tiles, New_Coord(starting_room.x - (corridor_size * 2), starting_room.y), Get_TileData(TileSlug_DOOR));
+			Update_WorldTile(world_tiles, New_Coord(starting_pos.x - corridor_size, starting_pos.y), Get_TileData(TileSlug_DOOR));
 			break;
 		case Dir_RIGHT:
-			Update_WorldTile(world_tiles, New_Coord(starting_room.x + corridor_size, starting_room.y), Get_TileData(TileSlug_DOOR));
-
 			for (int i = 0; i < corridor_size; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x + corridor_size + (i + 1), starting_room.y - 1), Get_TileData(TileSlug_GENERIC_WALL));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x + corridor_size + (i + 1), starting_room.y), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_room.x + corridor_size + (i + 1), starting_room.y + 1), Get_TileData(TileSlug_GENERIC_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + (i + 1), starting_pos.y - 1), Get_TileData(TileSlug_GENERIC_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + (i + 1), starting_pos.y), Get_TileData(TileSlug_GROUND));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + (i + 1), starting_pos.y + 1), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
-			Update_WorldTile(world_tiles, New_Coord(starting_room.x + (corridor_size * 2), starting_room.y), Get_TileData(TileSlug_DOOR));
+			Update_WorldTile(world_tiles, New_Coord(starting_pos.x + corridor_size, starting_pos.y), Get_TileData(TileSlug_DOOR));
 			break;
 		default:
 			break;
 	}
 }
 
-static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_room, int corridor_size, direction_en direction) {
+static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting_pos, int corridor_size, direction_en direction) {
 	assert(world_tiles != NULL);
 
 	switch (direction) {
 		case Dir_UP:
 			for (int i = 0; i < corridor_size; i++) {
-				if (Check_OutOfWorldBounds(New_Coord(starting_room.x, starting_room.y - corridor_size - (i + 1)))) {
+				if (Check_OutOfWorldBounds(New_Coord(starting_pos.x, starting_pos.y - (i + 1)))) {
 					return true;
-				} else if (world_tiles[starting_room.x][starting_room.y - corridor_size - (i + 1)].data->type == TileType_SOLID
-					|| world_tiles[starting_room.x - 1][starting_room.y - corridor_size - (i + 1)].data->type == TileType_SOLID
-					|| world_tiles[starting_room.x + 1][starting_room.y - corridor_size - (i + 1)].data->type == TileType_SOLID) {
+				} else if (world_tiles[starting_pos.x][starting_pos.y - (i + 1)].data->type == TileType_SOLID
+					|| world_tiles[starting_pos.x - 1][starting_pos.y - (i + 1)].data->type == TileType_SOLID
+					|| world_tiles[starting_pos.x + 1][starting_pos.y - (i + 1)].data->type == TileType_SOLID) {
 					return true;
 				}
 			}
 			return false;
 		case Dir_DOWN:
 			for (int i = 0; i < corridor_size; i++) {
-				if (Check_OutOfWorldBounds(New_Coord(starting_room.x, starting_room.y + corridor_size + (i + 1)))) {
+				if (Check_OutOfWorldBounds(New_Coord(starting_pos.x, starting_pos.y + (i + 1)))) {
 					return true;
-				} else if (world_tiles[starting_room.x][starting_room.y + corridor_size + (i + 1)].data->type == TileType_SOLID
-					|| world_tiles[starting_room.x - 1][starting_room.y + corridor_size + (i + 1)].data->type == TileType_SOLID
-					|| world_tiles[starting_room.x + 1][starting_room.y + corridor_size + (i + 1)].data->type == TileType_SOLID) {
+				} else if (world_tiles[starting_pos.x][starting_pos.y + (i + 1)].data->type == TileType_SOLID
+					|| world_tiles[starting_pos.x - 1][starting_pos.y + (i + 1)].data->type == TileType_SOLID
+					|| world_tiles[starting_pos.x + 1][starting_pos.y + (i + 1)].data->type == TileType_SOLID) {
 					return true;
 				}
 			}
 			return false;
 		case Dir_LEFT:
 			for (int i = 0; i < corridor_size; i++) {
-				if (Check_OutOfWorldBounds(New_Coord(starting_room.x - corridor_size - (i + 1), starting_room.y))) {
+				if (Check_OutOfWorldBounds(New_Coord(starting_pos.x - (i + 1), starting_pos.y))) {
 					return true;
-				} else if (world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y].data->type == TileType_SOLID
-					|| world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y - 1].data->type == TileType_SOLID
-					|| world_tiles[starting_room.x - corridor_size - (i + 1)][starting_room.y + 1].data->type == TileType_SOLID) {
+				} else if (world_tiles[starting_pos.x - (i + 1)][starting_pos.y].data->type == TileType_SOLID
+					|| world_tiles[starting_pos.x - (i + 1)][starting_pos.y - 1].data->type == TileType_SOLID
+					|| world_tiles[starting_pos.x - (i + 1)][starting_pos.y + 1].data->type == TileType_SOLID) {
 					return true;
 				}
 			}
 			return false;
 		case Dir_RIGHT:
 			for (int i = 0; i < corridor_size; i++) {
-				if (Check_OutOfWorldBounds(New_Coord(starting_room.x + corridor_size + (i + 1), starting_room.y))) {
+				if (Check_OutOfWorldBounds(New_Coord(starting_pos.x + (i + 1), starting_pos.y))) {
 					return true;
-				} else if (world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y].data->type == TileType_SOLID
-					|| world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y - 1].data->type == TileType_SOLID
-					|| world_tiles[starting_room.x + corridor_size + (i + 1)][starting_room.y + 1].data->type == TileType_SOLID) {
+				} else if (world_tiles[starting_pos.x + (i + 1)][starting_pos.y].data->type == TileType_SOLID
+					|| world_tiles[starting_pos.x + (i + 1)][starting_pos.y - 1].data->type == TileType_SOLID
+					|| world_tiles[starting_pos.x + (i + 1)][starting_pos.y + 1].data->type == TileType_SOLID) {
 					return true;
 				}
 			}
