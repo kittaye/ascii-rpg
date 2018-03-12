@@ -1,13 +1,13 @@
 #ifndef ITEMS_H_
 #define ITEMS_H_
 
-#define SPR_SMALLFOOD 'f'
-#define SPR_BIGFOOD 'F'
+#define SPR_HP_POT_I 'h'
+#define SPR_HP_POT_II 'H'
 
 typedef enum item_slug_en {
 	ItmSlug_NONE,
-	ItmSlug_SMALLFOOD,
-	ItmSlug_BIGFOOD
+	ItmSlug_HP_POT_I,
+	ItmSlug_HP_POT_II
 } item_slug_en;
 
 typedef struct item_t {

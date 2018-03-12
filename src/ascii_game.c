@@ -245,10 +245,10 @@ static void Populate_Rooms(game_state_t *state) {
 						Update_WorldTile(state->world_tiles, New_Coord(x, y), Get_TileData(TileSlug_BIGGOLD));
 						break;
 					case 7:
-						Update_WorldTileItemOccupier(state->world_tiles, New_Coord(x, y), Get_Item(ItmSlug_SMALLFOOD));
+						Update_WorldTileItemOccupier(state->world_tiles, New_Coord(x, y), Get_Item(ItmSlug_HP_POT_I));
 						break;
 					case 8:
-						Update_WorldTileItemOccupier(state->world_tiles, New_Coord(x, y), Get_Item(ItmSlug_BIGFOOD));
+						Update_WorldTileItemOccupier(state->world_tiles, New_Coord(x, y), Get_Item(ItmSlug_HP_POT_II));
 						break;
 					default:
 						break;
@@ -687,11 +687,11 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 						case SPR_GENERIC_WALL:
 							tile_data = Get_TileData(TileSlug_GENERIC_WALL);
 							break;
-						case SPR_SMALLFOOD:
-							item = Get_Item(ItmSlug_SMALLFOOD);
+						case SPR_HP_POT_I:
+							item = Get_Item(ItmSlug_HP_POT_I);
 							break;
-						case SPR_BIGFOOD:
-							item = Get_Item(ItmSlug_BIGFOOD);
+						case SPR_HP_POT_II:
+							item = Get_Item(ItmSlug_HP_POT_II);
 							break;
 						case SPR_GOLD:
 							tile_data = Get_TileData(TileSlug_GOLD);
@@ -1134,16 +1134,12 @@ void Interact_CurrentlySelectedItem(game_state_t *state, item_select_control_en 
 	switch (key_pressed) {
 		case ItmCtrl_USE:
 			switch (item_selected->item_slug) {
-				case ItmSlug_SMALLFOOD:
-				case ItmSlug_BIGFOOD:;
-					int health_to_add = (item_selected->item_slug == ItmSlug_SMALLFOOD) ? 1 : 2;
+				case ItmSlug_HP_POT_I:
+				case ItmSlug_HP_POT_II:;
+					int health_to_add = (item_selected->item_slug == ItmSlug_HP_POT_I) ? 1 : 2;
 					int health_restored = AddTo_Health(&state->player, health_to_add);
 
-					if (health_restored > 0) {
-						Update_GameLog(&state->game_log, LOGMSG_PLR_USE_FOOD, health_restored);
-					} else {
-						Update_GameLog(&state->game_log, LOGMSG_PLR_USE_FOOD_FULL);
-					}
+					Update_GameLog(&state->game_log, LOGMSG_PLR_USE_HP_POT, health_restored, item_selected->name);
 
 					state->player.inventory[state->player.current_item_index_selected] = Get_Item(ItmSlug_NONE);
 					break;
@@ -1170,11 +1166,11 @@ void Interact_CurrentlySelectedItem(game_state_t *state, item_select_control_en 
 
 void Examine_Item(game_state_t *state, const item_t *item) {
 	switch (item->item_slug) {
-		case ItmSlug_SMALLFOOD:
-			Update_GameLog(&state->game_log, LOGMSG_EXAMINE_SMALL_FOOD);
+		case ItmSlug_HP_POT_I:
+			Update_GameLog(&state->game_log, LOGMSG_EXAMINE_SMALL_HP_POT);
 			break;
-		case ItmSlug_BIGFOOD:
-			Update_GameLog(&state->game_log, LOGMSG_EXAMINE_BIG_FOOD);
+		case ItmSlug_HP_POT_II:
+			Update_GameLog(&state->game_log, LOGMSG_EXAMINE_MEDIUM_HP_POT);
 			break;
 		default:
 			Update_GameLog(&state->game_log, "There's nothing here...?");	// SHOULD NOT HAPPEN
@@ -1261,8 +1257,8 @@ void Draw_MerchantScreen(game_state_t *state) {
 	GEO_drawf_align_center(0, y++, Clr_YELLOW, "Trading with Merchant");
 	y++;
 	GEO_drawf(x, y++, Clr_YELLOW, "Option     Item                    Price (gold)");
-	GEO_drawf(x, y++, Clr_WHITE, "(1)        %-23s %d", Get_Item(ItmSlug_SMALLFOOD)->name, Get_Item(ItmSlug_SMALLFOOD)->value);
-	GEO_drawf(x, y++, Clr_WHITE, "(2)        %-23s %d", Get_Item(ItmSlug_BIGFOOD)->name, Get_Item(ItmSlug_BIGFOOD)->value);
+	GEO_drawf(x, y++, Clr_WHITE, "(1)        %-23s %d", Get_Item(ItmSlug_HP_POT_I)->name, Get_Item(ItmSlug_HP_POT_I)->value);
+	GEO_drawf(x, y++, Clr_WHITE, "(2)        %-23s %d", Get_Item(ItmSlug_HP_POT_II)->name, Get_Item(ItmSlug_HP_POT_II)->value);
 	y++;
 	GEO_drawf(x, y++, Clr_WHITE, "Your gold: %d", state->player.stats.num_gold);
 	y++;
@@ -1277,11 +1273,11 @@ void Draw_MerchantScreen(game_state_t *state) {
 		const int key = Get_KeyInput(state);
 		switch (key) {
 			case '1':
-				chosen_item = ItmSlug_SMALLFOOD;
+				chosen_item = ItmSlug_HP_POT_I;
 				validKeyPress = true;
 				break;
 			case '2':
-				chosen_item = ItmSlug_BIGFOOD;
+				chosen_item = ItmSlug_HP_POT_II;
 				validKeyPress = true;
 				break;
 			case '\n':
