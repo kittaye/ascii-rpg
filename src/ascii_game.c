@@ -828,15 +828,15 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 	// If no new room could be created from this room, attempt to build two corridors towards the center of the world to an existing room.
 	if (new_room_created == false) {
 		if (this_room_pos.x < (Get_WorldScreenWidth() / 2)) {
-			if (Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x + this_room_radius, this_room_pos.y), Dir_RIGHT)) state->game_turns++;
+			Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x + this_room_radius, this_room_pos.y), Dir_RIGHT);
 		} else {
-			if (Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x - this_room_radius, this_room_pos.y), Dir_LEFT)) state->game_turns++;
+			Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x - this_room_radius, this_room_pos.y), Dir_LEFT);
 		}
 
 		if (this_room_pos.y < (Get_WorldScreenHeight() / 2)) {
-			if (Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x, this_room_pos.y + this_room_radius), Dir_DOWN)) state->game_turns++;
+			Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x, this_room_pos.y + this_room_radius), Dir_DOWN);
 		} else {
-			if (Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x, this_room_pos.y - this_room_radius), Dir_UP)) state->game_turns++;
+			Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x, this_room_pos.y - this_room_radius), Dir_UP);
 		}
 	}
 }
