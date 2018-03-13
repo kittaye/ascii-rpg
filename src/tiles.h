@@ -38,7 +38,8 @@ typedef enum tile_type_en {
 	TileType_SOLID,
 	TileType_SPECIAL,
 	TileType_ITEM,
-	TileType_EMPTY
+	TileType_EMPTY,
+	TileType_VOID
 } tile_type_en;
 
 typedef struct tile_data_t {
