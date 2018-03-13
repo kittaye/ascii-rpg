@@ -20,7 +20,6 @@
 #define HUB_MAP_FREQUENCY 4
 #define RIGHT_PANEL_OFFSET 36
 #define BOTTOM_PANEL_OFFSET 6			
-#define TOP_PANEL_OFFSET 0		
 #define DEBUG_RCS_LIMIT 100000			// Room collision limit.
 #define DEBUG_INJECTED_INPUT_LIMIT 256	// Injected user input limit (used for testing).
 #define LOG_BUFFER_SIZE 175

@@ -632,7 +632,7 @@ static bool Check_RoomOutOfWorldBounds(const room_t *room) {
 }
 
 bool Check_OutOfWorldBounds(coord_t coord) {
-	if (coord.x >= Get_WorldScreenWidth() || coord.x < 0 || coord.y < 0 + TOP_PANEL_OFFSET || coord.y >= Get_WorldScreenHeight()) {
+	if (coord.x >= Get_WorldScreenWidth() || coord.x < 0 || coord.y < 0 || coord.y >= Get_WorldScreenHeight()) {
 		return true;
 	}
 	return false;
