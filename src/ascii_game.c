@@ -877,27 +877,22 @@ static bool Try_GenerateCorridorConnection(tile_t **world_tiles, coord_t startin
 	// Corridor search has hit something, ensure that the wall hit isn't a corner by checking the next tile in front of it.
 	switch (direction) {
 		case Dir_UP:
-			if (world_tiles[pos.x][pos.y - 1].data->type == TileType_SOLID) {
-				return false;
-			}
+			pos.y--;
 			break;
 		case Dir_DOWN:
-			if (world_tiles[pos.x][pos.y + 1].data->type == TileType_SOLID) {
-				return false;
-			}
+			pos.y++;
 			break;
 		case Dir_LEFT:
-			if (world_tiles[pos.x - 1][pos.y].data->type == TileType_SOLID) {
-				return false;
-			}
+			pos.x--;
 			break;
 		case Dir_RIGHT:
-			if (world_tiles[pos.x + 1][pos.y].data->type == TileType_SOLID) {
-				return false;
-			}
+			pos.x++;
 			break;
 		default:
-			break;
+			return false;
+	}
+	if (Check_OutOfWorldBounds(pos) || world_tiles[pos.x][pos.y].data->type == TileType_SOLID) {
+		return false;
 	}
 
 	// The corridor search was successful, so finally try to generate the corridor itself by checking any other collisions with it.
