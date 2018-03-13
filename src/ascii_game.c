@@ -496,6 +496,9 @@ static bool Perform_PlayerLogic(game_state_t *state) {
 					return false;
 				}
 				break;
+			case 'p':
+				state->floor_complete = true;
+				return false;
 			default:
 				break;
 		}
