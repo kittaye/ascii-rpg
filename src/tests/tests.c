@@ -395,7 +395,7 @@ int test_update_game_log_buffer_overflow_clamped() {
 int test_drop_an_item_successfully() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	const item_t *item = Get_Item(ItmSlug_SMALLFOOD);
+	const item_t *item = Get_Item(ItmSlug_HP_POT_I);
 	state.player.inventory[0] = item;
 	state.player.current_item_index_selected = 0;
 	Interact_CurrentlySelectedItem(&state, ItmCtrl_DROP);
@@ -413,8 +413,8 @@ int test_drop_an_item_successfully() {
 int test_cant_drop_item_onto_another() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	state.player.inventory[0] = Get_Item(ItmSlug_BIGFOOD);
-	state.player.inventory[1] = Get_Item(ItmSlug_SMALLFOOD);
+	state.player.inventory[0] = Get_Item(ItmSlug_HP_POT_II);
+	state.player.inventory[1] = Get_Item(ItmSlug_HP_POT_I);
 
 	state.player.current_item_index_selected = 0;
 	Interact_CurrentlySelectedItem(&state, ItmCtrl_DROP);
@@ -423,7 +423,7 @@ int test_cant_drop_item_onto_another() {
 
 	mu_assert(__func__, strcmp(state.game_log.line1, LOGMSG_PLR_CANT_DROP_ITEM) == 0);
 	mu_assert(__func__, state.player.inventory[0] == Get_Item(ItmSlug_NONE));
-	mu_assert(__func__, state.player.inventory[1] == Get_Item(ItmSlug_SMALLFOOD));
+	mu_assert(__func__, state.player.inventory[1] == Get_Item(ItmSlug_HP_POT_I));
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
@@ -432,7 +432,7 @@ int test_cant_drop_item_onto_another() {
 int test_pickup_an_item_successfully() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	const item_t *item = Get_Item(ItmSlug_BIGFOOD);
+	const item_t *item = Get_Item(ItmSlug_HP_POT_II);
 
 	// Spawn item next to player.
 	state.player.pos = New_Coord(0, 0);
@@ -457,16 +457,16 @@ int test_pickup_an_item_successfully() {
 int test_item_examine_correct_value() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	state.player.inventory[0] = Get_Item(ItmSlug_SMALLFOOD);
-	state.player.inventory[1] = Get_Item(ItmSlug_BIGFOOD);
+	state.player.inventory[0] = Get_Item(ItmSlug_HP_POT_I);
+	state.player.inventory[1] = Get_Item(ItmSlug_HP_POT_II);
 
 	state.player.current_item_index_selected = 0;
 	Interact_CurrentlySelectedItem(&state, ItmCtrl_EXAMINE);
-	mu_assert(__func__, strcmp(state.game_log.line1, LOGMSG_EXAMINE_SMALL_FOOD) == 0);
+	mu_assert(__func__, strcmp(state.game_log.line1, LOGMSG_EXAMINE_SMALL_HP_POT) == 0);
 
 	state.player.current_item_index_selected = 1;
 	Interact_CurrentlySelectedItem(&state, ItmCtrl_EXAMINE);
-	mu_assert(__func__, strcmp(state.game_log.line1, LOGMSG_EXAMINE_BIG_FOOD) == 0);
+	mu_assert(__func__, strcmp(state.game_log.line1, LOGMSG_EXAMINE_MEDIUM_HP_POT) == 0);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
@@ -475,7 +475,7 @@ int test_item_examine_correct_value() {
 int test_cant_pickup_another_item_because_inventory_full() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	const item_t  *item = Get_Item(ItmSlug_SMALLFOOD);
+	const item_t  *item = Get_Item(ItmSlug_HP_POT_I);
 
 	// Fill inventory.
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
@@ -524,7 +524,7 @@ int test_get_tile_foreground_attributes_single_occupier() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
 	enemy_t *enemy = InitCreate_Enemy(Get_EnemyData(EnmySlug_WEREWOLF), New_Coord(1, 1));
-	const item_t *item = Get_Item(ItmSlug_BIGFOOD);
+	const item_t *item = Get_Item(ItmSlug_HP_POT_II);
 	const tile_data_t random_tile1 = {.sprite = 'X', .type = TileType_SOLID, .color = Clr_CYAN};
 
 	Update_WorldTile(state.world_tiles, New_Coord(0, 0), &random_tile1);
@@ -549,7 +549,7 @@ int test_get_tile_foreground_attributes_full_occupiers() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
 	enemy_t *enemy = InitCreate_Enemy(Get_EnemyData(EnmySlug_WEREWOLF), New_Coord(0, 0));
-	const item_t *item = Get_Item(ItmSlug_BIGFOOD);
+	const item_t *item = Get_Item(ItmSlug_HP_POT_II);
 	const tile_data_t random_tile1 = {.sprite = 'X', .type = TileType_SOLID, .color = Clr_CYAN};
 
 	// Priority ordering: Enemy > Item > Tile.
