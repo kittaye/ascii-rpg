@@ -505,16 +505,14 @@ int test_get_tile_foreground_attributes_no_occupiers() {
 	const tile_data_t random_tile2 = {.sprite = 'Q', .type = TileType_NPC, .color = Clr_MAGENTA};
 
 	Update_WorldTile(state.world_tiles, New_Coord(0, 0), &random_tile1);
-
-	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == 'X');
-	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_SOLID);
-	mu_assert(__func__, Get_TileForegroundColour(&state.world_tiles[0][0]) == Clr_CYAN);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == 'X');
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_SOLID);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_CYAN);
 
 	Update_WorldTile(state.world_tiles, New_Coord(0, 0), &random_tile2);
-
-	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == 'Q');
-	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_NPC);
-	mu_assert(__func__, Get_TileForegroundColour(&state.world_tiles[0][0]) == Clr_MAGENTA);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == 'Q');
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_NPC);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_MAGENTA);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
@@ -530,16 +528,16 @@ int test_get_tile_foreground_attributes_single_occupier() {
 	Update_WorldTile(state.world_tiles, New_Coord(0, 0), &random_tile1);
 	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), item);
 
-	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == item->sprite);
-	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_ITEM);
-	mu_assert(__func__, Get_TileForegroundColour(&state.world_tiles[0][0]) == Clr_GREEN);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == item->sprite);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_ITEM);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_GREEN);
 
 	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), NULL);
 	Update_WorldTileEnemyOccupier(state.world_tiles, New_Coord(0, 0), enemy);
 
-	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == enemy->data->sprite);
-	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_ENEMY);
-	mu_assert(__func__, Get_TileForegroundColour(&state.world_tiles[0][0]) == Clr_RED);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == enemy->data->sprite);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_ENEMY);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_RED);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
@@ -558,21 +556,21 @@ int test_get_tile_foreground_attributes_full_occupiers() {
 	Update_WorldTileEnemyOccupier(state.world_tiles, New_Coord(0, 0), enemy);
 	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), item);
 
-	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == enemy->data->sprite);
-	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_ENEMY);
-	mu_assert(__func__, Get_TileForegroundColour(&state.world_tiles[0][0]) == Clr_RED);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == enemy->data->sprite);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_ENEMY);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_RED);
 
 	Update_WorldTileEnemyOccupier(state.world_tiles, New_Coord(0, 0), NULL);
 
-	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == item->sprite);
-	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_ITEM);
-	mu_assert(__func__, Get_TileForegroundColour(&state.world_tiles[0][0]) == Clr_GREEN);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == item->sprite);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_ITEM);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_GREEN);
 
 	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), NULL);
 
-	mu_assert(__func__, Get_TileForegroundSprite(&state.world_tiles[0][0]) == 'X');
-	mu_assert(__func__, Get_TileForegroundType(&state.world_tiles[0][0]) == TileType_SOLID);
-	mu_assert(__func__, Get_TileForegroundColour(&state.world_tiles[0][0]) == Clr_CYAN);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == 'X');
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_SOLID);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_CYAN);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
