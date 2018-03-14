@@ -46,11 +46,9 @@ int main(int argc, char *argv[]) {
 	Init_GameState(&game_state);
 	game_state.player = Create_Player();
 
-	const char *filename = NULL;
-
 	Draw_HelpScreen(&game_state);
 	Update_GameLog(&game_state.game_log, LOGMSG_WELCOME);
-	InitCreate_DungeonFloor(&game_state, num_rooms_specified, filename);
+	InitCreate_DungeonFloor(&game_state, num_rooms_specified, NULL);
 
 	// Main game loop.
 	while (!g_process_over) {
@@ -60,17 +58,7 @@ int main(int argc, char *argv[]) {
 			Cleanup_DungeonFloor(&game_state);
 			game_state.current_floor++;
 			game_state.floor_complete = false;
-
-			// Every few floors, the hub layout is created instead of a random dungeon layout.
-			if (game_state.current_floor % HUB_MAP_FREQUENCY == 0) {
-				game_state.fog_of_war = false;
-				filename = HUB_FILENAME;
-			} else {
-				game_state.fog_of_war = true;
-				filename = NULL;
-			}
-
-			InitCreate_DungeonFloor(&game_state, num_rooms_specified, filename);
+			InitCreate_DungeonFloor(&game_state, num_rooms_specified, NULL);
 		}
 	}
 
