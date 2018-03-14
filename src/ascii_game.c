@@ -513,7 +513,7 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 
 	// Perform world logic based on the tile the player moved to.
 	tile_t *curr_world_tile = &state->world_tiles[state->player.pos.x][state->player.pos.y];
-	switch (Get_TileForegroundType(curr_world_tile)) {
+	switch (Get_ForegroundTileData(curr_world_tile).type) {
 		case TileType_ITEM:
 			// Special case for items which are gold.
 			if (curr_world_tile->data->sprite == SPR_GOLD || curr_world_tile->data->sprite == SPR_BIGGOLD) {
@@ -1065,37 +1065,40 @@ static void Generate_Room(tile_t **world_tiles, const room_t *room) {
 	}
 }
 
-char Get_TileForegroundSprite(const tile_t *tile) {
-	// Show enemy occupier's sprite, before an item's, before the tile's sprite itself.
-	if (tile->enemy_occupier != NULL) {
-		return tile->enemy_occupier->data->sprite;
-	} else if (tile->item_occupier != NULL) {
-		return tile->item_occupier->sprite;
-	} else {
-		return tile->data->sprite;
-	}
-}
+tile_data_t Get_ForegroundTileData(const tile_t *tile) {
+	char foreground_sprite = ' ';
+	colour_en foreground_color = Clr_WHITE;
+	tile_type_en foreground_type = TileType_EMPTY;
 
-colour_en Get_TileForegroundColour(const tile_t *tile) {
-	// Show enemy occupier's colour, before an item's, before the tile's colour itself.
+	// Get enemy occupier's sprite, before an item's, before the tile's sprite itself.
 	if (tile->enemy_occupier != NULL) {
-		return Clr_RED;
+		foreground_sprite = tile->enemy_occupier->data->sprite;
 	} else if (tile->item_occupier != NULL) {
-		return Clr_GREEN;
+		foreground_sprite = tile->item_occupier->sprite;
 	} else {
-		return tile->data->color;
+		foreground_sprite = tile->data->sprite;
 	}
-}
 
-tile_type_en Get_TileForegroundType(const tile_t *tile) {
+	// Get enemy occupier's colour, before an item's, before the tile's colour itself.
+	if (tile->enemy_occupier != NULL) {
+		foreground_color = Clr_RED;
+	} else if (tile->item_occupier != NULL) {
+		foreground_color = Clr_GREEN;
+	} else {
+		foreground_color = tile->data->color;
+	}
+
 	// Show enemy occupier's type, before an item's, before the tile's type itself.
 	if (tile->enemy_occupier != NULL) {
-		return TileType_ENEMY;
+		foreground_type = TileType_ENEMY;
 	} else if (tile->item_occupier != NULL) {
-		return TileType_ITEM;
+		foreground_type = TileType_ITEM;
 	} else {
-		return tile->data->type;
+		foreground_type = tile->data->type;
 	}
+
+	tile_data_t foreground_tile = {.sprite = foreground_sprite, .color = foreground_color, .type = foreground_type};
+	return foreground_tile;
 }
 
 void Update_WorldTile(tile_t **world_tiles, coord_t pos, const tile_data_t *tile_data) {
@@ -1126,17 +1129,18 @@ void Apply_RecursiveVision(const game_state_t *state, coord_t pos) {
 			}
 
 			tile_t *tile = &state->world_tiles[x][y];
+			const tile_data_t foreground = Get_ForegroundTileData(tile);
 
 			// Doors block vision but are empty tiles, so add it as an exception to the condition.
 			if (tile->data->type != TileType_SOLID && tile->data->sprite != SPR_DOOR) {
 				if (tile->visited == false) {
 					tile->visited = true;
-					GEO_draw_char(x, y, Get_TileForegroundColour(tile), Get_TileForegroundSprite(tile));
+					GEO_draw_char(x, y, foreground.color, foreground.sprite);
 					Apply_RecursiveVision(state, New_Coord(x, y));
 				}
 			} else {
 				tile->visited = true;
-				GEO_draw_char(x, y, Get_TileForegroundColour(tile), Get_TileForegroundSprite(tile));
+				GEO_draw_char(x, y, foreground.color, foreground.sprite);
 			}
 		}
 	}
@@ -1161,7 +1165,8 @@ void Apply_VisionToWorldTiles(const game_state_t *state) {
 					if (tile->data->type != TileType_SOLID && tile->data->sprite != SPR_DOOR) {
 						tile->visited = false;
 					} else {
-						GEO_draw_char(x, y, Get_TileForegroundColour(tile), Get_TileForegroundSprite(tile));
+						const tile_data_t foreground = Get_ForegroundTileData(tile);
+						GEO_draw_char(x, y, foreground.color, foreground.sprite);
 					}
 				}
 			}
@@ -1170,8 +1175,8 @@ void Apply_VisionToWorldTiles(const game_state_t *state) {
 		// If fog of war is disabled, draw all tiles.
 		for (int x = 0; x < world_screen_w; x++) {
 			for (int y = 0; y < world_screen_h; y++) {
-				const tile_t *tile = &state->world_tiles[x][y];
-				GEO_draw_char(x, y, Get_TileForegroundColour(tile), Get_TileForegroundSprite(tile));
+				const tile_data_t foreground = Get_ForegroundTileData(&state->world_tiles[x][y]);
+				GEO_draw_char(x, y, foreground.color, foreground.sprite);
 			}
 		}
 	}

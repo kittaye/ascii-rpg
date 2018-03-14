@@ -180,19 +180,9 @@ void Update_GameLog(log_list_t *game_log, const char *format, ...);
 void Update_AllEnemyCombat(game_state_t *state, enemy_node_t *enemy_list);
 
 /*
-	Gets the sprite that should be shown to the player when multiple things are at the same position. Foreground sprite is based on ordering rules.
+	Gets the tile data that should be relevant to the player when multiple things are at the same position. Foreground tile is based on ordering rules.
 */
-char Get_TileForegroundSprite(const tile_t *tile);
-
-/*
-	Gets the colour that should be shown to the player when multiple things are at the same position. Foreground colour is based on ordering rules.
-*/
-colour_en Get_TileForegroundColour(const tile_t *tile);
-
-/*
-	Gets the tile type that should be relevant to the player when multiple things are at the same position. Foreground type is based on ordering rules.
-*/
-tile_type_en Get_TileForegroundType(const tile_t *tile);
+tile_data_t Get_ForegroundTileData(const tile_t *tile);
 
 /*
 	Draws world tiles to be shown to the user. Game state variable 'fog_of_war' is the determining factor.
