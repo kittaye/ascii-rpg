@@ -1,5 +1,5 @@
-#ifndef MAIN_H_
-#define MAIN_H_
+#ifndef HELPERS_H_
+#define HELPERS_H_
 
 #include <stdio.h>
 
@@ -18,4 +18,4 @@ bool Check_FContainsChar(FILE *fp, char char_to_find);
 */
 dimensions_t Get_FileDimensions(FILE *fp);
 
-#endif // !MAIN_H_
+#endif // !HELPERS_H_
