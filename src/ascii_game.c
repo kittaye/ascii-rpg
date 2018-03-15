@@ -1105,14 +1105,9 @@ tile_data_t Get_ForegroundTileData(const tile_t *tile) {
 		foreground_color = tile->data->color;
 	}
 
-	// Get enemy occupier's type, before an item's, before the tile's type itself.
-	if (tile->enemy_occupier != NULL) {
-		foreground_type = TileType_ENEMY;
-	} else if (tile->item_occupier != NULL) {
-		foreground_type = TileType_ITEM;
-	} else {
-		foreground_type = tile->data->type;
-	}
+	// A particular tile's type is always the same, not matter what occupies it.
+	// (Because "foreground tile" information is only relevant to the variables needed for drawing -- sprite and colour). 
+	const tile_type_en foreground_type = tile->data->type;
 
 	tile_data_t foreground_tile = {.sprite = foreground_sprite, .color = foreground_color, .type = foreground_type};
 	return foreground_tile;
