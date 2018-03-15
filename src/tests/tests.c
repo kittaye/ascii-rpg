@@ -34,13 +34,9 @@ Setup before any tests.
 static void Setup_Test_Env() {
 	GEO_setup_screen();
 
-	// NOTE: Make sure these values satisfy the current minimal size needed to play the game.
-	const int MIN_SCREEN_WIDTH = 130;
-	const int MIN_SCREEN_HEIGHT = 60;
-
-	if (GEO_screen_width() < MIN_SCREEN_WIDTH || GEO_screen_height() < MIN_SCREEN_HEIGHT) {
+	if (GEO_screen_width() < MIN_TERMINAL_WIDTH || GEO_screen_height() < MIN_TERMINAL_HEIGHT) {
 		GEO_cleanup_screen();
-		fprintf(stderr, "Terminal screen dimensions must be at least %dx%d to run tests. Exiting...\n", MIN_SCREEN_WIDTH, MIN_SCREEN_HEIGHT);
+		fprintf(stderr, "Terminal screen dimensions must be at least %dx%d to run tests. Exiting...\n", MIN_TERMINAL_WIDTH, MIN_TERMINAL_HEIGHT);
 		exit(1);
 	}
 }
@@ -642,7 +638,7 @@ int main(int argc, char **argv) {
 	Setup_Test_Env();
 
 	int result = run_all_tests();
-	floor_statistics_t floor_statistics = get_statistics_on_dungeon_floor_creation(1000);
+	floor_statistics_t floor_statistics = get_statistics_on_dungeon_floor_creation(10000);
 
 	Cleanup_Test_Env();
 
