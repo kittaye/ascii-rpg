@@ -33,11 +33,8 @@ typedef enum tile_slug_en {
 } tile_slug_en;
 
 typedef enum tile_type_en {
-	TileType_NPC,
-	TileType_ENEMY,
 	TileType_SOLID,
 	TileType_SPECIAL,
-	TileType_ITEM,
 	TileType_EMPTY,
 	TileType_VOID
 } tile_type_en;
@@ -46,7 +43,6 @@ typedef struct tile_data_t {
 	const char sprite;
 	const tile_type_en type;
 	const colour_en color;
-	const bool is_structural;	// If a tile is structural, then it blocks the player's vision but will always be visible to the player after being seen.
 } tile_data_t;
 
 typedef struct tile_t {
