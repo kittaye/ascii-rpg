@@ -183,6 +183,9 @@ void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specifi
 	assert(num_rooms_specified >= MIN_ROOMS);
 	assert(num_rooms_specified <= MAX_ROOMS);
 
+	const int world_screen_w = Get_WorldScreenWidth();
+	const int world_screen_h = Get_WorldScreenHeight();
+
 	// Make sure dungeon floor values are reset from any previous floors.
 	Reset_WorldTiles(state);
 	state->num_rooms_created = 0;
@@ -195,10 +198,13 @@ void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specifi
 		Create_RoomsFromFile(state, filename_specified);
 	} else {
 		int starting_room_radius = 3;
-		coord_t starting_room_pos = New_Coord(Get_WorldScreenWidth() / 2, Get_WorldScreenHeight() / 2);
+		int x_pos = (world_screen_w / 2) + (rand() % world_screen_w / 2) - world_screen_w / 4;
+		int y_pos = (world_screen_h / 2) + (rand() % world_screen_h / 2) - world_screen_h / 4;
+		coord_t starting_room_pos = New_Coord(x_pos, y_pos);
+
 		Define_Room(&state->rooms[0], starting_room_pos, starting_room_radius);
 
-		if (!Check_RoomCollision((const tile_t**)state->world_tiles, &state->rooms[0])) {
+		if (Check_RoomCollision((const tile_t**)state->world_tiles, &state->rooms[0]) == false) {
 			Create_RoomsRecursively(state, starting_room_pos, starting_room_radius, num_rooms_specified);
 			Populate_Rooms(state);
 		}
