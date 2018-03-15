@@ -751,29 +751,30 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int room_radius, int max_rooms) {
 	assert(state != NULL);
 
-	const int ATTEMPTS_PER_ROOM = 25;
+	const int ATTEMPTS_PER_ROOM = 10;
 
 	// Get this room's informaton.
 	const room_t this_room = state->rooms[state->num_rooms_created];
+	const int this_room_id = state->num_rooms_created;
 	const coord_t this_room_pos = room_pos;
 	const int this_room_radius = room_radius;
+	int rooms_created_from_this_room = 0;
 
 	// Generate this room.
-	Generate_Room(state->world_tiles, &state->rooms[state->num_rooms_created]);
+	Generate_Room(state->world_tiles, &state->rooms[this_room_id]);
 	state->num_rooms_created++;
 
 	// Begin setup for the next new room.
 	int rand_direction = rand() % 4;
-	int new_room_radius = Get_NextRoomRadius();
+	const int new_room_radius = Get_NextRoomRadius();
 
 	// Try to initialise a new room with a connecting corridor, until all retry iterations are used up OR max rooms are reached.
-	bool new_room_created = false;
 	for (int i = 0; i < ATTEMPTS_PER_ROOM; i++) {
 		if (state->num_rooms_created >= max_rooms) {
 			break;
 		}
 
-		// Make sure the next random direction is different from the last attempt's direction.
+		// Cycle to the next direction for a new attempt.
 		if (i > 0) {
 			rand_direction = ((rand_direction + 1) % 4);
 		}
@@ -781,25 +782,25 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 		// Get the new room's position and corridor connector coordinates.
 		coord_t new_room_pos = this_room_pos;
 		coord_t new_corridor_pos = this_room_pos;
-		int corridor_length = this_room_radius;
+		int new_corridor_length = this_room_radius;
 		switch (rand_direction) {
 			case Dir_UP:
-				new_room_pos.y = this_room_pos.y - this_room_radius - corridor_length - new_room_radius;
+				new_room_pos.y = this_room_pos.y - this_room_radius - new_corridor_length - new_room_radius;
 				new_room_pos.x = (rand() % (this_room.TR_corner.x - this_room.TL_corner.x - 1)) + this_room.TL_corner.x + 1;
 				new_corridor_pos = New_Coord(new_room_pos.x, this_room_pos.y - this_room_radius);
 				break;
 			case Dir_DOWN:
-				new_room_pos.y = this_room_pos.y + this_room_radius + corridor_length + new_room_radius;
+				new_room_pos.y = this_room_pos.y + this_room_radius + new_corridor_length + new_room_radius;
 				new_room_pos.x = (rand() % (this_room.TR_corner.x - this_room.TL_corner.x - 1)) + this_room.TL_corner.x + 1;
 				new_corridor_pos = New_Coord(new_room_pos.x, this_room_pos.y + this_room_radius);
 				break;
 			case Dir_LEFT:
-				new_room_pos.x = this_room_pos.x - this_room_radius - corridor_length - new_room_radius;
+				new_room_pos.x = this_room_pos.x - this_room_radius - new_corridor_length - new_room_radius;
 				new_room_pos.y = (rand() % (this_room.BL_corner.y - this_room.TL_corner.y - 1)) + this_room.TL_corner.y + 1;
 				new_corridor_pos = New_Coord(this_room_pos.x - this_room_radius, new_room_pos.y);
 				break;
 			case Dir_RIGHT:
-				new_room_pos.x = this_room_pos.x + this_room_radius + corridor_length + new_room_radius;
+				new_room_pos.x = this_room_pos.x + this_room_radius + new_corridor_length + new_room_radius;
 				new_room_pos.y = (rand() % (this_room.BL_corner.y - this_room.TL_corner.y - 1)) + this_room.TL_corner.y + 1;
 				new_corridor_pos = New_Coord(this_room_pos.x + this_room_radius, new_room_pos.y);
 				break;
@@ -807,32 +808,34 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 				break;
 		}
 
+		const int new_room_id = state->num_rooms_created;
+
 		// Define the new room.
-		Define_Room(&state->rooms[state->num_rooms_created], new_room_pos, new_room_radius);
+		Define_Room(&state->rooms[new_room_id], new_room_pos, new_room_radius);
 
 		// Check that the new room doesnt collide with map boundaries or anything solid.
-		if (Check_RoomCollision((const tile_t **)state->world_tiles, &state->rooms[state->num_rooms_created])) {
+		if (Check_RoomCollision((const tile_t **)state->world_tiles, &state->rooms[new_room_id])) {
 			state->debug_rcs++;
 			continue;
 		}
 
 		// Check that the corridor that will connect this room with the new room doesnt collide with anything solid.
-		if (Check_CorridorCollision((const tile_t**)state->world_tiles, new_corridor_pos, corridor_length, rand_direction)) {
+		if (Check_CorridorCollision((const tile_t**)state->world_tiles, new_corridor_pos, new_corridor_length, rand_direction)) {
 			state->debug_rcs++;
 			continue;
 		}
 
 		// Generate the corridor, connecting this room to the new one.
-		Generate_Corridor(state->world_tiles, new_corridor_pos, corridor_length, rand_direction);
+		Generate_Corridor(state->world_tiles, new_corridor_pos, new_corridor_length, rand_direction);
 
 		// Generate the new conjoined room and repeat.
 		Create_RoomsRecursively(state, new_room_pos, new_room_radius, max_rooms);
 
-		new_room_created = true;
+		rooms_created_from_this_room++;
 	}
 
-	// If no new room could be created from this room, attempt to build two corridors towards the center of the world to an existing room.
-	if (new_room_created == false) {
+	// If no rooms could be created from this room, attempt to build two corridors towards the center of the world to an existing room.
+	if (rooms_created_from_this_room == 0) {
 		if (this_room_pos.x < (Get_WorldScreenWidth() / 2)) {
 			Try_GenerateCorridorConnection(state->world_tiles, New_Coord(this_room_pos.x + this_room_radius, this_room_pos.y), Dir_RIGHT);
 		} else {
