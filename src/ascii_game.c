@@ -321,7 +321,7 @@ player_t Create_Player(void) {
 bool Try_SetPlayerPos(game_state_t *state, coord_t pos) {
 	assert(state != NULL);
 
-	if (!Check_OutOfWorldBounds(pos) && state->world_tiles[pos.x][pos.y].data->type != TileType_SOLID) {
+	if (!Check_OutOfWorldBounds(pos) && state->world_tiles[pos.x][pos.y].data->type != TileType_SOLID && state->world_tiles[pos.x][pos.y].data->type != TileType_VOID) {
 		state->player.pos = pos;
 		return true;
 	}
