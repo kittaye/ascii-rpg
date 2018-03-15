@@ -5,7 +5,7 @@
 #include "george_graphics.h"
 #include "log_messages.h"
 #include "ascii_game.h"
-#include "main.h"
+#include "helpers.h"
 
 int main(int argc, char *argv[]) {
 	if (argc < 2) {
@@ -20,26 +20,34 @@ int main(int argc, char *argv[]) {
 	// Initialise curses.
 	GEO_setup_screen();
 
-	// Ensure the terminal size is large enough to create the hub file.
-	FILE *fp;
-	fp = fopen(HUB_FILENAME, "r");
-	if (fp == NULL) {
-		fprintf(stderr, "The game's hub file \"%s\" could not be found. Exiting...\n", HUB_FILENAME);
+	// Ensure terminal size is bigger than the minimum values.
+	if (GEO_screen_width() < MIN_TERMINAL_WIDTH || GEO_screen_height() < MIN_TERMINAL_HEIGHT) {
 		GEO_cleanup_screen();
-		fclose(fp);
+		fprintf(stderr, "The terminal size must be at least (%dx%d) to run the game. Exiting...\n",
+			MIN_TERMINAL_WIDTH, MIN_TERMINAL_HEIGHT);
 		exit(1);
-	} else {
-		dimensions_t hub_file_dimensions = Get_FileDimensions(fp);
-		int min_width = hub_file_dimensions.x + RIGHT_PANEL_OFFSET;
-		int min_height = hub_file_dimensions.y + BOTTOM_PANEL_OFFSET;
-
-		if (GEO_screen_width() < min_width || GEO_screen_height() < min_height) {
-			GEO_cleanup_screen();
-			fprintf(stderr, "The current terminal size must be at least (%dx%d) to run the game. Exiting...\n",
-				min_width, min_height);
-			exit(1);
-		}
 	}
+
+	// Ensure the terminal size is large enough to create the hub file.
+	//FILE *fp;
+	//fp = fopen(HUB_FILENAME, "r");
+	//if (fp == NULL) {
+	//	fprintf(stderr, "The game's hub file \"%s\" could not be found. Exiting...\n", HUB_FILENAME);
+	//	GEO_cleanup_screen();
+	//	fclose(fp);
+	//	exit(1);
+	//} else {
+	//	dimensions_t hub_file_dimensions = Get_FileDimensions(fp);
+	//	int min_width = hub_file_dimensions.x + RIGHT_PANEL_OFFSET;
+	//	int min_height = hub_file_dimensions.y + BOTTOM_PANEL_OFFSET;
+
+	//	if (GEO_screen_width() < min_width || GEO_screen_height() < min_height) {
+	//		GEO_cleanup_screen();
+	//		fprintf(stderr, "The terminal size must be at least (%dx%d) to run the game. Exiting...\n",
+	//			min_width, min_height);
+	//		exit(1);
+	//	}
+	//}
 
 	// Initialise the game.
 	game_state_t game_state;
