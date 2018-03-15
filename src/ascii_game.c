@@ -527,16 +527,59 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 	state->player.current_npc_target = SPR_EMPTY;
 
 	// Perform world logic based on the tile the player moved to.
-	tile_t *curr_world_tile = &state->world_tiles[state->player.pos.x][state->player.pos.y];
-	switch (Get_ForegroundTileData(curr_world_tile).type) {
-		case TileType_ITEM:
-			// Special case for items which are gold.
-			if (curr_world_tile->data->sprite == SPR_GOLD || curr_world_tile->data->sprite == SPR_BIGGOLD) {
+	coord_t pos = state->player.pos;
+	tile_t *current_tile = &state->world_tiles[pos.x][pos.y];
+
+	if (current_tile->enemy_occupier != NULL) {
+		state->player.pos = player_old_pos;
+
+		enemy_t *attackedEnemy = current_tile->enemy_occupier;
+		attackedEnemy->curr_health--;
+		Update_GameLog(&state->game_log, LOGMSG_PLR_DMG_ENEMY, attackedEnemy->data->name, 1);
+
+		if (attackedEnemy->curr_health <= 0) {
+			Update_GameLog(&state->game_log, LOGMSG_PLR_KILL_ENEMY, attackedEnemy->data->name);
+			attackedEnemy->is_alive = false;
+			state->player.stats.enemies_slain++;
+
+			if (attackedEnemy->loot != Get_Item(ItmSlug_NONE)) {
+				Update_WorldTileItemOccupier(state->world_tiles, attackedEnemy->pos, attackedEnemy->loot);
+			}
+
+			Update_WorldTileEnemyOccupier(state->world_tiles, attackedEnemy->pos, NULL);
+		} else {
+			state->player.stats.curr_health--;
+			Update_GameLog(&state->game_log, LOGMSG_ENEMY_DMG_PLR, attackedEnemy->data->name, 1);
+		}
+
+	} else if (current_tile->item_occupier != NULL) {
+		// All items are "picked up" (removed from world) if the player has room in their inventory.
+		if (AddTo_Inventory(&state->player, current_tile->item_occupier)) {
+			Update_GameLog(&state->game_log, LOGMSG_PLR_GET_ITEM, current_tile->item_occupier->name);
+			Update_WorldTileItemOccupier(state->world_tiles, state->player.pos, NULL);
+		} else {
+			Update_GameLog(&state->game_log, LOGMSG_PLR_INVENTORY_FULL);
+		}
+	} else {
+		const tile_data_t current_tile_data = Get_ForegroundTileData(current_tile);
+
+		switch (current_tile_data.sprite) {
+			case SPR_STAIRCASE:
+				Update_GameLog(&state->game_log, LOGMSG_PLR_INTERACT_STAIRCASE);
+				state->floor_complete = true;
+				break;
+			case SPR_MERCHANT:
+				Update_GameLog(&state->game_log, LOGMSG_PLR_TALK_MERCHANT);
+				state->player.current_npc_target = SPR_MERCHANT;
+				state->player.pos = player_old_pos;
+				break;
+			case SPR_GOLD:
+			case SPR_BIGGOLD:;
 				int amt = 0;
 
-				if (curr_world_tile->data->sprite == SPR_GOLD) {
+				if (current_tile_data.sprite == SPR_GOLD) {
 					amt = (rand() % 4) + 1;
-				} else if (curr_world_tile->data->sprite == SPR_BIGGOLD) {
+				} else if (current_tile_data.sprite == SPR_BIGGOLD) {
 					amt = (rand() % 5) + 5;
 				}
 
@@ -548,65 +591,16 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 				}
 				Update_WorldTile(state->world_tiles, state->player.pos, Get_TileData(TileSlug_GROUND));
 				break;
-			}
-
-			// All other items are "picked up" (removed from world) if the player has room in their inventory.
-			if (AddTo_Inventory(&state->player, curr_world_tile->item_occupier)) {
-				Update_GameLog(&state->game_log, LOGMSG_PLR_GET_ITEM, curr_world_tile->item_occupier->name);
-				Update_WorldTileItemOccupier(state->world_tiles, state->player.pos, NULL);
-			} else {
-				Update_GameLog(&state->game_log, LOGMSG_PLR_INVENTORY_FULL);
-			}
-			break;
-		case TileType_ENEMY:;
-			enemy_t *attackedEnemy = curr_world_tile->enemy_occupier;
-			attackedEnemy->curr_health--;
-			Update_GameLog(&state->game_log, LOGMSG_PLR_DMG_ENEMY, attackedEnemy->data->name, 1);
-
-			if (attackedEnemy->curr_health <= 0) {
-				Update_GameLog(&state->game_log, LOGMSG_PLR_KILL_ENEMY, attackedEnemy->data->name);
-				attackedEnemy->is_alive = false;
-				state->player.stats.enemies_slain++;
-
-				if (attackedEnemy->loot != Get_Item(ItmSlug_NONE)) {
-					Update_WorldTileItemOccupier(state->world_tiles, attackedEnemy->pos, attackedEnemy->loot);
+			default:
+				if (state->game_log.line1[0] != ' '
+					|| state->game_log.line2[0] != ' '
+					|| state->game_log.line3[0] != ' '
+					|| state->game_log.line4[0] != ' '
+					|| state->game_log.line5[0] != ' ') {
+					Update_GameLog(&state->game_log, LOGMSG_EMPTY_SPACE);
 				}
-
-				Update_WorldTileEnemyOccupier(state->world_tiles, attackedEnemy->pos, NULL);
-			} else {
-				state->player.stats.curr_health--;
-				Update_GameLog(&state->game_log, LOGMSG_ENEMY_DMG_PLR, attackedEnemy->data->name, 1);
-			}
-
-			// Moving into any enemy results in no movement from the player.
-			state->player.pos = player_old_pos;
-			break;
-		case TileType_SPECIAL:
-			if (curr_world_tile->data->sprite == SPR_STAIRCASE) {
-				Update_GameLog(&state->game_log, LOGMSG_PLR_INTERACT_STAIRCASE);
-				state->floor_complete = true;
-			}
-
-			// Moving into a special object results in no movement from the player.
-			state->player.pos = player_old_pos;
-			break;
-		case TileType_NPC:
-			if (curr_world_tile->data->sprite == SPR_MERCHANT) {
-				Update_GameLog(&state->game_log, LOGMSG_PLR_TALK_MERCHANT);
-				state->player.current_npc_target = SPR_MERCHANT;
-			}
-			// Moving into an NPC results in no movement from the player.
-			state->player.pos = player_old_pos;
-			break;
-		default:
-			if (state->game_log.line1[0] != ' ' 
-				|| state->game_log.line2[0] != ' ' 
-				|| state->game_log.line3[0] != ' ' 
-				|| state->game_log.line4[0] != ' ' 
-				|| state->game_log.line5[0] != ' ') {
-				Update_GameLog(&state->game_log, LOGMSG_EMPTY_SPACE);
-			}
-			break;
+				break;
+		}
 	}
 
 	if (state->player.stats.curr_health <= 0) {
