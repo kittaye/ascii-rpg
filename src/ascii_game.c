@@ -198,8 +198,8 @@ void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specifi
 		Create_RoomsFromFile(state, filename_specified);
 	} else {
 		int starting_room_radius = 3;
-		int x_pos = (world_screen_w / 2) + (rand() % world_screen_w / 2) - world_screen_w / 4;
-		int y_pos = (world_screen_h / 2) + (rand() % world_screen_h / 2) - world_screen_h / 4;
+		int x_pos = (world_screen_w / 2) + (rand() % world_screen_w / 6) - world_screen_w / 12;
+		int y_pos = (world_screen_h / 2) + (rand() % world_screen_h / 6) - world_screen_h / 12;
 		coord_t starting_room_pos = New_Coord(x_pos, y_pos);
 
 		Define_Room(&state->rooms[0], starting_room_pos, starting_room_radius);
@@ -819,7 +819,7 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 			continue;
 		}
 
-		// Check that the corridor that will connect this room with the new room doesnt collide with anything solid.
+		// Check that the corridor that will connect this room with the new room doesnt collide with map boundaries or anything solid.
 		if (Check_CorridorCollision((const tile_t**)state->world_tiles, new_corridor_pos, new_corridor_length, rand_direction)) {
 			state->debug_rcs++;
 			continue;
@@ -882,7 +882,7 @@ static bool Try_GenerateCorridorConnection(tile_t **world_tiles, coord_t startin
 	} while (world_tiles[pos.x][pos.y].data->type == TileType_VOID);
 
 	// Corridor search finishing at length 1 means only the doors will be created -- no actual corridor. Also remove if the corridor is too long.
-	if (length <= 2 || length > 25) {
+	if (length <= 1 || length > 25) {
 		return false;
 	}
 
