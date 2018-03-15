@@ -46,10 +46,11 @@ typedef struct tile_data_t {
 	const char sprite;
 	const tile_type_en type;
 	const colour_en color;
+	const bool is_structural;	// If a tile is structural, then it blocks the player's vision but will always be visible to the player after being seen.
 } tile_data_t;
 
 typedef struct tile_t {
-	bool visited;
+	bool is_visible;
 	const tile_data_t *data;
 	enemy_t *enemy_occupier;
 	const item_t *item_occupier;
