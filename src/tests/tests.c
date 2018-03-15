@@ -329,6 +329,17 @@ int test_set_player_pos_into_solid_fails() {
 	return 0;
 }
 
+int test_set_player_pos_into_door() {
+	game_state_t state = Setup_Test_GameStateAndPlayer();
+
+	Update_WorldTile(state.world_tiles, New_Coord(0, 0), Get_TileData(TileSlug_DOOR));
+	mu_assert(__func__, state.world_tiles[0][0].data->type == TileType_SOLID);
+	mu_assert(__func__, Try_SetPlayerPos(&state, New_Coord(0, 0)) == true);
+
+	Cleanup_Test_GameStateAndPlayer(&state);
+	return 0;
+}
+
 int test_update_game_log_normal_behaviour() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
@@ -498,7 +509,7 @@ int test_get_tile_foreground_attributes_no_occupiers() {
 	game_state_t state = Setup_Test_GameStateAndPlayer();
 
 	const tile_data_t random_tile1 = {.sprite = 'X', .type = TileType_SOLID, .color = Clr_CYAN};
-	const tile_data_t random_tile2 = {.sprite = 'Q', .type = TileType_NPC, .color = Clr_MAGENTA};
+	const tile_data_t random_tile2 = {.sprite = 'Q', .type = TileType_SPECIAL, .color = Clr_MAGENTA};
 
 	Update_WorldTile(state.world_tiles, New_Coord(0, 0), &random_tile1);
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == 'X');
@@ -507,7 +518,7 @@ int test_get_tile_foreground_attributes_no_occupiers() {
 
 	Update_WorldTile(state.world_tiles, New_Coord(0, 0), &random_tile2);
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == 'Q');
-	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_NPC);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_SPECIAL);
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_MAGENTA);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
@@ -519,20 +530,20 @@ int test_get_tile_foreground_attributes_single_occupier() {
 
 	enemy_t *enemy = InitCreate_Enemy(Get_EnemyData(EnmySlug_WEREWOLF), New_Coord(1, 1));
 	const item_t *item = Get_Item(ItmSlug_HP_POT_II);
-	const tile_data_t random_tile1 = {.sprite = 'X', .type = TileType_SOLID, .color = Clr_CYAN};
+	const tile_data_t random_tile1 = {.sprite = 'X', .type = TileType_EMPTY, .color = Clr_CYAN};
 
 	Update_WorldTile(state.world_tiles, New_Coord(0, 0), &random_tile1);
 	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), item);
 
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == item->sprite);
-	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_ITEM);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_EMPTY);
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_GREEN);
 
 	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), NULL);
 	Update_WorldTileEnemyOccupier(state.world_tiles, New_Coord(0, 0), enemy);
 
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == enemy->data->sprite);
-	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_ENEMY);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_EMPTY);
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_RED);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
@@ -544,7 +555,7 @@ int test_get_tile_foreground_attributes_full_occupiers() {
 
 	enemy_t *enemy = InitCreate_Enemy(Get_EnemyData(EnmySlug_WEREWOLF), New_Coord(0, 0));
 	const item_t *item = Get_Item(ItmSlug_HP_POT_II);
-	const tile_data_t random_tile1 = {.sprite = 'X', .type = TileType_SOLID, .color = Clr_CYAN};
+	const tile_data_t random_tile1 = {.sprite = 'X', .type = TileType_EMPTY, .color = Clr_CYAN};
 
 	// Priority ordering: Enemy > Item > Tile.
 
@@ -553,19 +564,19 @@ int test_get_tile_foreground_attributes_full_occupiers() {
 	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), item);
 
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == enemy->data->sprite);
-	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_ENEMY);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_EMPTY);
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_RED);
 
 	Update_WorldTileEnemyOccupier(state.world_tiles, New_Coord(0, 0), NULL);
 
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == item->sprite);
-	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_ITEM);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_EMPTY);
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_GREEN);
 
 	Update_WorldTileItemOccupier(state.world_tiles, New_Coord(0, 0), NULL);
 
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).sprite == 'X');
-	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_SOLID);
+	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).type == TileType_EMPTY);
 	mu_assert(__func__, Get_ForegroundTileData(&state.world_tiles[0][0]).color == Clr_CYAN);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
@@ -589,6 +600,7 @@ int run_all_tests() {
 	mu_run_test(test_set_player_pos_bounds_valid);
 	mu_run_test(test_set_player_pos_out_of_bounds);
 	mu_run_test(test_set_player_pos_into_solid_fails);
+	mu_run_test(test_set_player_pos_into_door);
 
 	mu_run_test(test_update_game_log_normal_behaviour);
 	mu_run_test(test_update_game_log_buffer_overflow_clamped);
@@ -635,10 +647,14 @@ floor_statistics_t get_statistics_on_dungeon_floor_creation(int iterations) {
 
 
 int main(int argc, char **argv) {
+	floor_statistics_t dungeon_statistics;
+
 	Setup_Test_Env();
 
 	int result = run_all_tests();
-	floor_statistics_t floor_statistics = get_statistics_on_dungeon_floor_creation(10000);
+	if (result == 0) {
+		dungeon_statistics = get_statistics_on_dungeon_floor_creation(10000);
+	}
 
 	Cleanup_Test_Env();
 
@@ -650,7 +666,7 @@ int main(int argc, char **argv) {
 
 		printf("\nStatistics for seed: %d\n", last_seed_used);
 		printf(" - Average number of rooms over %d dungeon floors: %d, least number of rooms in a floor was: %d, most was: %d\n"
-			, floor_statistics.floors_created, floor_statistics.average_rooms, floor_statistics.least_rooms, floor_statistics.most_rooms);
+			, dungeon_statistics.floors_created, dungeon_statistics.average_rooms, dungeon_statistics.least_rooms, dungeon_statistics.most_rooms);
 	}
 	printf("\nTotal tests: %d\n", tests_run);
 
