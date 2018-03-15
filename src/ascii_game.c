@@ -920,9 +920,9 @@ static void Generate_Corridor(tile_t **world_tiles, coord_t starting_pos, int co
 		case Dir_UP:
 			// Create corridor.
 			for (int i = 0; i < corridor_size - 1; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - 1, starting_pos.y - (i + 1)), Get_TileData(TileSlug_VERT_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - 1, starting_pos.y - (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
 				Update_WorldTile(world_tiles, New_Coord(starting_pos.x, starting_pos.y - (i + 1)), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + 1, starting_pos.y - (i + 1)), Get_TileData(TileSlug_VERT_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + 1, starting_pos.y - (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
 			// Create door at the end of the corridor.
@@ -930,27 +930,27 @@ static void Generate_Corridor(tile_t **world_tiles, coord_t starting_pos, int co
 			break;
 		case Dir_DOWN:
 			for (int i = 0; i < corridor_size - 1; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - 1, starting_pos.y + (i + 1)), Get_TileData(TileSlug_VERT_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - 1, starting_pos.y + (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
 				Update_WorldTile(world_tiles, New_Coord(starting_pos.x, starting_pos.y + (i + 1)), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + 1, starting_pos.y + (i + 1)), Get_TileData(TileSlug_VERT_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + 1, starting_pos.y + (i + 1)), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
 			Update_WorldTile(world_tiles, New_Coord(starting_pos.x, starting_pos.y + corridor_size), Get_TileData(TileSlug_DOOR));
 			break;
 		case Dir_LEFT:
 			for (int i = 0; i < corridor_size - 1; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - (i + 1), starting_pos.y - 1), Get_TileData(TileSlug_HORI_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - (i + 1), starting_pos.y - 1), Get_TileData(TileSlug_GENERIC_WALL));
 				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - (i + 1), starting_pos.y), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - (i + 1), starting_pos.y + 1), Get_TileData(TileSlug_HORI_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x - (i + 1), starting_pos.y + 1), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
 			Update_WorldTile(world_tiles, New_Coord(starting_pos.x - corridor_size, starting_pos.y), Get_TileData(TileSlug_DOOR));
 			break;
 		case Dir_RIGHT:
 			for (int i = 0; i < corridor_size - 1; i++) {
-				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + (i + 1), starting_pos.y - 1), Get_TileData(TileSlug_HORI_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + (i + 1), starting_pos.y - 1), Get_TileData(TileSlug_GENERIC_WALL));
 				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + (i + 1), starting_pos.y), Get_TileData(TileSlug_GROUND));
-				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + (i + 1), starting_pos.y + 1), Get_TileData(TileSlug_HORI_WALL));
+				Update_WorldTile(world_tiles, New_Coord(starting_pos.x + (i + 1), starting_pos.y + 1), Get_TileData(TileSlug_GENERIC_WALL));
 			}
 
 			Update_WorldTile(world_tiles, New_Coord(starting_pos.x + corridor_size, starting_pos.y), Get_TileData(TileSlug_DOOR));
