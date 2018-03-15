@@ -170,7 +170,7 @@ static void Reset_WorldTiles(game_state_t *state) {
 	for (int x = 0; x < world_screen_w; x++) {
 		for (int y = 0; y < world_screen_h; y++) {
 			coord_t coord = New_Coord(x, y);
-			state->world_tiles[coord.x][coord.y].visited = false;
+			state->world_tiles[coord.x][coord.y].is_visible = false;
 			Update_WorldTile(state->world_tiles, coord, Get_TileData(TileSlug_VOID));
 			Update_WorldTileItemOccupier(state->world_tiles, coord, NULL);
 			Update_WorldTileEnemyOccupier(state->world_tiles, coord, NULL);
@@ -1088,7 +1088,7 @@ tile_data_t Get_ForegroundTileData(const tile_t *tile) {
 		foreground_color = tile->data->color;
 	}
 
-	// Show enemy occupier's type, before an item's, before the tile's type itself.
+	// Get enemy occupier's type, before an item's, before the tile's type itself.
 	if (tile->enemy_occupier != NULL) {
 		foreground_type = TileType_ENEMY;
 	} else if (tile->item_occupier != NULL) {
@@ -1131,15 +1131,16 @@ void Apply_RecursiveVision(const game_state_t *state, coord_t pos) {
 			tile_t *tile = &state->world_tiles[x][y];
 			const tile_data_t foreground = Get_ForegroundTileData(tile);
 
-			// Doors block vision but are empty tiles, so add it as an exception to the condition.
-			if (tile->data->type != TileType_SOLID && tile->data->sprite != SPR_DOOR) {
-				if (tile->visited == false) {
-					tile->visited = true;
+			// If the tile isn't structural and hasn't been seen already, show it and repeat from that tile.
+			if (tile->data->is_structural == false) {
+				if (tile->is_visible == false) {
+					tile->is_visible = true;
 					GEO_draw_char(x, y, foreground.color, foreground.sprite);
 					Apply_RecursiveVision(state, New_Coord(x, y));
 				}
 			} else {
-				tile->visited = true;
+				// Structural tiles are shown, but vision in that direction ends there.
+				tile->is_visible = true;
 				GEO_draw_char(x, y, foreground.color, foreground.sprite);
 			}
 		}
@@ -1156,14 +1157,14 @@ void Apply_VisionToWorldTiles(const game_state_t *state) {
 		// Only draw tiles the player can 'see'.
 		Apply_RecursiveVision(state, state->player.pos);
 
-		// Always remember seen solid tiles, and forget any other tiles the player can't see on this turn.
+		// Always remember seen structural tiles, and forget any other tiles the player can't see on this turn.
 		for (int x = 0; x < world_screen_w; x++) {
 			for (int y = 0; y < world_screen_h; y++) {
 				tile_t *tile = &state->world_tiles[x][y];
 
-				if (tile->visited == true) {
-					if (tile->data->type != TileType_SOLID && tile->data->sprite != SPR_DOOR) {
-						tile->visited = false;
+				if (tile->is_visible == true) {
+					if (tile->data->is_structural == false) {
+						tile->is_visible = false;
 					} else {
 						const tile_data_t foreground = Get_ForegroundTileData(tile);
 						GEO_draw_char(x, y, foreground.color, foreground.sprite);
