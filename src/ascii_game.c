@@ -879,7 +879,7 @@ static bool Try_GenerateCorridorConnection(tile_t **world_tiles, coord_t startin
 	} while (world_tiles[pos.x][pos.y].data->type == TileType_VOID);
 
 	// Corridor search finishing at length 1 means only the doors will be created -- no actual corridor. Also remove if the corridor is too long.
-	if (length == 1 || length > 25) {
+	if (length <= 2 || length > 25) {
 		return false;
 	}
 
