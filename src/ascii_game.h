@@ -19,7 +19,7 @@
 #define HUB_FILENAME "maps/hub.txt"
 #define HUB_MAP_FREQUENCY 4
 #define RIGHT_PANEL_OFFSET 36
-#define BOTTOM_PANEL_OFFSET 6			
+#define BOTTOM_PANEL_OFFSET 6
 #define DEBUG_RCS_LIMIT 100000			// Room collision limit.
 #define DEBUG_INJECTED_INPUT_LIMIT 256	// Injected user input limit (used for testing).
 #define LOG_BUFFER_SIZE 175
@@ -28,7 +28,8 @@
 #define MIN_TERMINAL_WIDTH 120
 #define MIN_TERMINAL_HEIGHT 45
 #define INVENTORY_SIZE 9
-#define _UNITY_VOID_SPRITE ';'		// Used by the Unity img-to-ascii converter for representing the void. NOTE: This value must be unique - no other sprite may use it.
+// Used by the Unity img-to-ascii converter for representing the void. NOTE: This value must be unique - no other sprite may use it.
+#define _UNITY_VOID_SPRITE ';'
 
 typedef enum direction_en {
 	Dir_UP,
@@ -52,7 +53,7 @@ typedef struct player_stats {
 
 	int max_vision;
 
-	int s_str;	
+	int s_str;
 	int s_def;
 	int s_vit;
 	int s_int;
@@ -84,25 +85,25 @@ typedef struct player_t {
 	char sprite;
 	colour_en color;
 	char current_npc_target;						// The currently targeted sprite, used to interact with NPCs.
-	int current_item_index_selected;				// The currently selected item index from the player's inventory, used to interact with the item.
+	int current_item_index_selected;		// The currently selected item index from the player's inventory, used to interact with the item.
 } player_t;
 
 typedef struct game_state_t {
-	int game_turns;						// Current number of game turns since game started.
+	int game_turns;								// Current number of game turns since game started.
 	int num_rooms_created;				// Number of rooms created in game (may not always == num_rooms_specified in command line).
-	bool fog_of_war;					// Toggle whether all world tiles are shown or only those within range of the player.
+	bool fog_of_war;							// Toggle whether all world tiles are shown or only those within range of the player.
 	bool player_turn_over;				// Determines when the player has finished their turn.
-	bool floor_complete;				// Determines when the player has completed the dungeon floor.
-	int current_floor;			
+	bool floor_complete;					// Determines when the player has completed the dungeon floor.
+	int current_floor;
 
-	player_t player;				
-	tile_t **world_tiles;				// Stores information about every (x, y) coordinate in the world map, for use in the game.
-	room_t *rooms;						// Array of all created rooms after dungeon generation.
-	log_list_t game_log;			
+	player_t player;
+	tile_t **world_tiles;					// Stores information about every (x, y) coordinate in the world map, for use in the game.
+	room_t *rooms;								// Array of all created rooms after dungeon generation.
+	log_list_t game_log;
 	enemy_node_t *enemy_list;			// Linked list of all enemies created in a dungeon.
 
-	int debug_rcs;						// Room collisions during room creation.
-	double debug_seed;					// RNG seed used to create this game.
+	int debug_rcs;								// Room collisions during room creation.
+	double debug_seed;						// RNG seed used to create this game.
 
 	// This debug field is used to simulate a sequence of player inputs and inject them into unit tests. +1 to ensure a NUL-terminating byte.
 	int debug_injected_inputs[DEBUG_INJECTED_INPUT_LIMIT + 1];
@@ -110,17 +111,17 @@ typedef struct game_state_t {
 } game_state_t;
 
 
-extern bool g_resize_error;			
-extern bool g_process_over;			
+extern bool g_resize_error;
+extern bool g_process_over;
 
 
-/* 
+/*
 	Initialises a game state struct to it's default values, including dynamic allocations.
 */
 void Init_GameState(game_state_t *state);
 
-/* 
-	Initialises and creates a dungeon floor which consists of, at least, a player spawn room and a staircase room, with rooms connected inbetween filled with enemies and items. 
+/*
+	Initialises and creates a dungeon floor which consists of, at least, a player spawn room and a staircase room, with rooms connected inbetween filled with enemies and items.
 	Optionally specify a text file to use a custom layout for the dungeon floor.
 */
 void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specified, const char *filename_specified);
@@ -181,7 +182,7 @@ void Update_GameLog(log_list_t *game_log, const char *format, ...);
 void Update_AllEnemyCombat(game_state_t *state, enemy_node_t *enemy_list);
 
 /*
-	Gets the tile data that should be relevant to the player when multiple things are at the same position. Foreground tile is based on ordering rules.
+	Gets the tile data to draw that should be relevant to the player when multiple things are at the same position. Foreground tile data is based on ordering rules.
 */
 tile_data_t Get_ForegroundTileData(const tile_t *tile);
 

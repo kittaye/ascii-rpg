@@ -66,7 +66,7 @@ static bool Try_GenerateCorridorConnection(tile_t **world_tiles, coord_t startin
 static void Create_RoomsRecursively(game_state_t *state, coord_t pos, int radius, int max_rooms);
 
 /*
-	Creates a dungeon floor's rooms from a txt file named 'filename'. 
+	Creates a dungeon floor's rooms from a txt file named 'filename'.
 */
 static void Create_RoomsFromFile(game_state_t *state, const char *filename);
 
@@ -251,7 +251,7 @@ static void Populate_Rooms(game_state_t *state) {
 					case 4:
 						Update_WorldTile(state->world_tiles, New_Coord(x, y), Get_TileData(TileSlug_GOLD));
 						break;
-					case 5: 
+					case 5:
 					case 6:
 						Update_WorldTile(state->world_tiles, New_Coord(x, y), Get_TileData(TileSlug_BIGGOLD));
 						break;
@@ -403,9 +403,10 @@ static void Draw_UI(const game_state_t *state) {
 		y++;
 
 		// Item selection.
-		if (state->player.current_item_index_selected != -1) {
+		int item_index = state->player.current_item_index_selected;
+		if (item_index != -1) {
 			y++;
-			GEO_drawf(x, y++, Clr_CYAN, "Selected item: %s", state->player.inventory[state->player.current_item_index_selected]->name);
+			GEO_drawf(x, y++, Clr_CYAN, "Selected item: %s", state->player.inventory[item_index]->name);
 			GEO_drawf(x, y++, Clr_YELLOW, "Press 'e' to use");
 			GEO_drawf(x, y++, Clr_YELLOW, "Press 'd' to drop");
 			GEO_drawf(x, y++, Clr_YELLOW, "Press 'x' to examine");
@@ -671,7 +672,9 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 				lineNum++;
 			}
 
-			anchor_centered_map_offset = New_Coord((Get_WorldScreenWidth() / 2) - ((longest_line - 1) / 2), ((Get_WorldScreenHeight() / 2) - (lineNum / 2)));
+			int x = (Get_WorldScreenWidth() / 2) - ((longest_line - 1) / 2);
+			int y = (Get_WorldScreenHeight() / 2) - (lineNum / 2));
+			anchor_centered_map_offset = New_Coord(x, y);
 		}
 
 		// Reset file read-ptr.
@@ -1027,7 +1030,7 @@ static bool Check_CorridorCollision(const tile_t **world_tiles, coord_t starting
 
 static void Define_Room(room_t *room, coord_t pos, int radius) {
 	assert(room != NULL);
-	
+
 	room->TL_corner.x = pos.x - radius;
 	room->TL_corner.y = pos.y - radius;
 
@@ -1100,7 +1103,7 @@ tile_data_t Get_ForegroundTileData(const tile_t *tile) {
 	}
 
 	// A particular tile's type is always the same, not matter what occupies it.
-	// (Because "foreground tile" information is only relevant to the variables needed for drawing -- sprite and colour). 
+	// (Because "foreground tile" information is only relevant to the variables needed for drawing -- sprite and colour).
 	const tile_type_en foreground_type = tile->data->type;
 
 	tile_data_t foreground_tile = {.sprite = foreground_sprite, .color = foreground_color, .type = foreground_type};
