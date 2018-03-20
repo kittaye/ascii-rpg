@@ -109,9 +109,9 @@ void Init_GameState(game_state_t *state) {
 	const int world_screen_w = Get_WorldScreenWidth();
 	const int world_screen_h = Get_WorldScreenHeight();
 
+	// Set initial values.
 	state->debug_seed = time(NULL);
 	srand(state->debug_seed);
-
 	state->game_turns = 0;
 	state->num_rooms_created = 0;
 	state->current_floor = 1;
@@ -135,6 +135,7 @@ void Init_GameState(game_state_t *state) {
 	// Create empty world space.
 	Reset_WorldTiles(state);
 
+	// Initialise game logs with empty space.
 	snprintf(state->game_log.line1, LOG_BUFFER_SIZE, LOGMSG_EMPTY_SPACE);
 	snprintf(state->game_log.line2, LOG_BUFFER_SIZE, LOGMSG_EMPTY_SPACE);
 	snprintf(state->game_log.line3, LOG_BUFFER_SIZE, LOGMSG_EMPTY_SPACE);
@@ -1130,9 +1131,10 @@ void Update_WorldTileEnemyOccupier(tile_t **world_tiles, coord_t pos, enemy_t *e
 }
 
 void Apply_RecursiveVision(const game_state_t *state, coord_t pos) {
-	// Draw tiles in a 3x3 radius of 'pos'. If the tile's type is considered as EMPTY, repeat the process from that tile.
+	// For each tile in a 3x3 radius of 'pos'...
 	for (int x = pos.x - 1; x <= pos.x + 1; x++) {
 		for (int y = pos.y - 1; y <= pos.y + 1; y++) {
+			// Ensure tile is within world bounds.
 			if (Check_OutOfWorldBounds(New_Coord(x, y))) {
 				continue;
 			}
