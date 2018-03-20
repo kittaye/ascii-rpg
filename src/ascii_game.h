@@ -84,25 +84,25 @@ typedef struct player_t {
 	const item_t *inventory[INVENTORY_SIZE];
 	char sprite;
 	colour_en color;
-	char current_npc_target;						// The currently targeted sprite, used to interact with NPCs.
+	char current_npc_target;				// The currently targeted sprite, used to interact with NPCs.
 	int current_item_index_selected;		// The currently selected item index from the player's inventory, used to interact with the item.
 } player_t;
 
 typedef struct game_state_t {
-	int game_turns;								// Current number of game turns since game started.
-	int num_rooms_created;				// Number of rooms created in game (may not always == num_rooms_specified in command line).
-	bool fog_of_war;							// Toggle whether all world tiles are shown or only those within range of the player.
-	bool player_turn_over;				// Determines when the player has finished their turn.
+	int game_turns;							// Current number of game turns since game started.
+	int num_rooms_created;					// Number of rooms created in game (may not always == num_rooms_specified in command line).
+	bool fog_of_war;						// Toggle whether all world tiles are shown or only those within range of the player.
+	bool player_turn_over;					// Determines when the player has finished their turn.
 	bool floor_complete;					// Determines when the player has completed the dungeon floor.
 	int current_floor;
 
 	player_t player;
 	tile_t **world_tiles;					// Stores information about every (x, y) coordinate in the world map, for use in the game.
-	room_t *rooms;								// Array of all created rooms after dungeon generation.
+	room_t *rooms;							// Array of all created rooms after dungeon generation.
 	log_list_t game_log;
-	enemy_node_t *enemy_list;			// Linked list of all enemies created in a dungeon.
+	enemy_node_t *enemy_list;				// Linked list of all enemies created in a dungeon.
 
-	int debug_rcs;								// Room collisions during room creation.
+	int debug_rcs;							// Room collisions during room creation.
 	double debug_seed;						// RNG seed used to create this game.
 
 	// This debug field is used to simulate a sequence of player inputs and inject them into unit tests. +1 to ensure a NUL-terminating byte.

@@ -860,7 +860,7 @@ static bool Try_GenerateCorridorConnection(tile_t **world_tiles, coord_t startin
 	coord_t pos = starting_pos;
 	int length = 0;
 
-	// Keep searching empty tiles until something else is hit.
+	// Keep searching void tiles until something else is hit.
 	do {
 		switch (direction) {
 			case Dir_UP:
