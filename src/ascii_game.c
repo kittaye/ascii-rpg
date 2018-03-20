@@ -674,7 +674,7 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 			}
 
 			int x = (Get_WorldScreenWidth() / 2) - ((longest_line - 1) / 2);
-			int y = (Get_WorldScreenHeight() / 2) - (lineNum / 2));
+			int y = (Get_WorldScreenHeight() / 2) - (lineNum / 2);
 			anchor_centered_map_offset = New_Coord(x, y);
 		}
 
@@ -1227,6 +1227,7 @@ void Update_AllEnemyCombat(game_state_t *state, enemy_node_t *enemy_list) {
 		}
 	}
 }
+
 void Interact_CurrentlySelectedItem(game_state_t *state, item_select_control_en key_pressed) {
 	assert(state != NULL);
 
