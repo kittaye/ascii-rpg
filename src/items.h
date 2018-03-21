@@ -12,6 +12,7 @@ typedef enum item_slug_en {
 
 typedef struct item_t {
 	const char *const name;
+	const char *const description;
 	const char sprite;
 	const item_slug_en item_slug;
 	const int value;
