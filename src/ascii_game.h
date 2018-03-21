@@ -189,12 +189,12 @@ tile_data_t Get_ForegroundTileData(const tile_t *tile);
 /*
 	Draws world tiles to be shown to the user. Game state variable 'fog_of_war' is the determining factor.
 */
-void Apply_VisionToWorldTiles(const game_state_t *state);
+void Draw_VisionToWorldTiles(const game_state_t *state);
 
 /*
-	Determines whether the tiles around position 'pos' should be shown to the user. If so, it is recursively called at that new tile position.
+	Determines whether the tiles around position 'pos' should be drawn. If so, it is recursively called at that new tile position.
 */
-void Apply_RecursiveVision(const game_state_t *state, coord_t pos);
+void Draw_RecursiveVision(const game_state_t *state, coord_t pos);
 
 /*
 	Interacts with the player's currently targeted NPC.

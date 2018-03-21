@@ -428,7 +428,7 @@ void Process(game_state_t *state) {
 	GEO_clear_screen();
 
 	// Draw all world tiles.
-	Apply_VisionToWorldTiles(state);
+	Draw_VisionToWorldTiles(state);
 
 	// Draw player.
 	GEO_draw_char(state->player.pos.x, state->player.pos.y, state->player.color, state->player.sprite);
@@ -1131,7 +1131,7 @@ void Update_WorldTileEnemyOccupier(tile_t **world_tiles, coord_t pos, enemy_t *e
 	world_tiles[pos.x][pos.y].enemy_occupier = enemy;
 }
 
-void Apply_RecursiveVision(const game_state_t *state, coord_t pos) {
+void Draw_RecursiveVision(const game_state_t *state, coord_t pos) {
 	// For each tile in a 3x3 radius of 'pos'...
 	for (int x = pos.x - 1; x <= pos.x + 1; x++) {
 		for (int y = pos.y - 1; y <= pos.y + 1; y++) {
@@ -1148,7 +1148,7 @@ void Apply_RecursiveVision(const game_state_t *state, coord_t pos) {
 				if (!tile->is_visible) {
 					tile->is_visible = true;
 					GEO_draw_char(x, y, foreground.color, foreground.sprite);
-					Apply_RecursiveVision(state, New_Coord(x, y));
+					Draw_RecursiveVision(state, New_Coord(x, y));
 				}
 			} else {
 				// Solid tiles are shown, but vision in that direction ends there.
@@ -1159,7 +1159,7 @@ void Apply_RecursiveVision(const game_state_t *state, coord_t pos) {
 	}
 }
 
-void Apply_VisionToWorldTiles(const game_state_t *state) {
+void Draw_VisionToWorldTiles(const game_state_t *state) {
 	assert(state != NULL);
 
 	const int world_screen_w = Get_WorldScreenWidth();
@@ -1167,14 +1167,14 @@ void Apply_VisionToWorldTiles(const game_state_t *state) {
 
 	if (state->fog_of_war) {
 		// Only draw tiles the player can 'see'.
-		Apply_RecursiveVision(state, state->player.pos);
+		Draw_RecursiveVision(state, state->player.pos);
 
-		// Always remember seen solid tiles, and forget any other tiles the player can't see on this turn.
+		// Always remember seen solid tiles, and forget any other tiles going into the next game turn.
 		for (int x = 0; x < world_screen_w; x++) {
 			for (int y = 0; y < world_screen_h; y++) {
 				tile_t *tile = &state->world_tiles[x][y];
 
-				if (tile->is_visible == true) {
+				if (tile->is_visible) {
 					if (tile->data->type != TileType_SOLID) {
 						tile->is_visible = false;
 					} else {
