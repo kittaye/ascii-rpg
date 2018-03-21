@@ -205,7 +205,7 @@ void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specifi
 
 		Define_Room(&state->rooms[0], starting_room_pos, starting_room_radius);
 
-		if (Check_RoomCollision((const tile_t**)state->world_tiles, &state->rooms[0]) == false) {
+		if (!Check_RoomCollision((const tile_t**)state->world_tiles, &state->rooms[0])) {
 			Create_RoomsRecursively(state, starting_room_pos, starting_room_radius, num_rooms_specified);
 			Populate_Rooms(state);
 		}
@@ -222,6 +222,7 @@ static void Populate_Rooms(game_state_t *state) {
 	const int player_spawn_room_index = rand() % (state->num_rooms_created - 1);
 
 	for (int i = 0; i < state->num_rooms_created - 1; i++) {
+		// Create player in this room.
 		if (i == player_spawn_room_index) {
 			coord_t pos = New_Coord(
 				state->rooms[i].TL_corner.x + ((state->rooms[i].TR_corner.x - state->rooms[i].TL_corner.x) / 2),
@@ -761,8 +762,8 @@ static void Create_RoomsRecursively(game_state_t *state, coord_t room_pos, int r
 	const int ATTEMPTS_PER_ROOM = 10;
 
 	// Get this room's informaton.
-	const room_t this_room = state->rooms[state->num_rooms_created];
 	const int this_room_id = state->num_rooms_created;
+	const room_t this_room = state->rooms[this_room_id];
 	const coord_t this_room_pos = room_pos;
 	const int this_room_radius = room_radius;
 	int rooms_created_from_this_room = 0;
@@ -915,7 +916,7 @@ static bool Try_GenerateCorridorConnection(tile_t **world_tiles, coord_t startin
 	}
 
 	// The corridor search was successful, so finally try to generate the corridor itself by checking any other collisions with it.
-	if (Check_CorridorCollision((const tile_t**)world_tiles, starting_pos, length - 1, direction) == false) {
+	if (!Check_CorridorCollision((const tile_t**)world_tiles, starting_pos, length - 1, direction)) {
 		Generate_Corridor(world_tiles, starting_pos, length, direction);
 		return true;
 	}
@@ -1142,9 +1143,9 @@ void Apply_RecursiveVision(const game_state_t *state, coord_t pos) {
 			tile_t *tile = &state->world_tiles[x][y];
 			const tile_data_t foreground = Get_ForegroundTileData(tile);
 
-			// If the tile isn't solid and hasn't been seen already, show it and repeat from that tile.
-			if (tile->data->type != TileType_SOLID) {
-				if (tile->is_visible == false) {
+			// If the tile isn't solid or void, and hasn't been seen already, show it and repeat from that tile.
+			if (tile->data->type != TileType_SOLID && tile->data->type != TileType_VOID) {
+				if (!tile->is_visible) {
 					tile->is_visible = true;
 					GEO_draw_char(x, y, foreground.color, foreground.sprite);
 					Apply_RecursiveVision(state, New_Coord(x, y));
