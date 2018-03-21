@@ -574,7 +574,6 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 			case SPR_MERCHANT:
 				Update_GameLog(&state->game_log, LOGMSG_PLR_TALK_MERCHANT);
 				state->player.current_npc_target = SPR_MERCHANT;
-				state->player.pos = player_old_pos;
 				break;
 			case SPR_GOLD:
 			case SPR_BIGGOLD:;
