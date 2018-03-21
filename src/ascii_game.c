@@ -1251,7 +1251,7 @@ void Interact_CurrentlySelectedItem(game_state_t *state, item_select_control_en 
 			}
 			break;
 		case ItmCtrl_EXAMINE:
-			Examine_Item(state, item_selected);
+			Update_GameLog(&state->game_log, item_selected->description);
 			break;
 		case ItmCtrl_DROP:
 			if (state->world_tiles[state->player.pos.x][state->player.pos.y].item_occupier == NULL) {
@@ -1263,20 +1263,6 @@ void Interact_CurrentlySelectedItem(game_state_t *state, item_select_control_en 
 			}
 			break;
 		default:
-			break;
-	}
-}
-
-void Examine_Item(game_state_t *state, const item_t *item) {
-	switch (item->item_slug) {
-		case ItmSlug_HP_POT_I:
-			Update_GameLog(&state->game_log, LOGMSG_EXAMINE_SMALL_HP_POT);
-			break;
-		case ItmSlug_HP_POT_II:
-			Update_GameLog(&state->game_log, LOGMSG_EXAMINE_MEDIUM_HP_POT);
-			break;
-		default:
-			Update_GameLog(&state->game_log, "There's nothing here...?");	// SHOULD NOT HAPPEN
 			break;
 	}
 }

@@ -22,7 +22,7 @@
 #define BOTTOM_PANEL_OFFSET 6
 #define DEBUG_RCS_LIMIT 100000			// Room collision limit.
 #define DEBUG_INJECTED_INPUT_LIMIT 256	// Injected user input limit (used for testing).
-#define LOG_BUFFER_SIZE 175
+#define LOG_BUFFER_SIZE 150
 #define MIN_ROOMS 2
 #define MAX_ROOMS 100
 #define MIN_TERMINAL_WIDTH 120
@@ -205,11 +205,6 @@ void Interact_CurrentlyTargetedNPC(game_state_t *state);
 	Interacts with the player's currently selected item in a way specified by the key press.
 */
 void Interact_CurrentlySelectedItem(game_state_t *state, item_select_control_en key_pressed);
-
-/*
-	Examines the item by displaying text to the game log.
-*/
-void Examine_Item(game_state_t *state, const item_t *item);
 
 /*
 	Adds to the player's current health. Negative values are used to deal damage to the player. Returns the difference in current health.

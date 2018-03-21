@@ -13,9 +13,6 @@
 #define LOGMSG_PLR_INTERACT_STAIRCASE "You ascend the staircase..."
 #define LOGMSG_PLR_NEW_FLOOR "You are now traversing floor %d."
 
-#define LOGMSG_EXAMINE_SMALL_HP_POT "A vial containing glowing red liquid."
-#define LOGMSG_EXAMINE_MEDIUM_HP_POT "A larger vial containing glowing red liquid."
-
 #define LOGMSG_PLR_TALK_MERCHANT "Merchant: \"Greetings traveller! If you wish to trade, press ENTER.\""
 #define LOGMSG_PLR_BUY_MERCHANT "Merchant: \"Thank you for purchasing my %s!\""
 #define LOGMSG_PLR_BUY_FULL_MERCHANT "Merchant: \"Seems like you don't have any room for this...\""
