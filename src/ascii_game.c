@@ -221,6 +221,8 @@ static void Populate_Rooms(game_state_t *state) {
 	// Choose a random room for the player spawn (except the last room created which is reserved for staircase room).
 	const int player_spawn_room_index = rand() % (state->num_rooms_created - 1);
 
+	bool created_merchant = false;
+
 	for (int i = 0; i < state->num_rooms_created - 1; i++) {
 		// Create player in this room.
 		if (i == player_spawn_room_index) {
@@ -229,6 +231,7 @@ static void Populate_Rooms(game_state_t *state) {
 				state->rooms[i].TR_corner.y + ((state->rooms[i].BR_corner.y - state->rooms[i].TR_corner.y) / 2)
 			);
 			Try_SetPlayerPos(state, pos);
+
 			continue;
 		}
 
@@ -258,10 +261,16 @@ static void Populate_Rooms(game_state_t *state) {
 						Update_WorldTile(state->world_tiles, New_Coord(x, y), Get_TileData(TileSlug_BIGGOLD));
 						break;
 					case 7:
-						Update_WorldTileItemOccupier(state->world_tiles, New_Coord(x, y), Get_Item(ItmSlug_HP_POT_I));
+						//Update_WorldTileItemOccupier(state->world_tiles, New_Coord(x, y), Get_Item(ItmSlug_HP_POT_I));
 						break;
 					case 8:
-						Update_WorldTileItemOccupier(state->world_tiles, New_Coord(x, y), Get_Item(ItmSlug_HP_POT_II));
+						//Update_WorldTileItemOccupier(state->world_tiles, New_Coord(x, y), Get_Item(ItmSlug_HP_POT_II));
+						break;
+					case 9:
+						if (!created_merchant && (state->current_floor % 2 == 0)) {
+							Update_WorldTile(state->world_tiles, New_Coord(x, y), Get_TileData(TileSlug_MERCHANT));
+							created_merchant = true;
+						}
 						break;
 					default:
 						break;
