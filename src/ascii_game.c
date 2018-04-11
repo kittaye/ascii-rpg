@@ -279,7 +279,7 @@ static void Populate_Rooms(game_state_t *state) {
 		}
 	}
 
-	// Spawn staircase in the last room created (tends to be near center of map due to dungeon creation algorithm).
+	// Spawn staircase in the last room created.
 	const int last_room = state->num_rooms_created - 1;
 	coord_t pos = New_Coord(
 		state->rooms[last_room].TL_corner.x + ((state->rooms[last_room].TR_corner.x - state->rooms[last_room].TL_corner.x) / 2),
@@ -433,22 +433,14 @@ static void Draw_UI(const game_state_t *state) {
 }
 
 void Process(game_state_t *state) {
-	// Clear drawn elements from screen.
 	GEO_clear_screen();
 
-	// Draw all world tiles.
+	Draw_UI(state);
 	Draw_VisionToWorldTiles(state);
-
-	// Draw player.
 	GEO_draw_char(state->player.pos.x, state->player.pos.y, state->player.color, state->player.sprite);
 
-	// Draw UI.
-	Draw_UI(state);
-
-	// Display drawn elements to screen.
 	GEO_show_screen();
 
-	// Remember player's current position before a move is made.
 	coord_t oldPos = state->player.pos;
 
 	// Wait for player input, then do player logic with it, and then determine whether the action ends their turn or not.
@@ -468,12 +460,13 @@ static bool Perform_PlayerLogic(game_state_t *state) {
 
 	player_t *player = &state->player;
 
+	// Get a character code from standard input without waiting (but looped until any key is pressed).
+	// This method of input processing allows for interrupt handling (dealing with terminal resizes).
 	while (true) {
-		// Get a character code from standard input without waiting (but looped until any key is pressed).
-		// This method of input processing allows for interrupt handling (dealing with terminal resizes).
 		const int key = Get_KeyInput(state);
 
 		switch (key) {
+			// Movement controls.
 			case KEY_UP:
 				return Try_SetPlayerPos(state, New_Coord(player->pos.x, player->pos.y - 1));
 			case KEY_DOWN:
@@ -482,6 +475,8 @@ static bool Perform_PlayerLogic(game_state_t *state) {
 				return Try_SetPlayerPos(state, New_Coord(player->pos.x - 1, player->pos.y));
 			case KEY_RIGHT:
 				return Try_SetPlayerPos(state, New_Coord(player->pos.x + 1, player->pos.y));
+			
+			// General controls.
 			case 'h':
 				Draw_HelpScreen(state);
 				return false;
@@ -491,15 +486,11 @@ static bool Perform_PlayerLogic(game_state_t *state) {
 			case 'q':
 				g_process_over = true;
 				return false;
-			case 'e':
-			case 'd':
-			case 'x':
-				if (player->current_item_index_selected != -1) {
-					Interact_CurrentlySelectedItem(state, key);
-					player->current_item_index_selected = -1;
-					return false;
-				}
-				break;
+			case 'p':
+				state->floor_complete = true;
+				return false;
+
+			// Item select controls.
 			case '1':
 			case '2':
 			case '3':
@@ -514,8 +505,19 @@ static bool Perform_PlayerLogic(game_state_t *state) {
 					return false;
 				}
 				break;
-			case KEY_RESIZE:
-				return false;
+
+			// Item interaction controls.
+			case ItmCtrl_USE:
+			case ItmCtrl_DROP:
+			case ItmCtrl_EXAMINE:
+				if (player->current_item_index_selected != -1) {
+					Interact_CurrentlySelectedItem(state, key);
+					player->current_item_index_selected = -1;
+					return false;
+				}
+				break;
+
+			// NPC interaction controls.
 			case '\n':
 			case KEY_ENTER:
 				if (state->player.current_npc_target != SPR_EMPTY) {
@@ -523,9 +525,12 @@ static bool Perform_PlayerLogic(game_state_t *state) {
 					return false;
 				}
 				break;
-			case 'p':
-				state->floor_complete = true;
+
+			// Resize interrupt.
+			case KEY_RESIZE:
 				return false;
+
+			// No key was pressed.
 			default:
 				break;
 		}
@@ -535,13 +540,13 @@ static bool Perform_PlayerLogic(game_state_t *state) {
 static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 	assert(state != NULL);
 
-	// Reset player's NPC target.
-	state->player.current_npc_target = SPR_EMPTY;
-
-	// Perform world logic based on the tile the player moved to.
 	coord_t pos = state->player.pos;
 	tile_t *current_tile = &state->world_tiles[pos.x][pos.y];
 
+	// Reset player's NPC target (interacting with an NPC target happens within player logic only).
+	state->player.current_npc_target = SPR_EMPTY;
+
+	// Perform logic on an enemy first, if it exists.
 	if (current_tile->enemy_occupier != NULL) {
 		state->player.pos = player_old_pos;
 
@@ -564,6 +569,7 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 			Update_GameLog(&state->game_log, LOGMSG_ENEMY_DMG_PLR, attackedEnemy->data->name, 1);
 		}
 
+	// Otherwise perform logic on an item, if it exists.
 	} else if (current_tile->item_occupier != NULL) {
 		// All items are "picked up" (removed from world) if the player has room in their inventory.
 		if (AddTo_Inventory(&state->player, current_tile->item_occupier)) {
@@ -572,6 +578,8 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 		} else {
 			Update_GameLog(&state->game_log, LOGMSG_PLR_INVENTORY_FULL);
 		}
+
+	// No enemy or item, so perform logic on whatever exists at the world tile itself.
 	} else {
 		const tile_data_t current_tile_data = Get_ForegroundTileData(current_tile);
 
@@ -1113,7 +1121,7 @@ tile_data_t Get_ForegroundTileData(const tile_t *tile) {
 	}
 
 	// A particular tile's type is always the same, not matter what occupies it.
-	// (Because "foreground tile" information is only relevant to the variables needed for drawing -- sprite and colour).
+	// (Because "foreground tile" information is only relevant to the variables needed for drawing -- being sprite and colour).
 	const tile_type_en foreground_type = tile->data->type;
 
 	tile_data_t foreground_tile = {.sprite = foreground_sprite, .color = foreground_color, .type = foreground_type};
