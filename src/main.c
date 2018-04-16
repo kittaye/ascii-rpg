@@ -52,11 +52,11 @@ int main(int argc, char *argv[]) {
 	// Initialise the game.
 	game_state_t game_state;
 	Init_GameState(&game_state);
-	game_state.player = Create_Player();
+	Init_Player(&game_state.player);
 
 	Draw_HelpScreen(&game_state);
 	Update_GameLog(&game_state.game_log, LOGMSG_WELCOME);
-	InitCreate_DungeonFloor(&game_state, num_rooms_specified, NULL);
+	Create_DungeonFloor(&game_state, num_rooms_specified, NULL);
 
 	// Main game loop.
 	while (!g_process_over) {
@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
 			Cleanup_DungeonFloor(&game_state);
 			game_state.current_floor++;
 			game_state.floor_complete = false;
-			InitCreate_DungeonFloor(&game_state, num_rooms_specified, NULL);
+			Create_DungeonFloor(&game_state, num_rooms_specified, NULL);
 		}
 	}
 

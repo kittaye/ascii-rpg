@@ -54,8 +54,7 @@ Streamline tests that need game state and the player to be initialised and creat
 static game_state_t Setup_Test_GameStateAndPlayer() {
 	game_state_t state;
 	Init_GameState(&state);
-	state.player = Create_Player();
-	state.player.pos = New_Coord(0, 0);
+	Init_Player(&state.player);
 	last_seed_used = state.debug_seed;
 	return state;
 }
@@ -73,9 +72,9 @@ Streamline tests that need game state, player, and the dungeon floor to be initi
 static game_state_t Setup_Test_GameStatePlayerAndDungeon() {
 	game_state_t state;
 	Init_GameState(&state);
+	Init_Player(&state.player);
 	last_seed_used = state.debug_seed;
-	state.player = Create_Player();
-	InitCreate_DungeonFloor(&state, 10, NULL);
+	Create_DungeonFloor(&state, 10, NULL);
 	return state;
 }
 
@@ -160,29 +159,30 @@ int test_init_game_state_correct_values() {
 }
 
 int test_create_player_correct_values() {
-	player_t player = Create_Player();
+	game_state_t state = Setup_Test_GameStateAndPlayer();
 
-	mu_assert(__func__, player.sprite == SPR_PLAYER);
-	mu_assert(__func__, Check_CoordsEqual(player.pos, New_Coord(0, 0)));
-	mu_assert(__func__, player.color == Clr_CYAN);
-	mu_assert(__func__, player.current_npc_target == ' ');
-	mu_assert(__func__, player.current_item_index_selected == -1);
+	mu_assert(__func__, state.player.sprite == SPR_PLAYER);
+	mu_assert(__func__, Check_CoordsEqual(state.player.pos, New_Coord(0, 0)));
+	mu_assert(__func__, state.player.color == Clr_CYAN);
+	mu_assert(__func__, state.player.current_npc_target == ' ');
+	mu_assert(__func__, state.player.current_item_index_selected == -1);
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
-		mu_assert(__func__, player.inventory[i] == Get_Item(ItmSlug_NONE));
+		mu_assert(__func__, state.player.inventory[i] == Get_Item(ItmSlug_NONE));
 	}
-	mu_assert(__func__, player.stats.level == 1);
-	mu_assert(__func__, player.stats.max_health > 0);
-	mu_assert(__func__, player.stats.curr_health == player.stats.max_health);
-	mu_assert(__func__, player.stats.max_mana > 0);
-	mu_assert(__func__, player.stats.curr_mana == player.stats.max_mana);
-	mu_assert(__func__, player.stats.s_str == 1);
-	mu_assert(__func__, player.stats.s_def == 1);
-	mu_assert(__func__, player.stats.s_vit == 1);
-	mu_assert(__func__, player.stats.s_int == 1);
-	mu_assert(__func__, player.stats.s_lck == 1);
-	mu_assert(__func__, player.stats.enemies_slain == 0);
-	mu_assert(__func__, player.stats.num_gold == 0);
+	mu_assert(__func__, state.player.stats.level == 1);
+	mu_assert(__func__, state.player.stats.max_health > 0);
+	mu_assert(__func__, state.player.stats.curr_health == state.player.stats.max_health);
+	mu_assert(__func__, state.player.stats.max_mana > 0);
+	mu_assert(__func__, state.player.stats.curr_mana == state.player.stats.max_mana);
+	mu_assert(__func__, state.player.stats.s_str == 1);
+	mu_assert(__func__, state.player.stats.s_def == 1);
+	mu_assert(__func__, state.player.stats.s_vit == 1);
+	mu_assert(__func__, state.player.stats.s_int == 1);
+	mu_assert(__func__, state.player.stats.s_lck == 1);
+	mu_assert(__func__, state.player.stats.enemies_slain == 0);
+	mu_assert(__func__, state.player.stats.num_gold == 0);
 
+	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
 }
 
@@ -226,7 +226,7 @@ int test_created_dungeon_floor_contains_staircase() {
 	room_t staircase_room = state.rooms[state.num_rooms_created - 1];
 	for (int x = staircase_room.TL_corner.x + 1; x < staircase_room.TR_corner.x; x++) {
 		for (int y = staircase_room.TL_corner.y + 1; y < staircase_room.BL_corner.y; y++) {
-			if (state.world_tiles[x][y].data->sprite == SPR_STAIRCASE) {
+			if (state.world_tiles[x][y].data == Get_TileData(TileSlug_STAIRCASE)) {
 				contains_staircase = true;
 				break;
 			}
@@ -469,11 +469,11 @@ int test_item_examine_correct_value() {
 
 	state.player.current_item_index_selected = 0;
 	Interact_CurrentlySelectedItem(&state, ItmCtrl_EXAMINE);
-	mu_assert(__func__, strcmp(state.game_log.line1, LOGMSG_EXAMINE_SMALL_HP_POT) == 0);
+	mu_assert(__func__, strcmp(state.game_log.line1, Get_Item(ItmSlug_HP_POT_I)->description) == 0);
 
 	state.player.current_item_index_selected = 1;
 	Interact_CurrentlySelectedItem(&state, ItmCtrl_EXAMINE);
-	mu_assert(__func__, strcmp(state.game_log.line1, LOGMSG_EXAMINE_MEDIUM_HP_POT) == 0);
+	mu_assert(__func__, strcmp(state.game_log.line1, Get_Item(ItmSlug_HP_POT_II)->description) == 0);
 
 	Cleanup_Test_GameStateAndPlayer(&state);
 	return 0;
@@ -627,7 +627,7 @@ floor_statistics_t get_statistics_on_dungeon_floor_creation(int iterations) {
 	int most_rooms = MIN_ROOMS;
 
 	for (int i = 0; i < iterations; i++) {
-		InitCreate_DungeonFloor(&state, MAX_ROOMS, NULL);
+		Create_DungeonFloor(&state, MAX_ROOMS, NULL);
 		total_rooms += state.num_rooms_created;
 		state.current_floor++;
 

@@ -11,7 +11,6 @@
 #define SPR_GENERIC_WALL '#'
 #define SPR_HORI_WALL '-'
 #define SPR_VERT_WALL '|'
-#define SPR_OPENING '?'		// Used to mark openings in rooms.
 #define SPR_STAIRCASE '^'
 #define SPR_MERCHANT '1'
 #define SPR_GOLD 'g'

@@ -17,7 +17,7 @@
 #include "ascii_game.h"
 
 bool g_resize_error = false;	// Global flag which is set when a terminal resize interrupt occurs.
-bool g_process_over = false;	// Global flag which controls the main while loop of the game.
+bool g_process_over = false;	// Global flag which controls the main loop of the game.
 
 #ifndef Private_Function_Declarations
 /*
@@ -179,7 +179,7 @@ static void Reset_WorldTiles(game_state_t *state) {
 	}
 }
 
-void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specified, const char *filename_specified) {
+void Create_DungeonFloor(game_state_t *state, unsigned int num_rooms_specified, const char *filename_specified) {
 	assert(state != NULL);
 	assert(num_rooms_specified >= MIN_ROOMS);
 	assert(num_rooms_specified <= MAX_ROOMS);
@@ -304,35 +304,33 @@ enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos) {
 	return enemy;
 }
 
-player_t Create_Player(void) {
-	player_t player;
+void Init_Player(player_t* player) {
+	assert(player != NULL);
 
-	player.sprite = SPR_PLAYER;
-	player.pos = New_Coord(0, 0);
-	player.color = Clr_CYAN;
-	player.current_npc_target = SPR_EMPTY;
-	player.current_item_index_selected = -1;
+	player->sprite = SPR_PLAYER;
+	player->pos = New_Coord(0, 0);
+	player->color = Clr_CYAN;
+	player->current_npc_target = SPR_EMPTY;
+	player->current_item_index_selected = -1;
 
 	for (int i = 0; i < INVENTORY_SIZE; i++) {
-		player.inventory[i] = Get_Item(ItmSlug_NONE);
+		player->inventory[i] = Get_Item(ItmSlug_NONE);
 	}
 
-	player.stats.level = 1;
-	player.stats.max_health = 10;
-	player.stats.curr_health = 10;
-	player.stats.max_mana = 10;
-	player.stats.curr_mana = 10;
+	player->stats.level = 1;
+	player->stats.max_health = 10;
+	player->stats.curr_health = 10;
+	player->stats.max_mana = 10;
+	player->stats.curr_mana = 10;
 
-	player.stats.s_str = 1;
-	player.stats.s_def = 1;
-	player.stats.s_vit = 1;
-	player.stats.s_int = 1;
-	player.stats.s_lck = 1;
+	player->stats.s_str = 1;
+	player->stats.s_def = 1;
+	player->stats.s_vit = 1;
+	player->stats.s_int = 1;
+	player->stats.s_lck = 1;
 
-	player.stats.enemies_slain = 0;
-	player.stats.num_gold = 0;
-
-	return player;
+	player->stats.enemies_slain = 0;
+	player->stats.num_gold = 0;
 }
 
 bool Try_SetPlayerPos(game_state_t *state, coord_t pos) {

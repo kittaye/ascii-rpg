@@ -9,12 +9,14 @@ static const item_t g_item_database[] = {
 		.sprite = SPR_EMPTY,
 		.item_slug = ItmSlug_NONE,
 		.value = 0},
+
 	[ItmSlug_HP_POT_I] = {
 		.name = "HP potion I",
 		.description = "A vial containing glowing red liquid.",
 		.sprite = SPR_HP_POT_I,
 		.item_slug = ItmSlug_HP_POT_I,
 		.value = 20},
+
 	[ItmSlug_HP_POT_II] = {
 		.name = "HP potion II",
 		.description = "A larger vial containing glowing red liquid.",

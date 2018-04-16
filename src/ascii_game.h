@@ -8,7 +8,6 @@
 #include "tiles.h"
 #include "colours.h"
 
-
 #define CLAMP(x, min_val, max_val) (((x) < (min_val)) ? (min_val) : (((x) > (max_val)) ? (max_val) : (x)))
 
 // Sprites.
@@ -65,10 +64,10 @@ typedef struct player_stats {
 
 typedef struct log_list_t {
 	char line1[LOG_BUFFER_SIZE];	// First message that is shown in the game log.
-	char line2[LOG_BUFFER_SIZE];	// Second message that is shown in the game log.
-	char line3[LOG_BUFFER_SIZE];	// Third message that is shown in the game log.
-	char line4[LOG_BUFFER_SIZE];	// Fourth message that is shown in the game log.
-	char line5[LOG_BUFFER_SIZE];	// Final message that is shown in the game log.
+	char line2[LOG_BUFFER_SIZE];	// Second message ...
+	char line3[LOG_BUFFER_SIZE];	// Third message ...
+	char line4[LOG_BUFFER_SIZE];	// Fourth message ...
+	char line5[LOG_BUFFER_SIZE];	// Final message ...
 } log_list_t;
 
 typedef struct room_t {
@@ -94,12 +93,12 @@ typedef struct game_state_t {
 	bool fog_of_war;						// Toggle whether all world tiles are shown or only those within range of the player.
 	bool player_turn_over;					// Determines when the player has finished their turn.
 	bool floor_complete;					// Determines when the player has completed the dungeon floor.
-	int current_floor;
+	int current_floor;						// Player's current floor.
 
-	player_t player;
-	tile_t **world_tiles;					// Stores information about every (x, y) coordinate in the world map, for use in the game.
+	player_t player;						// Stores player information.
+	tile_t **world_tiles;					// Stores information about every (x, y) coordinate in world space.
 	room_t *rooms;							// Array of all created rooms after dungeon generation.
-	log_list_t game_log;
+	log_list_t game_log;					// Log for displaying in-game messages.
 	enemy_node_t *enemy_list;				// Linked list of all enemies created in a dungeon.
 
 	int debug_rcs;							// Room collisions during room creation.
@@ -124,12 +123,12 @@ void Init_GameState(game_state_t *state);
 	Initialises and creates a dungeon floor which consists of, at least, a player spawn room and a staircase room, with rooms connected inbetween filled with enemies and items.
 	Optionally specify a text file to use a custom layout for the dungeon floor.
 */
-void InitCreate_DungeonFloor(game_state_t *state, unsigned int num_rooms_specified, const char *filename_specified);
+void Create_DungeonFloor(game_state_t *state, unsigned int num_rooms_specified, const char *filename_specified);
 
 /*
-	Initialises a player struct to it's default values and returns it.
+	Initialises a player to it's default values.
 */
-player_t Create_Player(void);
+void Init_Player(player_t* player);
 
 /*
 	Initalises and creates an enemy with it's default values set according to the enemy_data struct. It's current position is set to 'pos'. The created enemy is returned.
@@ -237,7 +236,7 @@ int Get_WorldScreenWidth(void);
 int Get_WorldScreenHeight(void);
 
 /*
-	Frees all memory allocated from calling 'InitCreate_DungeonFloor'.
+	Frees all memory allocated from calling 'Create_DungeonFloor'.
 */
 void Cleanup_DungeonFloor(game_state_t *state);
 
