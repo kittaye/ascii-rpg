@@ -1346,65 +1346,74 @@ void Draw_MerchantScreen(game_state_t *state) {
 	const int terminal_w = GEO_screen_width() - 1;
 	const int terminal_h = GEO_screen_height() - 1;
 
-	GEO_clear_screen();
+	bool is_interacting = true;
+	char last_msg[256] = " ";
 
 	// Draw screen border.
-	GEO_draw_line(0, 0, terminal_w, 0, Clr_WHITE, '*');
-	GEO_draw_line(0, 0, 0, terminal_h, Clr_WHITE, '*');
-	GEO_draw_line(terminal_w, 0, terminal_w, terminal_h, Clr_WHITE, '*');
-	GEO_draw_line(0, terminal_h, terminal_w, terminal_h, Clr_WHITE, '*');
+	while (is_interacting) {
+		GEO_clear_screen();
 
-	// Draw the merchant shop interface.
-	int x = 3;
-	int y = 2;
-	GEO_drawf_align_center(0, y++, Clr_YELLOW, "Trading with Merchant");
-	y++;
-	GEO_drawf(x, y++, Clr_YELLOW, "Option     Item                    Price (gold)");
-	GEO_drawf(x, y++, Clr_WHITE, "(1)        %-23s %d", Get_Item(ItmSlug_HP_POT_I)->name, Get_Item(ItmSlug_HP_POT_I)->value);
-	GEO_drawf(x, y++, Clr_WHITE, "(2)        %-23s %d", Get_Item(ItmSlug_HP_POT_II)->name, Get_Item(ItmSlug_HP_POT_II)->value);
-	y++;
-	GEO_drawf(x, y++, Clr_WHITE, "Your gold: %d", state->player.stats.num_gold);
-	y++;
-	GEO_drawf(x, y++, Clr_WHITE, "Select an option to buy an item, or press ENTER to leave.");
+		GEO_draw_line(0, 0, terminal_w, 0, Clr_WHITE, '*');
+		GEO_draw_line(0, 0, 0, terminal_h, Clr_WHITE, '*');
+		GEO_draw_line(terminal_w, 0, terminal_w, terminal_h, Clr_WHITE, '*');
+		GEO_draw_line(0, terminal_h, terminal_w, terminal_h, Clr_WHITE, '*');
 
-	GEO_show_screen();
+		// Draw the merchant shop interface.
+		int x = 3;
+		int y = 2;
+		GEO_drawf_align_center(0, y++, Clr_YELLOW, "Trading with Merchant");
+		y++;
+		GEO_drawf(x, y++, Clr_YELLOW, "Option     Item                    Price (gold)");
+		GEO_drawf(x, y++, Clr_WHITE, "(1)        %-23s %d", Get_Item(ItmSlug_HP_POT_I)->name, Get_Item(ItmSlug_HP_POT_I)->value);
+		GEO_drawf(x, y++, Clr_WHITE, "(2)        %-23s %d", Get_Item(ItmSlug_HP_POT_II)->name, Get_Item(ItmSlug_HP_POT_II)->value);
+		y++;
+		GEO_drawf(x, y++, Clr_WHITE, "Your gold: %d", state->player.stats.num_gold);
+		y++;
+		GEO_drawf(x, y++, Clr_WHITE, "Select an option to buy an item, or press ENTER to leave.");
+		y++;
+		GEO_drawf(x, y++, Clr_WHITE, last_msg);
 
-	// Get player input to buy something or leave.
-	bool validKeyPress = false;
-	item_slug_en chosen_item = ItmSlug_NONE;
-	while (!validKeyPress) {
-		const int key = Get_KeyInput(state);
-		switch (key) {
-			case '1':
-				chosen_item = ItmSlug_HP_POT_I;
-				validKeyPress = true;
-				break;
-			case '2':
-				chosen_item = ItmSlug_HP_POT_II;
-				validKeyPress = true;
-				break;
-			case '\n':
-			case KEY_ENTER:
-			case 'q':
-			case KEY_RESIZE:
-				validKeyPress = true;
-				break;
-			default:
-				break;
+		GEO_show_screen();
+
+		// Get player input to buy something or leave.
+		bool validKeyPress = false;
+		item_slug_en chosen_item = ItmSlug_NONE;
+		while (!validKeyPress) {
+			const int key = Get_KeyInput(state);
+			switch (key) {
+				case '1':
+					chosen_item = ItmSlug_HP_POT_I;
+					validKeyPress = true;
+					break;
+				case '2':
+					chosen_item = ItmSlug_HP_POT_II;
+					validKeyPress = true;
+					break;
+				case '\n':
+				case KEY_ENTER:
+				case 'q':
+				case KEY_RESIZE:
+					validKeyPress = true;
+					break;
+				default:
+					break;
+			}
 		}
-	}
 
-	// If player bought something...
-	if (chosen_item != ItmSlug_NONE) {
-		if (state->player.stats.num_gold >= Get_Item(chosen_item)->value) {
-			if (AddTo_Inventory(&state->player, Get_Item(chosen_item))) {
-				state->player.stats.num_gold -= Get_Item(chosen_item)->value;
-				Update_GameLog(&state->game_log, LOGMSG_PLR_BUY_MERCHANT, Get_Item(chosen_item)->name);
+		// If player bought something...
+		if (chosen_item != ItmSlug_NONE) {
+			if (state->player.stats.num_gold >= Get_Item(chosen_item)->value) {
+				if (AddTo_Inventory(&state->player, Get_Item(chosen_item))) {
+					state->player.stats.num_gold -= Get_Item(chosen_item)->value;
+					snprintf(last_msg, 256, LOGMSG_PLR_BUY_MERCHANT, Get_Item(chosen_item)->name);
+				} else {
+					snprintf(last_msg, 256, LOGMSG_PLR_BUY_FULL_MERCHANT);
+				}
 			} else {
-				Update_GameLog(&state->game_log, LOGMSG_PLR_BUY_FULL_MERCHANT);
+				snprintf(last_msg, 256, LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT, Get_Item(chosen_item)->name);
 			}
 		} else {
-			Update_GameLog(&state->game_log, LOGMSG_PLR_INSUFFICIENT_GOLD_MERCHANT);
+			is_interacting = false;
 		}
 	}
 }
