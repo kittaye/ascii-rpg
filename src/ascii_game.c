@@ -711,7 +711,7 @@ static void Create_RoomsFromFile(game_state_t *state, const char *filename) {
 					const tile_data_t *tile_data = Get_TileData(TileSlug_GROUND);
 
 					// Replace any /n, /t, etc. with a whitespace character.
-					if (!isgraph(line[i])) {
+					if (!isgraph((int)line[i])) {
 						line[i] = SPR_EMPTY;
 					}
 
@@ -1325,6 +1325,7 @@ static int Get_KeyInput(game_state_t *state) {
 			case KEY_RESIZE:
 				g_resize_error = true;
 				g_process_over = true;
+				break;
 			default:
 				return key;
 		}

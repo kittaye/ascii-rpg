@@ -10,9 +10,6 @@ typedef struct GEO_Screen {
 	int **px_color;
 } GEO_Screen;
 
-GEO_Screen *GEO_zdk_screen;
-GEO_Screen *GEO_zdk_prev_screen;
-
 void GEO_setup_screen(void);
 void GEO_cleanup_screen(void);
 void GEO_clear_screen(void);
