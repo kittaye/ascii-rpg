@@ -4,8 +4,17 @@
 #include "ascii_game.h"
 
 static const enemy_data_t g_enemy_data_database[] = {
-	[EnmySlug_ZOMBIE] =		{.name = "zombie",		.enemy_slug = EnmySlug_ZOMBIE,		.max_health = 5, .sprite = SPR_ZOMBIE},
-	[EnmySlug_WEREWOLF] =	{.name = "werewolf",	.enemy_slug = EnmySlug_WEREWOLF,	.max_health = 3, .sprite = SPR_WEREWOLF}
+	[EnmySlug_ZOMBIE] =	{
+		.name = "zombie",		
+		.enemy_slug = EnmySlug_ZOMBIE,		
+		.max_health = 5, 
+		.sprite = SPR_ZOMBIE},
+
+	[EnmySlug_WEREWOLF] = {
+		.name = "werewolf",	
+		.enemy_slug = EnmySlug_WEREWOLF,	
+		.max_health = 3, 
+		.sprite = SPR_WEREWOLF}
 };
 
 const enemy_data_t* Get_EnemyData(const enemy_slug_en enemy_slug) {
