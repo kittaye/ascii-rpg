@@ -289,21 +289,6 @@ static void Populate_Rooms(game_state_t *state) {
 	Update_WorldTile(state->world_tiles, pos, Get_TileData(TileSlug_STAIRCASE));
 }
 
-enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos) {
-	assert(enemy_data != NULL);
-
-	enemy_t *enemy = malloc(sizeof(*enemy));
-	assert(enemy != NULL);
-
-	enemy->data = enemy_data;
-	enemy->curr_health = enemy->data->max_health;
-	enemy->pos = pos;
-	enemy->is_alive = true;
-	enemy->loot = Get_Item(ItmSlug_NONE);
-
-	return enemy;
-}
-
 void Init_Player(player_t* player) {
 	assert(player != NULL);
 
@@ -538,17 +523,16 @@ static bool Perform_PlayerLogic(game_state_t *state) {
 static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 	assert(state != NULL);
 
-	coord_t pos = state->player.pos;
-	tile_t *current_tile = &state->world_tiles[pos.x][pos.y];
+	tile_t *moved_to_tile = &state->world_tiles[state->player.pos.x][state->player.pos.y];
 
 	// Reset player's NPC target (interacting with an NPC target happens within player logic only).
 	state->player.current_npc_target = SPR_EMPTY;
 
 	// Perform logic on an enemy first, if it exists.
-	if (current_tile->enemy_occupier != NULL) {
+	if (moved_to_tile->enemy_occupier != NULL) {
 		state->player.pos = player_old_pos;
 
-		enemy_t *attackedEnemy = current_tile->enemy_occupier;
+		enemy_t *attackedEnemy = moved_to_tile->enemy_occupier;
 		attackedEnemy->curr_health--;
 		Update_GameLog(&state->game_log, LOGMSG_PLR_DMG_ENEMY, attackedEnemy->data->name, 1);
 
@@ -568,10 +552,10 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 		}
 
 	// Otherwise perform logic on an item, if it exists.
-	} else if (current_tile->item_occupier != NULL) {
+	} else if (moved_to_tile->item_occupier != NULL) {
 		// All items are "picked up" (removed from world) if the player has room in their inventory.
-		if (AddTo_Inventory(&state->player, current_tile->item_occupier)) {
-			Update_GameLog(&state->game_log, LOGMSG_PLR_GET_ITEM, current_tile->item_occupier->name);
+		if (AddTo_Inventory(&state->player, moved_to_tile->item_occupier)) {
+			Update_GameLog(&state->game_log, LOGMSG_PLR_GET_ITEM, moved_to_tile->item_occupier->name);
 			Update_WorldTileItemOccupier(state->world_tiles, state->player.pos, NULL);
 		} else {
 			Update_GameLog(&state->game_log, LOGMSG_PLR_INVENTORY_FULL);
@@ -579,7 +563,7 @@ static void Perform_WorldLogic(game_state_t *state, coord_t player_old_pos) {
 
 	// No enemy or item, so perform logic on whatever exists at the world tile itself.
 	} else {
-		const tile_data_t current_tile_data = Get_ForegroundTileData(current_tile);
+		const tile_data_t current_tile_data = Get_ForegroundTileData(moved_to_tile);
 
 		switch (current_tile_data.sprite) {
 			case SPR_STAIRCASE:

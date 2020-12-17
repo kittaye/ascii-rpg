@@ -21,6 +21,21 @@ const enemy_data_t* Get_EnemyData(const enemy_slug_en enemy_slug) {
 	return &g_enemy_data_database[enemy_slug];
 }
 
+enemy_t* InitCreate_Enemy(const enemy_data_t *enemy_data, coord_t pos) {
+	assert(enemy_data != NULL);
+
+	enemy_t *enemy = malloc(sizeof(*enemy));
+	assert(enemy != NULL);
+
+	enemy->data = enemy_data;
+	enemy->curr_health = enemy->data->max_health;
+	enemy->pos = pos;
+	enemy->is_alive = true;
+	enemy->loot = Get_Item(ItmSlug_NONE);
+
+	return enemy;
+}
+
 void AddTo_EnemyList(enemy_node_t **list, enemy_t *enemy) {
 	assert(list != NULL);
 	assert(enemy != NULL);
